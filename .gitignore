@@ -1,0 +1,22 @@
+
+*.vsidx
+/.vs
+/.vs
+/.vs
+
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore Visual Studio specific files
+.vs/
+*.csproj.user
+*.suo
+*.cache
+
+applicationhost.config
+*.cache
+*.dll
+*.pdb
+*.cache
+.vs/FYP_TravelPlanner/config/applicationhost.config
