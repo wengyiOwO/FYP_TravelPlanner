@@ -15,7 +15,6 @@ namespace FYP_TravelPlanner
         {
             if (!IsPostBack)
             {
-                //string accountId = Session["Account_ID"].ToString();
                 string accountId = "AC0521";
                 LoadAccountDetails(accountId);
             }
@@ -42,20 +41,14 @@ namespace FYP_TravelPlanner
             }
 
             string profileImagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
-            if (System.IO.File.Exists(profileImagePath))
-            {
-                imgProfile.ImageUrl = "~/Uploads/Profile/" + accountId + ".jpg";
-            }
-            else
-            {
-                imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
-            }
+            imgProfile.ImageUrl = System.IO.File.Exists(profileImagePath)
+                ? $"~/Uploads/Profile/{accountId}.jpg"
+                : "~/Uploads/Profile/unknown.jpg";
         }
+
         protected void SaveChanges_Click(object sender, EventArgs e)
         {
-            //string accountId = Session["Account_ID"].ToString();
             string accountId = "AC0521";
-
             string accountName = inputName.Text;
             string phone = inputPhone.Text;
 
@@ -75,29 +68,29 @@ namespace FYP_TravelPlanner
 
             StatusMessage.Text = "Your changes have been saved successfully!";
             StatusMessage.ForeColor = System.Drawing.Color.Green;
-            StatusMessage.Visible = true; 
+            StatusMessage.Visible = true;
         }
 
         protected void UploadProfileImage_Click(object sender, EventArgs e)
         {
             if (ProfileImageUpload.HasFile)
             {
-                string accountId = "AC0521"; 
+                string accountId = "AC0521";
                 string filePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
 
                 ProfileImageUpload.SaveAs(filePath);
 
-                imgProfile.ImageUrl = $"~/Uploads/Profile/{accountId}.jpg?t={DateTime.Now.Ticks}"; 
-
                 StatusMessage.Text = "Profile image uploaded successfully!";
                 StatusMessage.ForeColor = System.Drawing.Color.Green;
-                StatusMessage.Visible = true; 
+                StatusMessage.Visible = true;
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "refreshImage", "refreshProfileImage();", true);
             }
             else
             {
                 StatusMessage.Text = "Please select a file to upload.";
-                StatusMessage.ForeColor = System.Drawing.Color.Red; 
-                StatusMessage.Visible = true; 
+                StatusMessage.ForeColor = System.Drawing.Color.Red;
+                StatusMessage.Visible = true;
             }
         }
     }

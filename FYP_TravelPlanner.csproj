@@ -248,6 +248,7 @@
     <Content Include="Traveller\TestMap.aspx" />
     <Content Include="Traveller\TravelPlan.aspx" />
     <Content Include="Traveller\ViewTravelPlanHistory.aspx" />
+    <Content Include="Traveller\EditPost.aspx" />
     <Content Include="Uploads\Profile\unknown.jpg" />
     <Content Include="Admin\YearlyPopularDestinations.aspx" />
     <Content Include="Admin\MonthlyPopularDestinations.aspx" />
@@ -2133,6 +2134,13 @@
     </Compile>
     <Compile Include="ResetPassword.aspx.designer.cs">
       <DependentUpon>ResetPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Traveller\EditPost.aspx.cs">
+      <DependentUpon>EditPost.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Traveller\EditPost.aspx.designer.cs">
+      <DependentUpon>EditPost.aspx</DependentUpon>
     </Compile>
     <Compile Include="TravelPlanner_Admin.Master.cs">
       <DependentUpon>TravelPlanner_Admin.Master</DependentUpon>

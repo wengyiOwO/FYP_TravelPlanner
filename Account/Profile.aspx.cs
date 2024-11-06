@@ -73,7 +73,7 @@ namespace FYP_TravelPlanner
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "SELECT post_id, post_title FROM Posts WHERE account_id = @AccountId";
+                string query = "SELECT post_id, post_title FROM Posts WHERE account_id = @AccountId AND post_status = 'Posted'";
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@AccountId", accountId);
