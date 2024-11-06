@@ -29,6 +29,13 @@
             justify-content: flex-start;
         }
     </style>
+        <script src="/js/YearlyPieChart.js"></script>
+
+    <script type="text/javascript">
+        var ratingData = <%= RatingDataJson %>; 
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
@@ -39,8 +46,9 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;"><i
-                        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
+                    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+                        <i
+                            class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
 
                 </td>
             </tr>
@@ -53,10 +61,10 @@
                     <asp:Button ID="Button3" CssClass="btn btn-success btn-lg" runat="server" Text="Monthly" Width="105px" PostBackUrl="~/Admin/MonthlyUserRating.aspx" />
                     <asp:Button ID="Button4" CssClass="btn btn-success btn-lg" runat="server" Text="Yearly" Width="97px" Enabled="False" />
                 </div>
-                <div class="dropdown-list" style="margin-top: 20px; text-align:center;">
-                    <h5>Select the Year for the Annual Popular Destinations Report</h5>
+                <div class="dropdown-list" style="margin-top: 20px; text-align: center;">
+                    <h5>Select the Year for the Annual User Ratings Report</h5>
 
-                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True">
+                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem></asp:ListItem>
@@ -72,7 +80,7 @@
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
+                                <div class="chart-pie pt-4 pb-2">
                                     <canvas id="myPieChart"></canvas>
                                 </div>
                                 <div class="mt-4 text-center small">
@@ -103,7 +111,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Ratings</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">115</div>
+                                        <asp:Label ID="lblTotalRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -117,7 +125,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Rating</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">4.2</div>
+                                        <asp:Label ID="lblAvgRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-star fa-2x text-gray-300"></i>
@@ -131,7 +139,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">5-Star Percentage</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">47%</div>
+                                        <asp:Label ID="lblPercentage" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-percentage fa-2x text-gray-300"></i>
@@ -145,5 +153,36 @@
 
         </div>
     </div>
-    <script src="/js/overallPieChart.js"></script>
+      <script type="text/javascript">
+          function exportToExcel() {
+              // Calculate total count, average rating, and 5-star percentage
+              var totalCount = ratingData.reduce((a, b) => a + b, 0);
+              var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+              var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+
+              // Prepare worksheet data
+              const worksheetData = [
+                  ["User Ratings Report"],
+                  [],
+                  ["Rating", "Count"],
+                  ["1 star", ratingData[0]],
+                  ["2 stars", ratingData[1]],
+                  ["3 stars", ratingData[2]],
+                  ["4 stars", ratingData[3]],
+                  ["5 stars", ratingData[4]],
+                  [],
+                  ["Total Ratings", totalCount],
+                  ["Average Rating", avgRating],
+                  ["5-Star Percentage", fiveStarPercentage]
+              ];
+
+              // Create a workbook and worksheet
+              const workbook = XLSX.utils.book_new();
+              const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+              XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
+
+              // Export the workbook to an Excel file
+              XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
+          }
+  </script>
 </asp:Content>

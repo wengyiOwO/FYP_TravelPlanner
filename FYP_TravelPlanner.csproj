@@ -184,6 +184,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web.DataVisualization" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -229,10 +230,12 @@
     <Content Include="js\demo\chart-bar-demo.js" />
     <Content Include="js\demo\chart-pie-demo.js" />
     <Content Include="js\demo\datatables-demo.js" />
+    <Content Include="js\MonthlyPieChart.js" />
     <Content Include="js\overallBarChart.js" />
     <Content Include="js\overallPieChart.js" />
     <Content Include="Admin\MonthlyUserRating.aspx" />
     <Content Include="Account\Profile.aspx" />
+    <Content Include="js\YearlyPieChart.js" />
     <Content Include="SessionTimeout.aspx" />
     <Content Include="Traveller\AddFriend.aspx" />
     <Content Include="Traveller\Chat.aspx" />

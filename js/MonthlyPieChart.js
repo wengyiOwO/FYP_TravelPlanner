@@ -1,6 +1,7 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+    // Pie Chart Example
 
-    var ctx = document.getElementById("myPieChart").getContext('2d');
+    var ctx = document.getElementById("monthlyPieChart").getContext('2d');
 
 
     var myPieChart = new Chart(ctx, {
@@ -34,7 +35,4 @@
     });
 
 });
-
-
-
 

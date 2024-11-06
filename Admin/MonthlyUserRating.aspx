@@ -3,6 +3,7 @@
 
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
     <style type="text/css">
         .auto-style1 {
             width: 1241px;
@@ -30,6 +31,14 @@
             justify-content: flex-start;
         }
     </style>
+    <script src="/js/MonthlyPieChart.js"></script>
+
+    <script type="text/javascript">
+        var ratingData = <%= RatingDataJson %>; 
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
+
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
@@ -40,8 +49,9 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;"><i
-                        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
+                    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+                        <i
+                            class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
 
                 </td>
             </tr>
@@ -55,14 +65,24 @@
                     <asp:Button ID="Button4" CssClass="btn btn-success btn-lg" runat="server" Text="Yearly" Width="97px" PostBackUrl="~/Admin/YearlyUserRating.aspx" />
                 </div>
 
-                <div class="dropdown-list" style="margin-top: 20px; text-align:center;">
+                <div class="dropdown-list" style="margin-top: 20px; text-align: center;">
                     <h5>Select the Month & Year for the Monthly User Ratings Report</h5>
-                    <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True">
+                    <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>1</asp:ListItem>
                         <asp:ListItem>2</asp:ListItem>
                         <asp:ListItem>3</asp:ListItem>
+                        <asp:ListItem>4</asp:ListItem>
+                        <asp:ListItem>5</asp:ListItem>
+                        <asp:ListItem>6</asp:ListItem>
+                        <asp:ListItem>7</asp:ListItem>
+                        <asp:ListItem>8</asp:ListItem>
+                        <asp:ListItem>9</asp:ListItem>
+                        <asp:ListItem>10</asp:ListItem>
+                        <asp:ListItem>11</asp:ListItem>
+                        <asp:ListItem>12</asp:ListItem>
+
                     </asp:DropDownList>
-                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True">
+                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem></asp:ListItem>
@@ -78,8 +98,8 @@
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
-                                    <canvas id="myPieChart"></canvas>
+                                <div class="chart-pie pt-4 pb-2">
+                                    <canvas id="monthlyPieChart"></canvas>
                                 </div>
                                 <div class="mt-4 text-center small">
                                     <span class="mr-2">
@@ -109,7 +129,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Ratings</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">115</div>
+                                        <asp:Label ID="lblTotalRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -123,7 +143,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Rating</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">4.2</div>
+                                        <asp:Label ID="lblAvgRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-star fa-2x text-gray-300"></i>
@@ -137,7 +157,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">5-Star Percentage</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">47%</div>
+                                        <asp:Label ID="lblPercentage" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-percentage fa-2x text-gray-300"></i>
@@ -153,5 +173,54 @@
 
         </div>
     </div>
-    <script src="/js/overallPieChart.js"></script>
+    <script type="text/javascript">
+        function exportToExcel() {
+            // Calculate total count, average rating, and 5-star percentage
+            var totalCount = ratingData.reduce((a, b) => a + b, 0);
+            var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+            var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+
+            // Prepare worksheet data
+            const worksheetData = [
+                ["User Ratings Report"],
+                [],
+                ["Rating", "Count"],
+                ["1 star", ratingData[0]],
+                ["2 stars", ratingData[1]],
+                ["3 stars", ratingData[2]],
+                ["4 stars", ratingData[3]],
+                ["5 stars", ratingData[4]],
+                [],
+                ["Total Ratings", totalCount],
+                ["Average Rating", avgRating],
+                ["5-Star Percentage", fiveStarPercentage]
+            ];
+
+            // Create a workbook and worksheet
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
+
+            // Export the workbook to an Excel file
+            XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
+
+            initializePieChart(ratingData);
+        }
+
+        function initializePieChart(data) {
+            const ctx = document.getElementById("myPieChart").getContext("2d");
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"],
+                    datasets: [{
+                        data: ratingData,
+                        backgroundColor: ['#e74a3b', '#f6c23e', '#36b9cc', '#1cc88a', '#4e73df'],
+                        hoverBackgroundColor: ['#be2617', '#dda20a', '#2c9faf', '#17a673', '#2e59d9'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }],
+                }
+            });
+        }
+    </script>
 </asp:Content>

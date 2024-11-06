@@ -5,26 +5,27 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
 using System.Web;
+using Newtonsoft.Json;
 
 
 namespace FYP_TravelPlanner
 {
     public partial class UserRatingReport : System.Web.UI.Page
     {
+        protected string RatingDataJson = "[]"; // Default to empty array
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                var ratingData = GetRatingData();
+                GetRatingData();
                 LoadRatingData();
 
-                // Pass the data to JavaScript to update the pie chart
-                var script = $"var ratingData = {ratingData};";
-                ClientScript.RegisterStartupScript(this.GetType(), "setRatingData", script, true);
+             
             }
         }
 
-        private string GetRatingData()
+        private void GetRatingData()
         {
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             int[] ratingsCount = new int[5];
@@ -50,7 +51,7 @@ namespace FYP_TravelPlanner
             }
 
             // Convert the ratings data array to a JavaScript array string
-            return $"[{string.Join(",", ratingsCount)}]";
+            RatingDataJson = JsonConvert.SerializeObject(ratingsCount);
         }
 
         private void LoadRatingData()
@@ -80,36 +81,62 @@ namespace FYP_TravelPlanner
 
         //protected void btnGeneratePdf_Click(object sender, EventArgs e)
         //{
-        //    // Retrieve the base64 chart image
+        //    // Retrieve the base64 chart image from the hidden field
         //    string base64ChartData = chartImage.Value;
 
-        //    // Decode base64 to byte array
-        //    byte[] chartImageBytes = Convert.FromBase64String(base64ChartData.Replace("data:image/png;base64,", ""));
-
-        //    // Generate PDF
-        //    using (MemoryStream ms = new MemoryStream())
+        //    // Check if base64ChartData is populated
+        //    if (string.IsNullOrEmpty(base64ChartData))
         //    {
-        //        Document document = new Document(PageSize.A4);
-        //        PdfWriter.GetInstance(document, ms);
-        //        document.Open();
-
-        //        // Add title or any text content
-        //        document.Add(new Paragraph("User Ratings Report"));
-
-        //        // Add chart image to PDF
-        //        iTextSharp.text.Image chartImage = iTextSharp.text.Image.GetInstance(chartImageBytes);
-        //        chartImage.ScaleToFit(400f, 300f);
-        //        document.Add(chartImage);
-
-        //        document.Close();
-
-        //        // Output the PDF to the browser
-        //        Response.ContentType = "application/pdf";
-        //        Response.AddHeader("content-disposition", "attachment;filename=UserRatingsReport.pdf");
-        //        Response.Cache.SetCacheability(HttpCacheability.NoCache);
-        //        Response.BinaryWrite(ms.ToArray());
-        //        Response.End();
+        //        Response.Write("Error: Chart image data is missing or empty.");
+        //        return;
         //    }
+
+        //    // Remove the prefix if present
+        //    if (base64ChartData.StartsWith("data:image/png;base64,"))
+        //    {
+        //        base64ChartData = base64ChartData.Replace("data:image/png;base64,", "");
+        //    }
+
+        //    try
+        //    {
+        //        // Decode the base64 string to a byte array
+        //        byte[] chartImageBytes = Convert.FromBase64String(base64ChartData);
+
+        //        // Create and configure the PDF document
+        //        using (MemoryStream ms = new MemoryStream())
+        //        {
+        //            Document document = new Document(PageSize.A4);
+        //            PdfWriter.GetInstance(document, ms);
+        //            document.Open();
+
+        //            // Add a title or introductory text
+        //            document.Add(new Paragraph("User Ratings Report"));
+
+        //            // Add the chart image to the PDF
+        //            iTextSharp.text.Image chartImage = iTextSharp.text.Image.GetInstance(chartImageBytes);
+        //            chartImage.ScaleToFit(400f, 300f); // Adjust image size if necessary
+        //            document.Add(chartImage);
+
+        //            document.Close();
+
+        //            // Output the PDF to the browser for download
+        //            Response.ContentType = "application/pdf";
+        //            Response.AddHeader("content-disposition", "attachment;filename=UserRatingsReport.pdf");
+        //            Response.Cache.SetCacheability(HttpCacheability.NoCache);
+        //            Response.BinaryWrite(ms.ToArray());
+        //            Response.End();
+        //        }
+        //    }
+        //    catch (FormatException ex)
+        //    {
+        //        Response.Write("Error decoding image data: " + ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Response.Write("An error occurred: " + ex.Message);
+        //    }
+        //}
+
     }
 
 }

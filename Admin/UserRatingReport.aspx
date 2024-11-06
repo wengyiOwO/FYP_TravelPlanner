@@ -1,6 +1,9 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserRatingReport.aspx.cs" MasterPageFile="~/TravelPlanner_Admin.Master" Inherits="FYP_TravelPlanner.UserRatingReport" %>
 
+<%@ Register Assembly="System.Web.DataVisualization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Namespace="System.Web.UI.DataVisualization.Charting" TagPrefix="asp" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+       
 
     <style type="text/css">
         .auto-style1 {
@@ -9,10 +12,6 @@
 
         .auto-style2 {
             width: 107px;
-        }
-
-        .auto-style4 {
-            height: 29px;
         }
 
         .button-group {
@@ -29,6 +28,14 @@
             justify-content: flex-start;
         }
     </style>
+            <script src="/js/overallPieChart.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
+    <script type="text/javascript">
+    var ratingData = <%= RatingDataJson %>;
+    </script>
+
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -42,12 +49,15 @@
                 <td class="auto-style2">
                     <asp:HiddenField ID="chartImage" runat="server" />
 
-           <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;" ></asp:Button>
+           <%--<asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  
+                ></asp:Button>--%>
+    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+        <i
+        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
                    
                 </td>
             </tr>
         </table>
-
         <div class="row justify-content-center">
             <div class="col-lg-12">
                 <div class="button-group">
@@ -140,6 +150,38 @@
 
         </div>
     </div>
-    <script src="/js/overallPieChart.js"></script>
+      <script type="text/javascript">
+          function exportToExcel() {
+              // Calculate total count, average rating, and 5-star percentage
+              var totalCount = ratingData.reduce((a, b) => a + b, 0);
+              var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+              var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+
+              // Prepare worksheet data
+              const worksheetData = [
+                  ["User Ratings Report"],
+                  [],
+                  ["Rating", "Count"],
+                  ["1 star", ratingData[0]],
+                  ["2 stars", ratingData[1]],
+                  ["3 stars", ratingData[2]],
+                  ["4 stars", ratingData[3]],
+                  ["5 stars", ratingData[4]],
+                  [],
+                  ["Total Ratings", totalCount],
+                  ["Average Rating", avgRating],
+                  ["5-Star Percentage", fiveStarPercentage]
+              ];
+
+              // Create a workbook and worksheet
+              const workbook = XLSX.utils.book_new();
+              const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+              XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
+
+              // Export the workbook to an Excel file
+              XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
+          }
+    </script>
+
 </asp:Content>
 
