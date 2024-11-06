@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserRatingReport.aspx.cs" MasterPageFile="~/TravelPlanner_Admin.Master" Inherits="FYP_TravelPlanner.UserRatingReport" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-  
+
     <style type="text/css">
         .auto-style1 {
             width: 1241px;
@@ -30,6 +30,7 @@
         }
     </style>
 </asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
     <div class="container-fluid">
@@ -39,9 +40,10 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;"><i
-                        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
+                    <asp:HiddenField ID="chartImage" runat="server" />
 
+           <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;" ></asp:Button>
+                   
                 </td>
             </tr>
         </table>
@@ -63,7 +65,7 @@
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
+                                <div class="chart-pie pt-4 pb-2">
                                     <canvas id="myPieChart"></canvas>
                                 </div>
                                 <div class="mt-4 text-center small">
@@ -94,7 +96,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Ratings</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">115</div>
+                                        <asp:Label ID="lblTotalRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -108,7 +110,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Rating</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">4.2</div>
+                                        <asp:Label ID="lblAvgRating" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-star fa-2x text-gray-300"></i>
@@ -122,7 +124,8 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">5-Star Percentage</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">47%</div>
+                                        <asp:Label ID="lblPercentage" runat="server" CssClass="h5 mb-0 font-weight-bold text-gray-800" Visible="true"></asp:Label>
+
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-percentage fa-2x text-gray-300"></i>

@@ -1,15 +1,17 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-
     // Pie Chart Example
+
     var ctx = document.getElementById("myPieChart").getContext('2d');
+
+
     var myPieChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ["5 stars", "4 stars", "3 stars", "2 stars", "1 star"],
+            labels: ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"],
             datasets: [{
-                data: [55, 30, 15, 10, 5],
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
+                data: ratingData,
+                backgroundColor: ['#e74a3b', '#f6c23e', '#36b9cc', '#1cc88a', '#4e73df'],
+                hoverBackgroundColor: ['#be2617', '#dda20a', '#2c9faf', '#17a673', '#2e59d9'],
                 hoverBorderColor: "rgba(234, 236, 244, 1)",
             }],
         },
@@ -31,4 +33,17 @@
             cutoutPercentage: 80,
         },
     });
+
 });
+function captureChart() {
+    var chartCanvas = document.getElementById("myPieChart");
+    if (chartCanvas) {
+        var imageData = chartCanvas.toDataURL("image/png");
+        console.log("Captured Image Data:", imageData);
+
+        document.getElementById("chartImage").value = imageData;
+    } else {
+        console.log("Chart canvas not found");
+    }
+}
+
