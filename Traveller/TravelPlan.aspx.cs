@@ -179,7 +179,8 @@ namespace FYP_TravelPlanner.Traveller
             }
 
             // Redirect or notify the user of successful save
-            Response.Write("<script>alert('Travel Plan Saved Successfully!');</script>");
+            Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+
             SendNotifyEmail(email, planId);
         }
 
