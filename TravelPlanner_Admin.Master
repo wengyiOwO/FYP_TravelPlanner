@@ -21,7 +21,7 @@
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body id="page-top">
-    <form id="form1" runat="server">
+    <form id="form1" name="form1" runat="server">
 
         <!-- Page Wrapper -->
         <div id="wrapper">

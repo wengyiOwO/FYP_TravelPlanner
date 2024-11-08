@@ -3,7 +3,7 @@
 <%@ Register Assembly="System.Web.DataVisualization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Namespace="System.Web.UI.DataVisualization.Charting" TagPrefix="asp" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-       
+
 
     <style type="text/css">
         .auto-style1 {
@@ -28,13 +28,69 @@
             justify-content: flex-start;
         }
     </style>
-            <script src="/js/overallPieChart.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="/js/overallPieChart.js"></script>
 
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script type="text/javascript">
     var ratingData = <%= RatingDataJson %>;
-    </script>
+    console.log("Rating Data:", ratingData);
+   
+    async function exportToPDF() {
+        if (!ratingData || ratingData.length === 0) {
+            console.error("No rating data available for PDF generation.");
+            alert("No rating data available.");
+            return;
+        }
+
+        // Calculate total count, average rating, and 5-star percentage
+        const totalCount = ratingData.reduce((a, b) => a + b, 0);
+        const avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+        const fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+
+        // Initialize PDF document
+        const { PDFDocument, rgb } = PDFLib;
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([600, 500]);
+
+        // Add report information to the PDF
+        page.drawText("User Ratings Report", { x: 50, y: 450, size: 20, color: rgb(0, 0.53, 0.71) });
+        page.drawText('Total Ratings: ${ totalCount }', { x: 50, y: 420, size: 14 });
+        page.drawText('Average Rating: ${ avgRating }', { x: 50, y: 400, size: 14 });
+        page.drawText('5 - Star Percentage: ${ fiveStarPercentage }', { x: 50, y: 380, size: 14 });
+
+        // Capture the chart as an image using html2canvas
+        const chartCanvas = document.getElementById("myPieChart");
+        if (chartCanvas) {
+            try {
+                const chartImageData = await html2canvas(chartCanvas).then(canvas => canvas.toDataURL("image/png"));
+                const chartImageBytes = await pdfDoc.embedPng(chartImageData);
+                page.drawImage(chartImageBytes, { x: 50, y: 100, width: 500, height: 250 });
+            } catch (error) {
+                console.error("Error capturing chart image:", error);
+            }
+        } else {
+            console.error("Chart canvas element not found.");
+        }
+
+        // Save and download the PDF
+        try {
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "UserRatingsReport.pdf";
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error generating or downloading PDF:", error);
+        }
+    }
+</script>
+
 
 </asp:Content>
 
@@ -49,12 +105,12 @@
                 <td class="auto-style2">
                     <asp:HiddenField ID="chartImage" runat="server" />
 
-           <%--<asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  
+                    <%--<asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  
                 ></asp:Button>--%>
-    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
-        <i
-        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
-                   
+                    <button onclick="exportToPDF()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+                        <i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report
+                    </button>
+
                 </td>
             </tr>
         </table>
@@ -150,38 +206,6 @@
 
         </div>
     </div>
-      <script type="text/javascript">
-          function exportToExcel() {
-              // Calculate total count, average rating, and 5-star percentage
-              var totalCount = ratingData.reduce((a, b) => a + b, 0);
-              var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
-              var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
 
-              // Prepare worksheet data
-              const worksheetData = [
-                  ["User Ratings Report"],
-                  [],
-                  ["Rating", "Count"],
-                  ["1 star", ratingData[0]],
-                  ["2 stars", ratingData[1]],
-                  ["3 stars", ratingData[2]],
-                  ["4 stars", ratingData[3]],
-                  ["5 stars", ratingData[4]],
-                  [],
-                  ["Total Ratings", totalCount],
-                  ["Average Rating", avgRating],
-                  ["5-Star Percentage", fiveStarPercentage]
-              ];
-
-              // Create a workbook and worksheet
-              const workbook = XLSX.utils.book_new();
-              const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-              XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
-
-              // Export the workbook to an Excel file
-              XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
-          }
-    </script>
 
 </asp:Content>
-

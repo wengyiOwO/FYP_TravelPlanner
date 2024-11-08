@@ -200,6 +200,7 @@ namespace FYP_TravelPlanner.Traveller
                 string areaName = "";
                 DateTime planDate = DateTime.Now;
                 int duration = 0;
+                int budget = 0;
 
                 // Retrieve travel plan details from the database
                 string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -208,7 +209,7 @@ namespace FYP_TravelPlanner.Traveller
                     conn.Open();
 
                     string query = @"
-                SELECT acc.account_name, area.area_name, tp.plan_date, tp.duration
+                SELECT acc.account_name, area.area_name, tp.plan_date, tp.duration, tp.budget
                 FROM Travel_Plan tp
                 INNER JOIN Account acc ON tp.account_id = acc.account_id
                 INNER JOIN Area area ON tp.area_id = area.area_id
@@ -225,6 +226,8 @@ namespace FYP_TravelPlanner.Traveller
                                 areaName = reader["area_name"].ToString();
                                 planDate = Convert.ToDateTime(reader["plan_date"]);
                                 duration = Convert.ToInt32(reader["duration"]);
+                                budget = Convert.ToInt32(reader["budget"]);
+
                             }
                         }
                     }
@@ -280,6 +283,8 @@ namespace FYP_TravelPlanner.Traveller
             <p><b>1. Destination</b>: {areaName}</p>
             <p><b>2. Date</b>: {planDate.ToString("yyyy-MM-dd")}</p>
             <p><b>3. Duration</b>: {duration} day(s)</p>
+            <p><b>4. Budget</b>: RM {budget} </p>
+
             <p><b>Itinerary Highlights:</b></p>           
             {itineraryDetails}
             <p>You can view the full details of your travel plan by logging into your account on the Take My Trip website. Don't forget to check your packing list, and make sure that you have all your travel documents ready.</p>

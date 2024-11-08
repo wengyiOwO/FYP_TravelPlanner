@@ -1,12 +1,15 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿function populateChart(data) {
     var ctx = document.getElementById('myBarChart').getContext('2d');
-    var myBarChart = new Chart(ctx, {
+    var labels = data.map(destination => destination.Name);
+    var values = data.map(destination => destination.Visits);
+
+    new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ["Pulau Langkawi", "Desaru Resort", "Sunway Lagoon", "Legoland", "Pulau Redang", "Escape Park", "A'Famosa", "KLCC"],
+            labels: labels,
             datasets: [{
                 label: 'Number of Visits',
-                data: [100, 90, 85, 75, 70, 60, 50, 45], 
+                data: values,
                 backgroundColor: 'rgba(78, 115, 223, 0.5)',
                 borderColor: 'rgba(78, 115, 223, 1)',
                 borderWidth: 1
@@ -36,4 +39,4 @@
             }
         }
     });
-});
+}

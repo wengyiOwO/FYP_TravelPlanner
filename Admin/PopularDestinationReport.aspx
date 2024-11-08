@@ -65,7 +65,7 @@
             <asp:Button ID="Button4" CssClass="btn btn-success btn-lg" runat="server" Text="Yearly" Width="97px" PostBackUrl="~/Admin/YearlyPopularDestinations.aspx" />
         </div>
 
-        <div class="row">
+         <div class="row">
             <!-- Bar Chart Section -->
             <div class="col-xl-8 col-lg-7 chart-container">
                 <div class="card shadow mb-4">
@@ -88,16 +88,7 @@
                     </div>
                     <div class="card-body">
                         <div class="ranking-list">
-                            <ol>
-                                <li>Pulau Langkawi</li>
-                                <li>Desaru Resort</li>
-                                <li>Sunway Lagoon</li>
-                                <li>Legoland</li>
-                                <li>Pulau Redang</li>
-                                <li>Escape Park</li>
-                                <li>A'Famosa</li>
-                                <li>KLCC</li>
-                            </ol>
+                            <ol id="rankingList"></ol> <!-- Dynamically populated -->
                         </div>
                     </div>
                 </div>
@@ -105,5 +96,54 @@
         </div>
     </div>
 
-    <script src="/js/overallBarChart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        // Function to populate chart with data from server
+        function populateChart(data) {
+            const labels = data.map(item => item.Name);
+            const visits = data.map(item => item.Visits);
+
+            var ctx = document.getElementById('myBarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: visits,
+                        backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Popular Destinations'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Populate ranking list
+            const rankingList = document.getElementById("rankingList");
+            rankingList.innerHTML = labels.map((label, index) => `<li>${label}</li>`).join('');
+        }
+    </script>
 </asp:Content>

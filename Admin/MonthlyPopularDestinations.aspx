@@ -66,14 +66,24 @@
                     <asp:Button ID="Button3" CssClass="btn btn-success btn-lg" runat="server" Text="Monthly" Width="105px" Enabled="false" />
                     <asp:Button ID="Button4" CssClass="btn btn-success btn-lg" runat="server" Text="Yearly" Width="97px" PostBackUrl="~/Admin/YearlyPopularDestinations.aspx" />
                 </div>
-                <div class="dropdown-list" style="margin-top: 20px; text-align:center;">
-                    <h5>Select the Month & Year for the Monthly Popular Destinations Report</h5>
-                    <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True">
+                <div class="dropdown-list" style="margin-top: 20px; text-align: center;">
+                    <h5>Select the Month & Year for the Monthly User Ratings Report</h5>
+                    <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>1</asp:ListItem>
                         <asp:ListItem>2</asp:ListItem>
                         <asp:ListItem>3</asp:ListItem>
+                        <asp:ListItem>4</asp:ListItem>
+                        <asp:ListItem>5</asp:ListItem>
+                        <asp:ListItem>6</asp:ListItem>
+                        <asp:ListItem>7</asp:ListItem>
+                        <asp:ListItem>8</asp:ListItem>
+                        <asp:ListItem>9</asp:ListItem>
+                        <asp:ListItem>10</asp:ListItem>
+                        <asp:ListItem>11</asp:ListItem>
+                        <asp:ListItem>12</asp:ListItem>
+
                     </asp:DropDownList>
-                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True">
+                    <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem></asp:ListItem>
@@ -102,27 +112,63 @@
                             </div>
                             <div class="card-body">
                                 <div class="ranking-list">
-                                    <ol>
-                                        <li>Pulau Langkawi</li>
-                                        <li>Desaru Resort</li>
-                                        <li>Sunway Lagoon</li>
-                                        <li>Legoland</li>
-                                        <li>Pulau Redang</li>
-                                        <li>Escape Park</li>
-                                        <li>A'Famosa</li>
-                                        <li>KLCC</li>
-                                    </ol>
+                                    <ol id="rankingList"></ol>
+                                    <!-- Dynamically populated -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <br />
-            <br />
-            <%-- <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT Product.ProductName, SUM(OrderDetails.Quantity) AS TotalQuantity FROM Product INNER JOIN OrderDetails ON Product.ProductID = OrderDetails.ProductID GROUP BY Product.ProductName;"></asp:SqlDataSource> --%>
-        </div>
-    </div>
 
-    <script src="/js/overallBarChart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script type="text/javascript">
+                // Function to populate chart with data from server
+                function populateChart(data) {
+                    const labels = data.map(item => item.Name);
+                    const visits = data.map(item => item.Visits);
+
+                    var ctx = document.getElementById('myBarChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Number of Visits',
+                                data: visits,
+                                backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                                borderColor: 'rgba(78, 115, 223, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Popular Destinations'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Visits'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+
+                    // Populate ranking list
+                    const rankingList = document.getElementById("rankingList");
+                    rankingList.innerHTML = labels.map((label, index) => `<li>${label}</li>`).join('');
+                }
+    </script>
 </asp:Content>

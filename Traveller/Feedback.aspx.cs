@@ -12,17 +12,22 @@ namespace FYP_TravelPlanner.Traveller
 {
     public partial class Feedback : System.Web.UI.Page
     {
+        protected double overallRating = 0.0;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 BindFeedbackData();
+                DisplayOverallRating();
             }
         }
 
         protected void ratingFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             BindFeedbackData();
+            DisplayOverallRating();
+
         }
         private void BindFeedbackData()
         {
@@ -85,8 +90,28 @@ namespace FYP_TravelPlanner.Traveller
                     rptFeedback.DataBind();
                 }
             }
+
         }
 
+
+        private void DisplayOverallRating()
+        {
+            // Calculate overall rating
+            string connectionString = WebConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            string query = "SELECT AVG(CAST(rating AS FLOAT)) AS AverageRating FROM Rating";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                overallRating = result != DBNull.Value ? Convert.ToDouble(result) : 0.0;
+            }
+
+            // Display overall rating
+            lblOverallRating.Text = $"Overall Rating: {overallRating:F1} / 5";
+            overallRatingStars.InnerHtml = GenerateStars((int)Math.Round(overallRating));
+        }
         protected string GenerateStars(int rating)
         {
             string starsHtml = "";

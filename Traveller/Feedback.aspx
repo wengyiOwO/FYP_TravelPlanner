@@ -77,6 +77,11 @@
             <div class="row g-0">
                 <div class="col-lg-11">
                     <div class="position-relative">
+                        <div class="text-center mb-4">
+                        <h4><asp:Label ID="lblOverallRating" runat="server" CssClass="font-weight-bold"></asp:Label></h4>
+                        <div id="overallRatingStars" runat="server" class="rating-stars">
+                        </div>
+                    </div>
                         <div class="filter-section">
                             <label for="ratingFilter" class="mr-3">Filter by Rating:</label>
                             <asp:DropDownList ID="ratingFilter" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ratingFilter_SelectedIndexChanged" CssClass="form-control w-auto">
