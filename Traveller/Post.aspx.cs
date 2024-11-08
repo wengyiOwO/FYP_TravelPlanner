@@ -27,7 +27,7 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                string query = "SELECT post_id, post_title, file_type FROM Posts";
+                string query = "SELECT post_id, post_title, file_type FROM Posts WHERE post_status = 'Posted'";
                 SqlCommand cmd = new SqlCommand(query, conn);
 
                 SqlDataAdapter da = new SqlDataAdapter(cmd);

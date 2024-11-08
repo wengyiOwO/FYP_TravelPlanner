@@ -131,12 +131,13 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnEdit_Click(object sender, EventArgs e)
         {
-
+            string postId = Request.QueryString["post_id"];
+            Response.Redirect("~/Traveller/EditPost.aspx?p=" + postId);
         }
 
         protected void btnDelete_Click(object sender, EventArgs e)
         {
-            string postId = Request.QueryString["PostID"];
+            string postId = Request.QueryString["post_id"];
 
             if (!string.IsNullOrEmpty(postId))
             {
@@ -144,7 +145,7 @@ namespace FYP_TravelPlanner.Traveller
 
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
-                    string updateQuery = "UPDATE Posts SET post_status = 'Deleted' WHERE PostID = @PostID";
+                    string updateQuery = "UPDATE Posts SET post_status = 'Deleted' WHERE post_id = @PostID";
                     using (SqlCommand cmd = new SqlCommand(updateQuery, con))
                     {
                         cmd.Parameters.AddWithValue("@PostID", postId);

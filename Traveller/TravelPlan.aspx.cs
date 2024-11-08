@@ -16,14 +16,18 @@ namespace FYP_TravelPlanner.Traveller
 {
     public partial class TravelPlan : System.Web.UI.Page
     {
-        protected string LocationsJson;
+        protected string LocationsJson
+        {
+            get { return ViewState["LocationsJson"] as string ?? "[]"; }
+            set { ViewState["LocationsJson"] = value; }
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            string planId = Request.QueryString["tp"];
+
             if (!IsPostBack)
             {
-                // Check if the tp parameter is in the URL
-                string planId = Request.QueryString["tp"];
                 if (!string.IsNullOrEmpty(planId))
                 {
                     // Load the travel plan details from the database
@@ -31,28 +35,24 @@ namespace FYP_TravelPlanner.Traveller
                 }
                 else if (Session["SelectedLocations"] != null)
                 {
-                    // Ensure session data is a List<Location>
+                    // Deserialize or keep data in session if it's already List<Location>
                     if (Session["SelectedLocations"] is string selectedLocationsJson)
                     {
-                        // Deserialize the JSON string into a List<Location>
                         Session["SelectedLocations"] = JsonConvert.DeserializeObject<List<Location>>(selectedLocationsJson);
-                    }
-                    else if (Session["SelectedLocations"] is List<Location>)
-                    {
-                        // The data is already in the correct format
                     }
                 }
                 else
                 {
-                    // Initialize LocationsJson as an empty array if session is null
-                    LocationsJson = "[]";
+                    LocationsJson = "[]"; // Initialize as empty if session is null
                 }
-
-                // Serialize for JavaScript after ensuring session data is a List<Location>
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                LocationsJson = serializer.Serialize((List<Location>)Session["SelectedLocations"]);
             }
+
+            // Ensure data is serialized for JavaScript on every load
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            LocationsJson = serializer.Serialize((List<Location>)Session["SelectedLocations"]);
         }
+
+
         private void LoadTravelPlanData(string planId)
         {
             List<Location> locations = new List<Location>();
@@ -61,8 +61,6 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
-
-                // Query to retrieve location data associated with the planId
                 string query = @"
             SELECT loc.location_id, loc.place_name, loc.place_address, loc.latitude, loc.longitude, di.day_number
             FROM Travel_Plan tp
@@ -93,10 +91,9 @@ namespace FYP_TravelPlanner.Traveller
                         }
                     }
                 }
-                conn.Close();
             }
 
-            // Store the list in session and serialize for JavaScript
+            // Store locations in session and prepare JSON for JavaScript
             Session["SelectedLocations"] = locations;
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize(locations);
@@ -106,8 +103,16 @@ namespace FYP_TravelPlanner.Traveller
         {
             // 1. Generate a new unique plan_id
             string planId = GeneratePlanId();
-            string email = Session["account_email"] as string;
+            string email;
 
+            if (!string.IsNullOrEmpty(Session["account_email"] as string))
+            {
+                email = Session["account_email"] as string;
+            }
+            else
+            {
+                email = "puajiaqian@gmail.com";
+            }
             // 2. Retrieve session values for Travel_Plan details
 
             //string accountId = Session["AccountID"].ToString();
@@ -181,6 +186,7 @@ namespace FYP_TravelPlanner.Traveller
             // Redirect or notify the user of successful save
             Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
 
+
             SendNotifyEmail(email, planId);
         }
 
@@ -225,12 +231,12 @@ namespace FYP_TravelPlanner.Traveller
                 }
 
                 string itineraryQuery = @"
-    SELECT di.day_number, loc.place_name, loc.place_address 
-    FROM Daily_Itinerary di
-    INNER JOIN Travel_Activity ta ON di.itinerary_id = ta.itinerary_id
-    INNER JOIN Location loc ON ta.location_id = loc.location_id
-    WHERE di.plan_id = @plan_id
-    ORDER BY di.day_number";
+            SELECT di.day_number, loc.place_name
+            FROM Daily_Itinerary di
+            INNER JOIN Travel_Activity ta ON di.itinerary_id = ta.itinerary_id
+            INNER JOIN Location loc ON ta.location_id = loc.location_id
+            WHERE di.plan_id = @plan_id
+            ORDER BY di.day_number";
 
                 string itineraryDetails = "";
 
@@ -258,13 +264,14 @@ namespace FYP_TravelPlanner.Traveller
                                     currentDay = dayNumber;
                                 }
 
-                                itineraryDetails += $"<li>{placeName} </li>";
+                                itineraryDetails += $"<li>{placeName}</li>";
                             }
 
                             if (currentDay != 0) itineraryDetails += "</ul>";
                         }
                     }
                 }
+
                 // Construct the email body with the retrieved details
                 string body = $@"
             <p><b>Dear {accountName}</b>,</p>
@@ -273,11 +280,10 @@ namespace FYP_TravelPlanner.Traveller
             <p><b>1. Destination</b>: {areaName}</p>
             <p><b>2. Date</b>: {planDate.ToString("yyyy-MM-dd")}</p>
             <p><b>3. Duration</b>: {duration} day(s)</p>
-          <p><b>Itinerary Highlights:</b></p>           
-          {itineraryDetails}
-         <p>You can view the full details of your travel plan by logging into your account on the Take My Trip website. Don't forget to check your packing list, and make sure that you have all your travel documents ready.</p><p></p>
-
-           <p>Safe Travels,</p>
+            <p><b>Itinerary Highlights:</b></p>           
+            {itineraryDetails}
+            <p>You can view the full details of your travel plan by logging into your account on the Take My Trip website. Don't forget to check your packing list, and make sure that you have all your travel documents ready.</p>
+            <p>Safe Travels,</p>
             <p><b>Take My Trip</b></p>";
 
                 // Set up and send the email

@@ -126,7 +126,8 @@
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span  class="mr-2 d-none d-lg-inline text-gray-600 small"></span><asp:Label runat="server" ID="userDropdownName"  Visible="true" style="margin-right:5px;" /> 
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"></span>
+                                    <asp:Label runat="server" ID="userDropdownName" Visible="true" Style="margin-right: 5px;" />
                                     <img class="img-profile rounded-circle" src="/img/profile.png" />
                                 </a>
                                 <!-- Dropdown - User Information -->
@@ -138,7 +139,7 @@
                                         <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Change Password
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                        <asp:LoginStatus ID="LoginStatus3" runat="server" LogoutAction="Redirect" LogoutPageUrl="~/Login.aspx" CssClass="dropdown-item" LoginText="Logout" OnLoggingOut="LoginStatus3_LoggingOut" />
+                                    <asp:LoginStatus ID="LoginStatus3" runat="server" LogoutAction="Redirect" LogoutPageUrl="~/Login.aspx" CssClass="dropdown-item" LoginText="Logout" OnLoggingOut="LoginStatus3_LoggingOut" />
                                 </div>
                             </li>
                         </ul>
@@ -206,6 +207,8 @@
         <script src="<%= ResolveUrl("~/vendor/chart.js/Chart.min.js") %>"></script>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
         <script>
             function logoutUser() {
                 if (confirm("Are you sure you want to log out?")) {
@@ -225,7 +228,7 @@
                     });
                 }
             }
-</script>
+        </script>
     </form>
 </body>
 </html>
