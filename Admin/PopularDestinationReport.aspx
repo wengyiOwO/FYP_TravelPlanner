@@ -88,7 +88,7 @@
                     </div>
                     <div class="card-body">
                         <div class="ranking-list">
-                            <ol id="rankingList"></ol> <!-- Dynamically populated -->
+                            <ol id="rankingList"></ol> 
                         </div>
                     </div>
                 </div>
