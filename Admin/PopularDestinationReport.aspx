@@ -42,6 +42,111 @@
             color: #4e73df;
         }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+ <script type="text/javascript">
+     var destinationData = <%= DestinationDataJson %>;
+     console.log("Destination Data:", destinationData); // Check data in console to verify
+
+     function generateBarChart() {
+         const ctx = document.getElementById("barChart").getContext("2d");
+
+         // Ensure the destinationData structure is an array of objects
+         const labels = destinationData.map(d => d.location_name); // Access 'location_name' from DataTable
+         const dataCounts = destinationData.map(d => d.visit_count); // Access 'visit_count' from DataTable
+
+         new Chart(ctx, {
+             type: 'bar',
+             data: {
+                 labels: labels,
+                 datasets: [{
+                     label: 'Top Destinations',
+                     data: dataCounts,
+                     backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                     borderColor: 'rgba(78, 115, 223, 1)',
+                     borderWidth: 1
+                 }]
+             },
+             options: {
+                 scales: {
+                     x: {
+                         beginAtZero: true,
+                         title: {
+                             display: true,
+                             text: 'Popular Destinations'
+                         }
+                     },
+                     y: {
+                         beginAtZero: true,
+                         title: {
+                             display: true,
+                             text: 'Number of Visits'
+                         }
+                     }
+                 },
+                 plugins: {
+                     legend: {
+                         display: false
+                     }
+                 }
+             }
+         });
+
+         const rankingList = document.getElementById("rankingList");
+         const top8Destinations = destinationData.slice(0, 8); // Get top 8 destinations
+
+         rankingList.innerHTML = top8Destinations
+             .map((d, index) => `<li>${d.location_name} - ${d.visit_count} visits</li>`)
+             .join('');
+     }
+
+     async function exportToPDF() {
+         if (!destinationData || destinationData.length === 0) {
+             alert("No data available to export.");
+             return;
+         }
+
+         try {
+             const chartCanvas = document.getElementById("barChart");
+             const chartImage = await html2canvas(chartCanvas).then(canvas => canvas.toDataURL("image/png"));
+
+             const { PDFDocument, rgb } = PDFLib;
+             const pdfDoc = await PDFDocument.create();
+             const page = pdfDoc.addPage([600, 800]);
+
+             page.drawText("Top 8 Popular Destinations", { x: 50, y: 750, size: 20, color: rgb(0, 0.53, 0.71) });
+             const chartImageBytes = await pdfDoc.embedPng(chartImage);
+             page.drawImage(chartImageBytes, { x: 50, y: 300, width: 500, height: 300 });
+
+             const top8Destinations = destinationData.slice(0, 8);
+             top8Destinations.forEach((d, index) => {
+                 page.drawText(`${index + 1}. ${d.location_name} - ${d.visit_count} visits`, { x: 50, y: 720 - index * 20, size: 12 });
+             });
+
+             const pdfBytes = await pdfDoc.save();
+             const blob = new Blob([pdfBytes], { type: "application/pdf" });
+             const url = URL.createObjectURL(blob);
+             const link = document.createElement("a");
+             link.href = url;
+             link.download = "PopularDestinationsReport.pdf";
+             link.click();
+             URL.revokeObjectURL(url);
+         } catch (error) {
+             console.error("Error generating PDF:", error);
+             alert("Failed to export to PDF. Please check the console for details.");
+         }
+     }
+
+     document.addEventListener("DOMContentLoaded", function () {
+         generateBarChart();
+     });
+
+ </script>
+
+
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -53,8 +158,10 @@
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
 
-                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;"><i
-                        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
+                    <button onclick="exportToPDF()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+                        <i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report
+
+                    </button>
                 </td>
             </tr>
         </table>
@@ -65,7 +172,7 @@
             <asp:Button ID="Button4" CssClass="btn btn-success btn-lg" runat="server" Text="Yearly" Width="97px" PostBackUrl="~/Admin/YearlyPopularDestinations.aspx" />
         </div>
 
-         <div class="row">
+        <div class="row">
             <!-- Bar Chart Section -->
             <div class="col-xl-8 col-lg-7 chart-container">
                 <div class="card shadow mb-4">
@@ -74,7 +181,7 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-area" style="height: 500px;">
-                            <canvas id="myBarChart" style="max-height: 100%;"></canvas>
+                            <canvas id="barChart" style="max-height: 100%;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -88,7 +195,7 @@
                     </div>
                     <div class="card-body">
                         <div class="ranking-list">
-                            <ol id="rankingList"></ol> 
+                            <ol id="rankingList"></ol>
                         </div>
                     </div>
                 </div>
@@ -96,54 +203,5 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="text/javascript">
-        // Function to populate chart with data from server
-        function populateChart(data) {
-            const labels = data.map(item => item.Name);
-            const visits = data.map(item => item.Visits);
 
-            var ctx = document.getElementById('myBarChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Number of Visits',
-                        data: visits,
-                        backgroundColor: 'rgba(78, 115, 223, 0.5)',
-                        borderColor: 'rgba(78, 115, 223, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Popular Destinations'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Visits'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-
-            // Populate ranking list
-            const rankingList = document.getElementById("rankingList");
-            rankingList.innerHTML = labels.map((label, index) => `<li>${label}</li>`).join('');
-        }
-    </script>
 </asp:Content>

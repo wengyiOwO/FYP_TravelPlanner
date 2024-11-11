@@ -111,7 +111,7 @@ namespace FYP_TravelPlanner.Traveller
             }
             else
             {
-                email = "puajiaqian@gmail.com";
+                email = "jiaqianpua@gmail.com";
             }
             // 2. Retrieve session values for Travel_Plan details
 

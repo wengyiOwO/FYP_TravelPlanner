@@ -31,12 +31,117 @@
             justify-content: flex-start;
         }
     </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
     <script src="/js/MonthlyPieChart.js"></script>
 
     <script type="text/javascript">
         var ratingData = <%= RatingDataJson %>; 
-</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+        console.log("Rating Data:", ratingData); // Check data in console to verify
+
+        function initializePieChart(data) {
+            if (!data || data.length === 0) {
+                console.warn("No rating data is available.");
+                return; // Exit if there's no data to avoid creating an empty chart
+            }
+
+            const ctx = document.getElementById("myPieChart").getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"],
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#e74a3b', '#f6c23e', '#36b9cc', '#1cc88a', '#4e73df'],
+                        hoverBackgroundColor: ['#be2617', '#dda20a', '#2c9faf', '#17a673', '#2e59d9'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)"
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: false
+                    },
+                    cutoutPercentage: 80,
+                },
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize the chart only if there's rating data
+            initializePieChart(ratingData);
+        });
+        async function exportToPDF() {
+            // Check if rating data is available
+            if (!ratingData || ratingData.length === 0) {
+                console.error("No rating data available for PDF generation.");
+                alert("No rating data available.");
+                return;
+            }
+
+
+            // Initialize PDF document
+            const { PDFDocument, rgb } = PDFLib;
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([600, 700]);
+
+            // Add report information to the PDF
+            page.drawText("User Ratings Report", { x: 50, y: 650, size: 20, color: rgb(0, 0.53, 0.71) });
+
+            // List each rating's count
+            const ratingsListY = 550;
+            page.drawText("Rating Counts:", { x: 50, y: ratingsListY, size: 16, color: rgb(0, 0, 0) });
+            ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"].forEach((label, index) => {
+                page.drawText(`${label}: ${ratingData[index]}`, { x: 70, y: ratingsListY - 20 * (index + 1), size: 14 });
+            });
+
+            // Capture the chart as an image using html2canvas
+            const chartCanvas = document.getElementById("myPieChart");
+            if (chartCanvas) {
+                try {
+                    const chartImageData = await html2canvas(chartCanvas).then(canvas => canvas.toDataURL("image/png"));
+                    const chartImageBytes = await pdfDoc.embedPng(chartImageData);
+                    page.drawImage(chartImageBytes, { x: 50, y: 250, width: 500, height: 250 });
+                } catch (error) {
+                    console.error("Error capturing chart image:", error);
+                }
+            } else {
+                console.error("Chart canvas element not found.");
+            }
+            // Calculate summary metrics
+            const totalCount = ratingData.reduce((a, b) => a + b, 0);
+            const avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+            const fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+            page.drawText(`Total Ratings: ${totalCount}`, { x: 50, y: 620, size: 14 });
+            page.drawText(`Average Rating: ${avgRating}`, { x: 50, y: 600, size: 14 });
+            page.drawText(`5-Star Percentage: ${fiveStarPercentage}`, { x: 50, y: 580, size: 14 });
+
+
+            // Save and download the PDF
+            try {
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "UserRatingsReport.pdf";
+                link.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error("Error generating or downloading PDF:", error);
+            }
+        }
+    </script>
 
 
 </asp:Content>
@@ -49,7 +154,7 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
+                    <button onclick="exportToPDF()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
                         <i
                             class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
 
@@ -173,54 +278,5 @@
 
         </div>
     </div>
-    <script type="text/javascript">
-        function exportToExcel() {
-            // Calculate total count, average rating, and 5-star percentage
-            var totalCount = ratingData.reduce((a, b) => a + b, 0);
-            var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
-            var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
-
-            // Prepare worksheet data
-            const worksheetData = [
-                ["User Ratings Report"],
-                [],
-                ["Rating", "Count"],
-                ["1 star", ratingData[0]],
-                ["2 stars", ratingData[1]],
-                ["3 stars", ratingData[2]],
-                ["4 stars", ratingData[3]],
-                ["5 stars", ratingData[4]],
-                [],
-                ["Total Ratings", totalCount],
-                ["Average Rating", avgRating],
-                ["5-Star Percentage", fiveStarPercentage]
-            ];
-
-            // Create a workbook and worksheet
-            const workbook = XLSX.utils.book_new();
-            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-            XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
-
-            // Export the workbook to an Excel file
-            XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
-
-            initializePieChart(ratingData);
-        }
-
-        function initializePieChart(data) {
-            const ctx = document.getElementById("myPieChart").getContext("2d");
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"],
-                    datasets: [{
-                        data: ratingData,
-                        backgroundColor: ['#e74a3b', '#f6c23e', '#36b9cc', '#1cc88a', '#4e73df'],
-                        hoverBackgroundColor: ['#be2617', '#dda20a', '#2c9faf', '#17a673', '#2e59d9'],
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }],
-                }
-            });
-        }
-    </script>
+   
 </asp:Content>
