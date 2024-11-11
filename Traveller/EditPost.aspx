@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/TakeMyTrip.Master" AutoEventWireup="true" CodeBehind="EditPost.aspx.cs" Inherits="FYP_TravelPlanner.Traveller.WebForm1" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/TakeMyTrip.Master" AutoEventWireup="true" CodeBehind="EditPost.aspx.cs" Inherits="FYP_TravelPlanner.Traveller.EditPost" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
         /* Same styles as CreatePost.aspx */
@@ -82,6 +82,8 @@
                         <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" Style="opacity:0; width:100%; height:100%; position:absolute; cursor:pointer;" />
                     </div>
                     <div id="previewContainer" class="d-flex flex-wrap mt-3">
+                                            <asp:Literal ID="previewLiteral" runat="server"></asp:Literal>
+
                         <!-- Existing image and video previews will be added here -->
                     </div>
                 </div>
@@ -154,5 +156,14 @@
                 previewContainer.appendChild(previewDiv);
             });
         };
+
+        function removeFile(fileUrl) {
+            // Use AJAX to notify server to delete the file or handle in backend after form submission
+            const previewContainer = document.getElementById('previewContainer');
+            const previewDiv = Array.from(previewContainer.children).find(div => {
+                return div.querySelector("img[src='" + fileUrl + "'], video[src='" + fileUrl + "']");
+            });
+            if (previewDiv) previewDiv.remove();
+        }
     </script>
 </asp:Content>

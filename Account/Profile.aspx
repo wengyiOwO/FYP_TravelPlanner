@@ -125,8 +125,13 @@
                                 <asp:Label ID="lblAccountName" runat="server" CssClass="h2 mb-0"></asp:Label>
                             </div>
                         </div>
-                        <div>
-                            <a href="/Account/EditProfile.aspx" class="btn btn-outline-primary d-none d-md-block">Edit Profile</a>
+                        <div id="friendButtonContainer" runat="server" class="d-flex justify-content-end">
+                            <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
+                            <asp:Button ID="btnAdd" runat="server" CssClass="btn btn-primary me-2" Text="Add Friend" OnClick="btnAdd_Click" Visible="false" />
+                            <asp:Button ID="btnSent" runat="server" CssClass="btn btn-secondary me-2" Text="Friend Request Sent" Enabled="false" Visible="false" />
+                            <asp:Button ID="btnAccept" runat="server" CssClass="btn btn-success me-2" Text="Accept" OnClick="btnAccept_Click" Visible="false" />
+                            <asp:Button ID="btnReject" runat="server" CssClass="btn btn-danger me-2" Text="Reject" OnClick="btnReject_Click" Visible="false" />
+                            <asp:Button ID="btnUnfriend" runat="server" CssClass="btn btn-warning" Text="Unfriend" OnClick="btnUnfriend_Click" Visible="false" />
                         </div>
                     </div>
                 </div>

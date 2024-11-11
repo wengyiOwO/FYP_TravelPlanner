@@ -11,7 +11,7 @@ namespace FYP_TravelPlanner.Traveller
 {
 
 
-    public partial class WebForm1
+    public partial class EditPost
     {
 
         /// <summary>
@@ -22,6 +22,15 @@ namespace FYP_TravelPlanner.Traveller
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.FileUpload fileUpload;
+
+        /// <summary>
+        /// previewLiteral control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal previewLiteral;
 
         /// <summary>
         /// txtPostTitle control.
