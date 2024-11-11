@@ -16,7 +16,30 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (!IsPostBack)
             {
+                LoadAreaDropdown();
                 BindTravelPlans();
+            }
+        }
+
+        private void LoadAreaDropdown()
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT DISTINCT A.area_id, A.area_name FROM Area A JOIN Travel_Plan TP ON TP.area_id = A.area_id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                ddlArea.Items.Clear();
+                ddlArea.Items.Add(new ListItem("All Areas", "")); 
+
+                while (reader.Read())
+                {
+                    ddlArea.Items.Add(new ListItem(reader["area_name"].ToString(), reader["area_id"].ToString()));
+                }
+
+                conn.Close();
             }
         }
 
@@ -33,37 +56,51 @@ namespace FYP_TravelPlanner.Traveller
                     INNER JOIN Area A ON TP.area_id = A.area_id
                     WHERE TP.account_id = @account_id";
 
+                if (!string.IsNullOrEmpty(ddlArea.SelectedValue))
+                {
+                    query += " AND A.area_id = @area_id";
+                }
+
+                query += " ORDER BY TP.plan_date DESC";
+
                 SqlCommand cmd = new SqlCommand(query, conn);
-                //cmd.Parameters.AddWithValue("@account_id", Session["AccountID"]);
-                cmd.Parameters.AddWithValue("@account_id","AC0521");
+                cmd.Parameters.AddWithValue("@account_id", "AC0521");
+
+                if (!string.IsNullOrEmpty(ddlArea.SelectedValue))
+                {
+                    cmd.Parameters.AddWithValue("@area_id", ddlArea.SelectedValue);
+                }
+
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
+
+                pnlNoData.Visible = dt.Rows.Count == 0;
 
                 rptTravelPlans.DataSource = dt;
                 rptTravelPlans.DataBind();
             }
         }
 
+        protected void Filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            BindTravelPlans();
+        }
+
         protected void btnDelete_Click(object sender, EventArgs e)
         {
-            // Get the Repeater item from the button that was clicked
             Button btnDelete = (Button)sender;
             RepeaterItem item = (RepeaterItem)btnDelete.NamingContainer;
 
-            // Retrieve the plan_id from the hidden field
             HiddenField hfPlanId = (HiddenField)item.FindControl("hfPlanId");
             string planId = hfPlanId.Value;
 
-            // Proceed with deletion
             if (DeleteTravelPlan(planId))
             {
-                // Refresh the repeater after deletion
                 BindTravelPlans();
             }
             else
             {
-                // Handle delete failure (optional)
                 Response.Write("<script>alert('Failed to delete the travel plan.');</script>");
             }
         }
