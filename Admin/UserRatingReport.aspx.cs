@@ -100,7 +100,7 @@ namespace FYP_TravelPlanner
                 // Clear the bitmap with a solid white color
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;  // For smoother edges
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; 
                     g.Clear(Color.White);  // Clear the background to white
 
                     Brush[] brushes = {
@@ -121,6 +121,8 @@ namespace FYP_TravelPlanner
 
                     for (int i = 0; i < ratingData.Length; i++)
                     {
+                        if (ratingData[i] == 0)
+                            continue;
                         // Calculate the sweep angle for each rating segment
                         float sweepAngle = (totalRatings > 0) ? (float)ratingData[i] / totalRatings * 360 : 0;
 
@@ -158,39 +160,31 @@ namespace FYP_TravelPlanner
             string pdfPath = Server.MapPath("~/UserRatingsReport.pdf");
             PdfWriter.GetInstance(pdfDoc, new FileStream(pdfPath, FileMode.Create));
             pdfDoc.Open();
-            // Create a table for the logo and company name with two columns
-            PdfPTable headerTable = new PdfPTable(2);
-            headerTable.WidthPercentage = 100;
-            float[] columnWidths = { 1f, 3f }; 
-            headerTable.SetWidths(columnWidths);
+            // Create a table with a single column to stack the logo and company name vertically
+            PdfPTable headerTable = new PdfPTable(1);
+            headerTable.WidthPercentage = 100; // Set the table width to full width for easier centering
 
-            // Add company logo to the first cell
+            // Center the table horizontally on the page
+            headerTable.HorizontalAlignment = Element.ALIGN_CENTER;
+
+            // Add company logo to the first cell and center it
             string logoPath = Server.MapPath("~/img/logo.png");
             if (File.Exists(logoPath))
             {
                 Image logo = Image.GetInstance(logoPath);
-                logo.ScaleToFit(60f, 60f); // Scale the logo as needed
+                logo.ScaleToFit(140f, 140f); // Scale the logo as needed
                 PdfPCell logoCell = new PdfPCell(logo);
                 logoCell.Border = PdfPCell.NO_BORDER;
-                logoCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                logoCell.HorizontalAlignment = Element.ALIGN_CENTER; // Center-align the logo within the cell
                 headerTable.AddCell(logoCell);
             }
-            else
-            {
-                headerTable.AddCell(new PdfPCell { Border = PdfPCell.NO_BORDER });
-            }
 
-            // Add company name to the second cell
-            PdfPCell nameCell = new PdfPCell(new Phrase("Take My Trip", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 24, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
-            nameCell.Border = PdfPCell.NO_BORDER;
-            nameCell.VerticalAlignment = Element.ALIGN_MIDDLE;
-            nameCell.HorizontalAlignment = Element.ALIGN_LEFT;
-            headerTable.AddCell(nameCell);
-
-            // Add the table to the document
+          
+            // Add the header table to the document
             pdfDoc.Add(headerTable);
+
+
             // Add some spacing after logo and name
-            pdfDoc.Add(new Paragraph(" "));  // Blank paragraph as a spacer
 
             pdfDoc.Add(new Paragraph("User Ratings Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLUE)));
             pdfDoc.Add(new Paragraph("Rating Summary:", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD)));
