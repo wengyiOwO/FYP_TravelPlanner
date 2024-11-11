@@ -49,14 +49,12 @@
 
  <script type="text/javascript">
      var destinationData = <%= DestinationDataJson %>;
-     console.log("Destination Data:", destinationData); // Check data in console to verify
-
+     console.log("Destination Data:", destinationData); 
      function generateBarChart() {
          const ctx = document.getElementById("barChart").getContext("2d");
 
-         // Ensure the destinationData structure is an array of objects
-         const labels = destinationData.map(d => d.location_name); // Access 'location_name' from DataTable
-         const dataCounts = destinationData.map(d => d.visit_count); // Access 'visit_count' from DataTable
+         const labels = destinationData.map(d => d.location_name); 
+         const dataCounts = destinationData.map(d => d.visit_count); 
 
          new Chart(ctx, {
              type: 'bar',
@@ -103,43 +101,7 @@
              .join('');
      }
 
-     async function exportToPDF() {
-         if (!destinationData || destinationData.length === 0) {
-             alert("No data available to export.");
-             return;
-         }
-
-         try {
-             const chartCanvas = document.getElementById("barChart");
-             const chartImage = await html2canvas(chartCanvas).then(canvas => canvas.toDataURL("image/png"));
-
-             const { PDFDocument, rgb } = PDFLib;
-             const pdfDoc = await PDFDocument.create();
-             const page = pdfDoc.addPage([600, 800]);
-
-             page.drawText("Top 8 Popular Destinations", { x: 50, y: 750, size: 20, color: rgb(0, 0.53, 0.71) });
-             const chartImageBytes = await pdfDoc.embedPng(chartImage);
-             page.drawImage(chartImageBytes, { x: 50, y: 300, width: 500, height: 300 });
-
-             const top8Destinations = destinationData.slice(0, 8);
-             top8Destinations.forEach((d, index) => {
-                 page.drawText(`${index + 1}. ${d.location_name} - ${d.visit_count} visits`, { x: 50, y: 720 - index * 20, size: 12 });
-             });
-
-             const pdfBytes = await pdfDoc.save();
-             const blob = new Blob([pdfBytes], { type: "application/pdf" });
-             const url = URL.createObjectURL(blob);
-             const link = document.createElement("a");
-             link.href = url;
-             link.download = "PopularDestinationsReport.pdf";
-             link.click();
-             URL.revokeObjectURL(url);
-         } catch (error) {
-             console.error("Error generating PDF:", error);
-             alert("Failed to export to PDF. Please check the console for details.");
-         }
-     }
-
+  
      document.addEventListener("DOMContentLoaded", function () {
          generateBarChart();
      });
@@ -158,10 +120,12 @@
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
 
-                    <button onclick="exportToPDF()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
-                        <i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report
 
-                    </button>
+    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
+></asp:Button>
+             
+                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+
                 </td>
             </tr>
         </table>

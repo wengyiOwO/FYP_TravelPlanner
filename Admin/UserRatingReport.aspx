@@ -55,13 +55,10 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <asp:HiddenField ID="chartImage" runat="server" />
 
                     <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
                 ></asp:Button>
-                    <%--<button onclick="exportToPDF()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
-                        <i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report
-                    </button>--%>
+             
                                 <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
                 </td>

@@ -43,6 +43,68 @@
             color: #4e73df;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script type="text/javascript">
+        var destinationData = <%= DestinationDataJson %>;
+        console.log("Destination Data:", destinationData);
+        function generateBarChart() {
+            const ctx = document.getElementById("myBarChart").getContext("2d");
+
+            const labels = destinationData.map(d => d.location_name);
+            const dataCounts = destinationData.map(d => d.visit_count);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Top Destinations',
+                        data: dataCounts,
+                        backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Popular Destinations'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            const rankingList = document.getElementById("rankingList");
+            const top8Destinations = destinationData.slice(0, 8); // Get top 8 destinations
+
+            rankingList.innerHTML = top8Destinations
+                .map((d, index) => `<li>${d.location_name} - ${d.visit_count} visits</li>`)
+                .join('');
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            generateBarChart();
+        });
+
+    </script>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -54,8 +116,12 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;"><i
-                        class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>                       </td>
+
+                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" Style="margin-right: 20px; width: 150px;" OnClick="btnGenerate_Click"></asp:Button>
+
+                    <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+
+                </td>
             </tr>
         </table>
 
@@ -118,57 +184,9 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
-
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script type="text/javascript">
-                // Function to populate chart with data from server
-                function populateChart(data) {
-                    const labels = data.map(item => item.Name);
-                    const visits = data.map(item => item.Visits);
-
-                    var ctx = document.getElementById('myBarChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Number of Visits',
-                                data: visits,
-                                backgroundColor: 'rgba(78, 115, 223, 0.5)',
-                                borderColor: 'rgba(78, 115, 223, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Popular Destinations'
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Number of Visits'
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
-
-                    // Populate ranking list
-                    const rankingList = document.getElementById("rankingList");
-                    rankingList.innerHTML = labels.map((label, index) => `<li>${label}</li>`).join('');
-                }
-    </script>
+            </div>
+        </div>
 </asp:Content>
