@@ -61,7 +61,7 @@
              data: {
                  labels: labels,
                  datasets: [{
-                     label: 'Top Destinations',
+                     label: 'Number of Visits',
                      data: dataCounts,
                      backgroundColor: 'rgba(78, 115, 223, 0.5)',
                      borderColor: 'rgba(78, 115, 223, 1)',

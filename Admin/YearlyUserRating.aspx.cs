@@ -171,48 +171,70 @@ namespace FYP_TravelPlanner
             byte[] chartImageBytes = GenerateChartImage(ratingData);
 
             Document pdfDoc = new Document(PageSize.A4);
-            string pdfPath = Server.MapPath("~/UserRatingsReport.pdf");
+            string pdfPath = Server.MapPath("~/AnnualUserRatingsReport.pdf");
             PdfWriter.GetInstance(pdfDoc, new FileStream(pdfPath, FileMode.Create));
             pdfDoc.Open();
-            // Create a table with a single column to stack the logo and company name vertically
-            PdfPTable headerTable = new PdfPTable(1);
-            headerTable.WidthPercentage = 100; // Set the table width to full width for easier centering
 
-            // Center the table horizontally on the page
+            // Header table with logo
+            PdfPTable headerTable = new PdfPTable(1);
+            headerTable.WidthPercentage = 100;
             headerTable.HorizontalAlignment = Element.ALIGN_CENTER;
 
-            // Add company logo to the first cell and center it
             string logoPath = Server.MapPath("~/img/logo.png");
             if (File.Exists(logoPath))
             {
                 Image logo = Image.GetInstance(logoPath);
-                logo.ScaleToFit(140f, 140f); // Scale the logo as needed
-                PdfPCell logoCell = new PdfPCell(logo);
-                logoCell.Border = PdfPCell.NO_BORDER;
-                logoCell.HorizontalAlignment = Element.ALIGN_CENTER; // Center-align the logo within the cell
+                logo.ScaleToFit(140f, 140f);
+                PdfPCell logoCell = new PdfPCell(logo)
+                {
+                    Border = PdfPCell.NO_BORDER,
+                    HorizontalAlignment = Element.ALIGN_CENTER
+                };
                 headerTable.AddCell(logoCell);
             }
 
-
-            // Add the header table to the document
             pdfDoc.Add(headerTable);
+            pdfDoc.Add(new Paragraph("Annual User Ratings Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD)));
 
-            pdfDoc.Add(new Paragraph("User Ratings Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLUE)));
-            pdfDoc.Add(new Paragraph("Rating Summary:", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD)));
+            // Rating Count Table
+            PdfPTable ratingCountTable = new PdfPTable(2);
+            ratingCountTable.SpacingBefore = 20f;
+            ratingCountTable.WidthPercentage = 100;
+
+            ratingCountTable.AddCell("Rating");
+            ratingCountTable.AddCell("Count");
 
             string[] labels = { "1 star", "2 stars", "3 stars", "4 stars", "5 stars" };
             for (int i = 0; i < ratingData.Length; i++)
             {
-
-                pdfDoc.Add(new Paragraph($"{labels[i]}: {ratingData[i]}", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
-
+                ratingCountTable.AddCell(labels[i]);
+                ratingCountTable.AddCell(ratingData[i].ToString());
             }
 
-            pdfDoc.Add(new Paragraph($"Total Ratings: {lblTotalRating.Text}", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
-            pdfDoc.Add(new Paragraph($"Average Rating: {lblAvgRating.Text}", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
-            pdfDoc.Add(new Paragraph($"5-Star Percentage: {lblPercentage.Text}", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
+            pdfDoc.Add(new Paragraph("Rating Count", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD, BaseColor.BLUE)));
+            pdfDoc.Add(ratingCountTable);
 
-            // Only add chart image if it exists
+            // Rating Summary Table
+            PdfPTable ratingSummaryTable = new PdfPTable(2);
+            ratingSummaryTable.SpacingBefore = 20f;
+            ratingSummaryTable.WidthPercentage = 100;
+
+            ratingSummaryTable.AddCell("Metric");
+            ratingSummaryTable.AddCell("Value");
+
+            ratingSummaryTable.AddCell("Total Ratings:");
+            ratingSummaryTable.AddCell(lblTotalRating.Text);
+
+            ratingSummaryTable.AddCell("Average Rating:");
+            ratingSummaryTable.AddCell(lblAvgRating.Text);
+
+            ratingSummaryTable.AddCell("5-Star Percentage:");
+            ratingSummaryTable.AddCell(lblPercentage.Text);
+
+            pdfDoc.Add(new Paragraph("Rating Summary", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD, BaseColor.BLUE)));
+            pdfDoc.Add(ratingSummaryTable);
+
+            // Add chart image if it exists
             if (chartImageBytes != null && chartImageBytes.Length > 0)
             {
                 Image chartImage = Image.GetInstance(chartImageBytes);
@@ -244,7 +266,7 @@ namespace FYP_TravelPlanner
             }
 
             GenerateUserRatingsPDFWithChart(ratingData);
-            lblMessage.Text = "User Ratings PDF has been generated successfully. <a href='/UserRatingsReport.pdf' target='_blank'>Download PDF</a>";
+            lblMessage.Text = "Annual User Ratings PDF has been generated successfully. <a href='/AnnualUserRatingsReport.pdf' target='_blank'>Download PDF</a>";
         }
     }
 }

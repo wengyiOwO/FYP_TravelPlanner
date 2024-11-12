@@ -32,6 +32,24 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     // Load the travel plan details from the database
                     LoadTravelPlanData(planId);
+                    int duration;
+                    if (Session["duration"] != null)
+                    {
+                        duration = Convert.ToInt32(Session["duration"]);
+                        DateTime today = DateTime.Today;
+
+                        // Check if there are scheduled itinerary emails for today
+                        for (int day = 1; day <= (int)Session["Duration"]; day++)
+                        {
+                            if (Session[$"ItineraryEmail_Day{day}"] is DateTime emailDate && emailDate == today)
+                            {
+                                SendDailyItineraryEmail(planId, day);
+                                Session.Remove($"ItineraryEmail_Day{day}"); // Clear once sent
+                            }
+                        }
+                    }
+                    
+
                 }
                 else if (Session["SelectedLocations"] != null)
                 {
@@ -188,6 +206,10 @@ namespace FYP_TravelPlanner.Traveller
 
 
             SendNotifyEmail(email, planId);
+
+            duration = Convert.ToInt32(Session["duration"]);
+            Session["duration"] = duration; // Store duration in Session to make it available across pages
+            ScheduleItineraryEmails(planId, startDate, duration);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)
@@ -322,6 +344,131 @@ namespace FYP_TravelPlanner.Traveller
                 lblMessage.Text = "An error occurred while sending the email: " + ex.Message;
                 lblMessage.ForeColor = System.Drawing.Color.Red;
                 Console.WriteLine("General Error: " + ex.ToString());
+                return false;
+            }
+        }
+
+        private void ScheduleItineraryEmails(string planId, DateTime startDate, int duration)
+        {
+            DateTime today = DateTime.Today;
+
+            for (int day = 1; day <= duration; day++)
+            {
+                DateTime emailSendDate = startDate.AddDays(day - 1);
+
+                if (emailSendDate == today)
+                {
+                    // Send today's itinerary immediately if it's the correct date
+                    SendDailyItineraryEmail(planId, day);
+                }
+                else if (emailSendDate > today)
+                {
+                    // Set up session reminders for subsequent days
+                    Session[$"ItineraryEmail_Day{day}"] = emailSendDate;
+                }
+            }
+        }
+
+        private bool SendDailyItineraryEmail(string planId, int dayNumber)
+        {
+            try
+            {
+                string fromEmail = "puajq-wm21@student.tarc.edu.my";
+                string toEmail = Session["account_email"] as string ?? "jiaqianpua@gmail.com";
+                string subject = $"Day {dayNumber} Itinerary Reminder for Your Travel Plan!";
+
+                string accountName = "";
+                string areaName = "";
+                DateTime planDate;
+                int duration;
+                string itineraryDetails = "";
+
+                string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    // Get account and plan details
+                    string planQuery = @"
+                SELECT acc.account_name, area.area_name, tp.plan_date, tp.duration
+                FROM Travel_Plan tp
+                INNER JOIN Account acc ON tp.account_id = acc.account_id
+                INNER JOIN Area area ON tp.area_id = area.area_id
+                WHERE tp.plan_id = @plan_id";
+
+                    using (SqlCommand cmd = new SqlCommand(planQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@plan_id", planId);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                accountName = reader["account_name"].ToString();
+                                areaName = reader["area_name"].ToString();
+                                planDate = Convert.ToDateTime(reader["plan_date"]);
+                                duration = Convert.ToInt32(reader["duration"]);
+                            }
+                        }
+                    }
+
+                    // Retrieve day-specific itinerary details
+                    string itineraryQuery = @"
+                SELECT loc.place_name
+                FROM Daily_Itinerary di
+                INNER JOIN Travel_Activity ta ON di.itinerary_id = ta.itinerary_id
+                INNER JOIN Location loc ON ta.location_id = loc.location_id
+                WHERE di.plan_id = @plan_id AND di.day_number = @day_number";
+
+                    itineraryDetails = $"<p><b>Day {dayNumber} Itinerary:</b></p><ul>";
+
+                    using (SqlCommand itineraryCmd = new SqlCommand(itineraryQuery, conn))
+                    {
+                        itineraryCmd.Parameters.AddWithValue("@plan_id", planId);
+                        itineraryCmd.Parameters.AddWithValue("@day_number", dayNumber);
+
+                        using (SqlDataReader reader = itineraryCmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string placeName = reader["place_name"].ToString();
+                                itineraryDetails += $"<li>{placeName}</li>";
+                            }
+                        }
+                    }
+                    itineraryDetails += "</ul>";
+                }
+
+                // Construct the email body
+                string body = $@"
+            <p><b>Dear {accountName}</b>,</p>
+            <p>This is your itinerary for Day {dayNumber} of your travel plan in {areaName}.</p>
+            {itineraryDetails}
+            <p>Have a great day ahead!</p>
+            <p><b>Take My Trip</b></p>";
+
+                // Set up and send the email
+                MailMessage mail = new MailMessage
+                {
+                    From = new MailAddress(fromEmail),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
+                mail.To.Add(toEmail);
+
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    Credentials = new NetworkCredential(fromEmail, "mkhm ibkq tijr svds"),
+                    EnableSsl = true
+                };
+
+                smtp.Send(mail);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                lblMessage.Text = "An error occurred while sending the daily itinerary email: " + ex.Message;
+                lblMessage.ForeColor = System.Drawing.Color.Red;
                 return false;
             }
         }

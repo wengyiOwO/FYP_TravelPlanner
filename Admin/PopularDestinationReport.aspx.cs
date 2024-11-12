@@ -11,6 +11,7 @@ using System.Web.UI;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Image = iTextSharp.text.Image;
+using System.Collections.Generic;
 
 namespace FYP_TravelPlanner
 {
@@ -69,9 +70,9 @@ namespace FYP_TravelPlanner
             int width = 800;
             int height = 400;
             int barWidth = 60;
-            int spacing = 40;
+            int spacing = 35;
             int labelOffset = 15;
-            int maxLabelLength = 12;
+            int maxLabelLength = 10; // Shorten max length to allow more lines
             int labelPadding = 8;
 
             using (Bitmap bmp = new Bitmap(width, height))
@@ -108,43 +109,26 @@ namespace FYP_TravelPlanner
                         // Draw visit count above bar
                         g.DrawString(visitCount.ToString(), font, brush, x + barWidth / 4, y - 20);
 
-                        // Split the label if it's too long
-                        string line1 = locationName;
-                        string line2 = "";
-                        string line3 = "";
-                        if (locationName.Length > maxLabelLength)
+                        // Split label into up to four lines
+                        List<string> labelLines = new List<string>();
+                        while (locationName.Length > maxLabelLength && labelLines.Count < 3)
                         {
                             int splitIndex = locationName.LastIndexOf(' ', maxLabelLength);
-                            if (splitIndex == -1) splitIndex = maxLabelLength; // If no space, split mid-word
-                            line1 = locationName.Substring(0, splitIndex).Trim();
-                            string remainingText = locationName.Substring(splitIndex).Trim();
+                            if (splitIndex == -1) splitIndex = maxLabelLength;
 
-                            if (remainingText.Length > maxLabelLength)
-                            {
-                                int splitIndex2 = remainingText.LastIndexOf(' ', maxLabelLength);
-                                if (splitIndex2 == -1) splitIndex2 = maxLabelLength; // If no space, split mid-word
-
-                                line2 = remainingText.Substring(0, splitIndex2).Trim();
-                                line3 = remainingText.Substring(splitIndex2).Trim();
-                            }
-                            else
-                            {
-                                line2 = remainingText;
-                            }
+                            labelLines.Add(locationName.Substring(0, splitIndex).Trim());
+                            locationName = locationName.Substring(splitIndex).Trim();
                         }
+                        labelLines.Add(locationName);
 
                         // Draw each line with appropriate spacing
-                        g.DrawString(line1, font, brush, x, height - 55 + labelPadding);          // First line
-                        if (!string.IsNullOrEmpty(line2))
+                        for (int j = 0; j < labelLines.Count; j++)
                         {
-                            g.DrawString(line2, font, brush, x, height - 40 + labelPadding);      // Second line
-                        }
-                        if (!string.IsNullOrEmpty(line3))
-                        {
-                            g.DrawString(line3, font, brush, x, height - 25 + labelPadding);      // Third line, slightly below
+                            g.DrawString(labelLines[j], font, brush, x, height - 55 + (j * 15) + labelPadding);
                         }
                     }
                 }
+
                 using (MemoryStream ms = new MemoryStream())
                 {
                     bmp.Save(ms, ImageFormat.Png);
@@ -186,7 +170,7 @@ namespace FYP_TravelPlanner
             // Add the header table to the document
             pdfDoc.Add(headerTable);
             // Title
-            pdfDoc.Add(new Paragraph("Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
+            pdfDoc.Add(new Paragraph("Overall Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
             pdfDoc.Add(new Paragraph(" ")); // Add space after title
 
             // Add data table
@@ -237,7 +221,7 @@ namespace FYP_TravelPlanner
 
             // Generate PDF report
             GeneratePopularDestinationPDF(destinationData);
-            lblMessage.Text = "Popular Destination Report has been generated successfully. <a href='/PopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
+            lblMessage.Text = "Overall Popular Destination Report has been generated successfully. <a href='/PopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
         }
     }
 }

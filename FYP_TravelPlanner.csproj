@@ -231,7 +231,6 @@
     <Content Include="js\demo\chart-pie-demo.js" />
     <Content Include="js\demo\datatables-demo.js" />
     <Content Include="js\MonthlyPieChart.js" />
-    <Content Include="js\overallBarChart.js" />
     <Content Include="js\overallPieChart.js" />
     <Content Include="Admin\MonthlyUserRating.aspx" />
     <Content Include="Account\Profile.aspx" />
