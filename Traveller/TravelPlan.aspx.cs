@@ -21,6 +21,8 @@ namespace FYP_TravelPlanner.Traveller
             get { return ViewState["LocationsJson"] as string ?? "[]"; }
             set { ViewState["LocationsJson"] = value; }
         }
+        protected string AllLocationsJson { get; set; }
+
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -28,6 +30,9 @@ namespace FYP_TravelPlanner.Traveller
 
             if (!IsPostBack)
             {
+                // Fetch and load all locations for nearby search functionality
+                LoadAllLocations();
+
                 if (!string.IsNullOrEmpty(planId))
                 {
                     // Load the travel plan details from the database
@@ -50,8 +55,44 @@ namespace FYP_TravelPlanner.Traveller
             // Ensure data is serialized for JavaScript on every load
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize((List<Location>)Session["SelectedLocations"]);
+            List<Location> allLocations = Session["AllLocations"] as List<Location>;
+            AllLocationsJson = serializer.Serialize(allLocations);
         }
 
+        private void LoadAllLocations()
+        {
+            List<Location> allLocations = new List<Location>();
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                string query = @"SELECT location_id, place_name, place_address, latitude, longitude 
+                         FROM Location";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Location location = new Location
+                            {
+                                id = reader["location_id"].ToString(),
+                                name = reader["place_name"].ToString(),
+                                address = reader["place_address"].ToString(),
+                                lat = Convert.ToDouble(reader["latitude"]),
+                                lng = Convert.ToDouble(reader["longitude"])
+                            };
+                            allLocations.Add(location);
+                        }
+                    }
+                }
+            }
+
+            // Store all locations in session
+            Session["AllLocations"] = allLocations;
+        }
 
         private void LoadTravelPlanData(string planId)
         {
@@ -101,6 +142,17 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
+
+            if (Session["account_id"] == null)
+            {
+               
+                var locations = (List<Location>)Session["SelectedLocations"];
+                Session["LocationsToSave"] = JsonConvert.SerializeObject(locations);
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+
             // 1. Generate a new unique plan_id
             string planId = GeneratePlanId();
             string email;
@@ -115,7 +167,7 @@ namespace FYP_TravelPlanner.Traveller
             }
             // 2. Retrieve session values for Travel_Plan details
 
-            //string accountId = Session["AccountID"].ToString();
+            //string accountId = Session["account_id"].ToString();
             string accountId = "AC0521";
             string areaId = Session["AreaID"].ToString();
             DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
@@ -187,7 +239,7 @@ namespace FYP_TravelPlanner.Traveller
             Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
 
 
-            SendNotifyEmail(email, planId);
+            //SendNotifyEmail(email, planId);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)
@@ -394,6 +446,15 @@ namespace FYP_TravelPlanner.Traveller
             }
             return newActivityId;
         }
+
+        [System.Web.Services.WebMethod]
+        public static void UpdateSelectedLocations(string updatedLocations)
+        {
+            // Deserialize the JSON list and store it in session
+            var locationsList = JsonConvert.DeserializeObject<List<Location>>(updatedLocations);
+            HttpContext.Current.Session["SelectedLocations"] = locationsList;
+        }
+
 
         public class Location
         {

@@ -86,7 +86,17 @@ namespace FYP_TravelPlanner
                         }
                         else if (string.Equals(userRole, "Traveller", StringComparison.OrdinalIgnoreCase))
                         {
-                            Response.Redirect("~/Traveller/CreateTravelPlan.aspx", false);
+                            if (Session["LocationsToSave"] != null)
+                            {
+                                // If locations to save exist, redirect to TravelPlan.aspx
+                                Response.Redirect("~/Traveller/TravelPlan.aspx", false);
+                            }
+                            else
+                            {
+                                // Otherwise, redirect to CreateTravelPlan.aspx
+                                Response.Redirect("~/Traveller/CreateTravelPlan.aspx", false);
+                            }
+
                             Context.ApplicationInstance.CompleteRequest();
                         }
                         else
