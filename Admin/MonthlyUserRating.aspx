@@ -31,12 +31,16 @@
             justify-content: flex-start;
         }
     </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
     <script src="/js/MonthlyPieChart.js"></script>
 
     <script type="text/javascript">
         var ratingData = <%= RatingDataJson %>; 
-</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+        console.log("Rating Data:", ratingData); // Check data in console to verify
+
+     
+    </script>
 
 
 </asp:Content>
@@ -49,10 +53,11 @@
             <tr>
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
-                    <button onclick="exportToExcel()" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" style="margin-right: 20px; width: 150px;">
-                        <i
-                            class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</button>
 
+    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
+></asp:Button>
+   
+                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                 </td>
             </tr>
         </table>
@@ -173,54 +178,5 @@
 
         </div>
     </div>
-    <script type="text/javascript">
-        function exportToExcel() {
-            // Calculate total count, average rating, and 5-star percentage
-            var totalCount = ratingData.reduce((a, b) => a + b, 0);
-            var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
-            var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
-
-            // Prepare worksheet data
-            const worksheetData = [
-                ["User Ratings Report"],
-                [],
-                ["Rating", "Count"],
-                ["1 star", ratingData[0]],
-                ["2 stars", ratingData[1]],
-                ["3 stars", ratingData[2]],
-                ["4 stars", ratingData[3]],
-                ["5 stars", ratingData[4]],
-                [],
-                ["Total Ratings", totalCount],
-                ["Average Rating", avgRating],
-                ["5-Star Percentage", fiveStarPercentage]
-            ];
-
-            // Create a workbook and worksheet
-            const workbook = XLSX.utils.book_new();
-            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-            XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
-
-            // Export the workbook to an Excel file
-            XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
-
-            initializePieChart(ratingData);
-        }
-
-        function initializePieChart(data) {
-            const ctx = document.getElementById("myPieChart").getContext("2d");
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"],
-                    datasets: [{
-                        data: ratingData,
-                        backgroundColor: ['#e74a3b', '#f6c23e', '#36b9cc', '#1cc88a', '#4e73df'],
-                        hoverBackgroundColor: ['#be2617', '#dda20a', '#2c9faf', '#17a673', '#2e59d9'],
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }],
-                }
-            });
-        }
-    </script>
+   
 </asp:Content>
