@@ -15,17 +15,25 @@ namespace FYP_TravelPlanner.Traveller
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            string accountId;
             if (!IsPostBack)
             {
-                BindFriends();
-                BindFriendRequests();
+                if (Session["account_id"] != null)
+                {
+                    accountId = Session["account_id"].ToString();
+                    BindFriends();
+                    BindFriendRequests();
+                }
+                else
+                {
+                    Response.Redirect("~/Login.aspx");
+                }
             }
         }
 
         private void BindFriends()
         {
-            string accountId = Convert.ToString("AC0521");
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
@@ -64,8 +72,7 @@ namespace FYP_TravelPlanner.Traveller
 
         private void BindFriendRequests()
         {
-            string accountId = Convert.ToString("AC0521");
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
@@ -93,8 +100,7 @@ namespace FYP_TravelPlanner.Traveller
         protected void rptFriendRequests_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
 
-            string accountId = Convert.ToString("AC0521");
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
 
             string friendId = Convert.ToString(e.CommandArgument);
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -128,8 +134,7 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
-            string accountId = Convert.ToString("AC0521");
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
             string searchTerm = txtSearch.Text.Trim(); 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 

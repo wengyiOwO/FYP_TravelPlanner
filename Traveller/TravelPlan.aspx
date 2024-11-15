@@ -51,7 +51,7 @@
             }
 
         .leaflet-routing-container {
-            display: none; 
+            display: none;
         }
 
         .leaflet-routing-alt {
@@ -66,7 +66,7 @@
         var map;
         var markers = [];
         var control;
-        let locations = JSON.parse('<%= LocationsJson %>'); 
+        let locations = JSON.parse('<%= LocationsJson %>');
         let currentDay = 1;
 
         function initMap() {
@@ -153,20 +153,38 @@
         }
 
         function addLocationToPlan(lat, lng, name) {
+            // Find the location object in AllLocationsJson to get its id
+            const locationObj = JSON.parse('<%= AllLocationsJson %>').find(loc => loc.lat === lat && loc.lng === lng);
+            if (!locationObj) {
+                alert("Error: Location not found.");
+                return;
+            }
+
+            const id = locationObj.id;
+
             // Add the new location to the markers array for tracking on the map
             var icon = L.divIcon({ html: `<div class="custom-div-icon">${markers.length + 1}</div>`, className: 'custom-div-icon' });
             var newMarker = L.marker([lat, lng], { icon: icon }).addTo(map);
             markers.push(newMarker);
 
-            // Add the new location to the locations array for the current day
-            locations.push({ lat: lat, lng: lng, name: name, day: currentDay });
+            // Add the new location to the locations array for the current day, including the id
+            locations.push({ id: id, lat: lat, lng: lng, name: name, day: currentDay });
 
-            // Add the new location to the table for the current day
+            // Sort the locations array for the current day by latitude
+            locations.sort((a, b) => a.lat - b.lat);
+
+            // Update the table to reflect the sorted locations
             const tableBody = document.getElementById('locationTable');
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${markers.length}</td><td>${name}</td>
-                     <td style="text-align: center;"><button class="btn btn-delete" onclick="deleteLocation(${lat}, ${lng}, currentDay, this)">&times;</button></td>`;
-            tableBody.appendChild(row);
+            tableBody.innerHTML = '';  // Clear existing rows
+
+            // Add the sorted locations back to the table
+            locations.filter(loc => loc.day === currentDay).forEach((loc, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${index + 1}</td><td>${loc.name}</td>
+                         <td style="text-align: center;"><button class="btn btn-delete" onclick="deleteLocation(${loc.lat}, ${loc.lng}, ${loc.day}, this)">&times;</button></td>`;
+                tableBody.appendChild(row);
+            });
+
 
             // Update the route on the map to include the new location
             updateRoute();
@@ -222,15 +240,29 @@
         }
 
         function deleteLocation(lat, lng, day, button) {
+            // Remove the marker from the map and the markers array
             const markerIndex = markers.findIndex(marker => marker.getLatLng().equals([lat, lng]));
             if (markerIndex > -1) {
                 map.removeLayer(markers[markerIndex]);
                 markers.splice(markerIndex, 1);
             }
 
+            // Remove the location from the locations array
+            const locationIndex = locations.findIndex(loc => loc.lat === lat && loc.lng === lng && loc.day === day);
+            if (locationIndex > -1) {
+                locations.splice(locationIndex, 1);
+            }
+
+            // Remove the row from the table
             var row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
+
+            // Update the route and markers on the map
             updateRoute();
+            updateMarkerNumbers(); // Reorder marker numbers after deletion
+
+            // Refresh the table to reflect the updated list for the current day
+            updateTable(day);
         }
 
         function updateRoute() {
@@ -273,8 +305,8 @@
                 success: function (response) {
                     // After updating the session on the server, trigger the btnSave click
                     document.getElementById('<%= btnSave.ClientID %>').click();
-        }
-    });
+                }
+            });
         }
 
         function generatePDF() {
@@ -400,7 +432,7 @@
                 </div>
             </div>
             <div class="col-md-8">
-                <div id="map" class="shadow-sm"></div>  
+                <div id="map" class="shadow-sm"></div>
             </div>
         </div>
         <div>

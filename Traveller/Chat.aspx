@@ -66,6 +66,7 @@
             border-top: 1px solid #dee2e6 !important;
         }
     </style>
+
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -116,14 +117,14 @@
                     <div class="position-relative chat-messages p-4">
                         <asp:Repeater ID="rptChatMessages" runat="server">
                             <ItemTemplate>
-                                <div class='<%# Eval("sender_id").ToString() == "AC0521" ? "chat-message-right" : "chat-message-left" %> pb-4'>
+                                <div class='<%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "chat-message-right" : "chat-message-left" %> pb-4'>
                                     <div>
                                         <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
                                         <div class="text-muted small text-nowrap mt-2"><%# Eval("chat_datetime", "{0:hh:mm tt}") %></div>
                                     </div>
                                     <div class="flex-shrink-1 bg-light rounded py-2 px-3">
                                         <div class="font-weight-bold mb-1">
-                                            <%# Eval("sender_id").ToString() == "AC0521" ? "You" : Eval("sender_name") %>
+                                            <%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "You" : Eval("sender_name") %>
                                         </div>
                                         <%# Eval("chat_message") %>
                                     </div>

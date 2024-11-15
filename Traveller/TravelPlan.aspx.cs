@@ -66,15 +66,16 @@ namespace FYP_TravelPlanner.Traveller
                 }
                 else
                 {
-                    LocationsJson = "[]"; // Initialize as empty if session is null
+                    Response.Redirect("~/Login.aspx");
+                    //LocationsJson = "[]"; // Initialize as empty if session is null
                 }
             }
 
             // Ensure data is serialized for JavaScript on every load
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize((List<Location>)Session["SelectedLocations"]);
-            List<Location> allLocations = Session["AllLocations"] as List<Location>;
-            AllLocationsJson = serializer.Serialize(allLocations);
+            //List<Location> allLocations = Session["AllLocations"] as List<Location>;
+            AllLocationsJson = serializer.Serialize((List<Location>)Session["AllLocations"]);
         }
 
         private void LoadAllLocations()
@@ -258,11 +259,11 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-            SendNotifyEmail(email, planId);
+            //SendNotifyEmail(email, planId);
 
             duration = Convert.ToInt32(Session["duration"]);
             Session["duration"] = duration; // Store duration in Session to make it available across pages
-            ScheduleItineraryEmails(planId, startDate, duration);
+            //ScheduleItineraryEmails(planId, startDate, duration);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)

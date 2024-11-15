@@ -72,9 +72,13 @@ namespace FYP_TravelPlanner.Traveller
                 return;
             }
 
-            // Retrieve the start date and duration
             int duration = int.Parse(ddlDuration.SelectedValue);
             int budget = int.Parse(rblBudget.SelectedValue);
+            var selectedInterests = cblActivities.Items.Cast<ListItem>()
+    .Where(item => item.Selected)
+    .Select(item => item.Value)
+    .ToList();
+
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             List<Location> locations = new List<Location>();
 
@@ -84,11 +88,9 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     conn.Open();
                     string query = "SELECT location_id, place_name, latitude, longitude FROM Location WHERE area_id = @areaId";
-
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@areaId", selectedAreaId);
-
                         SqlDataReader reader = cmd.ExecuteReader();
                         while (reader.Read())
                         {
@@ -103,13 +105,49 @@ namespace FYP_TravelPlanner.Traveller
                         }
                     }
                 }
+                List<Location> filteredLocations = FilterLocationsByInterest(locations, selectedInterests);
+                // Determine the number of locations based on the budget
+                int locationCount;
+                switch (budget)
+                {
+                    case 500:
+                        locationCount = 4;
+                        break;
+                    case 1000:
+                        locationCount = 8;
+                        break;
+                    case 1500:
+                        locationCount = 12;
+                        break;
+                    case 2000:
+                        locationCount = 16;
+                        break;
+                    default:
+                        locationCount = 4;
+                        break;
+                }
 
-                // Randomly select locations and distribute them over the travel days
+
+                // If filtered locations are less than needed, add random locations to meet the required count
                 var random = new Random();
-                var selectedLocations = locations.OrderBy(x => random.Next()).Take(duration * 3).ToList();
-                int locationsPerDay = 3;
+                if (filteredLocations.Count < locationCount)
+                {
+                    // Add random locations from the unfiltered list, excluding duplicates
+                    var additionalLocations = locations.Except(filteredLocations)
+                                                       .OrderBy(x => random.Next())
+                                                       .Take(locationCount - filteredLocations.Count)
+                                                       .ToList();
+                    filteredLocations.AddRange(additionalLocations);
+                }
 
-                // Assign locations to each travel day
+                // Limit to the number of locations based on the budget
+                var selectedLocations = filteredLocations.Take(locationCount).ToList();
+
+                // Sort locations by latitude for easier routing
+                selectedLocations = selectedLocations.OrderBy(l => l.lat).ToList();
+
+                // Divide the locations by duration (days)
+                int locationsPerDay = locationCount / duration;
                 for (int i = 0; i < selectedLocations.Count; i++)
                 {
                     selectedLocations[i].day = (i / locationsPerDay) + 1;
@@ -127,6 +165,47 @@ namespace FYP_TravelPlanner.Traveller
             {
                 testError.Text = $"Error: {ex.Message}";
             }
+        }
+
+        // Method to filter locations by activity interest keywords
+        private List<Location> FilterLocationsByInterest(List<Location> locations, List<string> selectedInterests)
+        {
+            var filteredLocations = new List<Location>();
+
+            // Keywords for each category
+            var interestKeywords = new Dictionary<string, List<string>>
+    {
+        { "beaches", new List<string> { "Pantai", "Island", "Beach", "Pulau" } },
+        { "citySightseeing", new List<string> { "Heritage", "Museum", "City", "Historical", "Monument", "Tower" } },
+        { "foodExploration", new List<string> { "Food", "Restaurant", "Cafe", "Market", "Cuisine", "Street Food" } },
+        { "shopping", new List<string> { "Mall", "Shopping", "Market", "Bazaar", "Souvenir" } },
+        { "outdoorAdventures", new List<string> { "Taman", "Park", "Theme Park", "Escape Park", "Waterfall", "Nature", "Hill", "Hiking" } }
+    };
+
+            foreach (var location in locations)
+            {
+                bool matchesInterest = false;
+
+                // Check if location name contains any keyword for each selected interest
+                foreach (var interest in selectedInterests)
+                {
+                    if (interestKeywords.ContainsKey(interest))
+                    {
+                        var keywords = interestKeywords[interest];
+                        if (keywords.Any(keyword => location.name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0))
+                        {
+                            matchesInterest = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (matchesInterest)
+                    filteredLocations.Add(location);
+            }
+
+            // If no interests are selected, return all locations
+            return filteredLocations.Count > 0 ? filteredLocations : locations;
         }
 
         public class Location

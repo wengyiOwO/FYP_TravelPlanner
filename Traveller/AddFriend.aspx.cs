@@ -14,7 +14,18 @@ namespace FYP_TravelPlanner.Traveller
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            string accountId;
+            if (!IsPostBack)
+            {
+                if (Session["account_id"] != null)
+                {
+                    accountId = Session["account_id"].ToString();
+                }
+                else
+                {
+                    Response.Redirect("~/Login.aspx");
+                }
+            }
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -48,8 +59,7 @@ namespace FYP_TravelPlanner.Traveller
             if (e.CommandName == "AddFriend")
             {
                 string account2_id = Convert.ToString(e.CommandArgument);
-                string account1_id = Convert.ToString("AC0521"); // Assuming session holds current user's ID
-                //string account1_id = Convert.ToString(Session["account_id"]);
+                string account1_id = Convert.ToString(Session["account_id"]);
                 // Insert friend request into Friends table
                 string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 

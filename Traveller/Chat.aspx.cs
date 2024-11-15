@@ -7,19 +7,48 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Script.Serialization;
+using System.Web.Services;
+
 
 namespace FYP_TravelPlanner.Traveller
 {
     public partial class Chat : System.Web.UI.Page
     {
-        private string accountId = "AC0521";
-        private string selectedFriendId;
+        private string _accountId;
+        private string _selectedFriendId;
+
+        public string accountId
+        {
+            get { return _accountId; }
+            set { _accountId = value; }
+        }
+
+        public string selectedFriendId
+        {
+            get { return _selectedFriendId; }
+            set { _selectedFriendId = value; }
+        }
         private string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
+                if (Session["account_id"] != null)
+                {
+                    accountId = Convert.ToString(Session["account_id"]);
+                    LoadFriends();
+                }
+                else
+                {
+                    Response.Redirect("~/Login.aspx");
+                }
+
+            }
+            else
+            {
+                accountId = Convert.ToString(Session["account_id"]);
                 LoadFriends();
             }
 
@@ -225,6 +254,35 @@ namespace FYP_TravelPlanner.Traveller
             else
             {
                 img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; 
+            }
+        }
+
+        [WebMethod]
+        public static string GetChatMessages(string accountId, string friendId)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"
+            SELECT Chat.sender_id, Chat.chat_message, Chat.chat_datetime, Account.account_name AS sender_name
+            FROM Chat
+            INNER JOIN Account ON Chat.sender_id = Account.account_id
+            WHERE (Chat.sender_id = @account_id AND Chat.receiver_id = @friend_id) 
+               OR (Chat.sender_id = @friend_id AND Chat.receiver_id = @account_id)
+            ORDER BY Chat.chat_datetime";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@account_id", accountId);
+                cmd.Parameters.AddWithValue("@friend_id", friendId);
+
+                conn.Open();
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                return serializer.Serialize(dt);
             }
         }
     }
