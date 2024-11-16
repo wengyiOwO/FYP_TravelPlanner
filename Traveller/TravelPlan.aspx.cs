@@ -37,23 +37,7 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     // Load the travel plan details from the database
                     LoadTravelPlanData(planId);
-                    int duration;
-                    if (Session["duration"] != null)
-                    {
-                        duration = Convert.ToInt32(Session["duration"]);
-                        DateTime today = DateTime.Today;
-
-                        // Check if there are scheduled itinerary emails for today
-                        for (int day = 1; day <= (int)Session["Duration"]; day++)
-                        {
-                            if (Session[$"ItineraryEmail_Day{day}"] is DateTime emailDate && emailDate == today)
-                            {
-                                SendDailyItineraryEmail(planId, day);
-                                Session.Remove($"ItineraryEmail_Day{day}"); // Clear once sent
-                            }
-                        }
-                    }
-                    
+                   
 
                 }
                 else if (Session["SelectedLocations"] != null)
@@ -164,7 +148,7 @@ namespace FYP_TravelPlanner.Traveller
 
             if (Session["account_id"] == null)
             {
-               
+
                 var locations = (List<Location>)Session["SelectedLocations"];
                 Session["LocationsToSave"] = JsonConvert.SerializeObject(locations);
                 Response.Redirect("~/Login.aspx");
@@ -182,7 +166,7 @@ namespace FYP_TravelPlanner.Traveller
             }
             else
             {
-                email = "jiaqianpua@gmail.com";
+                email = "takemytrip2024@gmail.com";
             }
             // 2. Retrieve session values for Travel_Plan details
 
@@ -259,11 +243,13 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-            //SendNotifyEmail(email, planId);
+            if (Session["NotifyEmailSent"] == null)
+            {
+                SendNotifyEmail(email, planId);
+                Session["NotifyEmailSent"] = true;
+            }
 
-            duration = Convert.ToInt32(Session["duration"]);
-            Session["duration"] = duration; // Store duration in Session to make it available across pages
-            //ScheduleItineraryEmails(planId, startDate, duration);
+            ScheduleItineraryEmails(planId, startDate);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)
@@ -402,24 +388,14 @@ namespace FYP_TravelPlanner.Traveller
             }
         }
 
-        private void ScheduleItineraryEmails(string planId, DateTime startDate, int duration)
+        private void ScheduleItineraryEmails(string planId, DateTime startDate)
         {
             DateTime today = DateTime.Today;
 
-            for (int day = 1; day <= duration; day++)
+            // Send Day 1 itinerary immediately if the start date is today
+            if (startDate == today)
             {
-                DateTime emailSendDate = startDate.AddDays(day - 1);
-
-                if (emailSendDate == today)
-                {
-                    // Send today's itinerary immediately if it's the correct date
-                    SendDailyItineraryEmail(planId, day);
-                }
-                else if (emailSendDate > today)
-                {
-                    // Set up session reminders for subsequent days
-                    Session[$"ItineraryEmail_Day{day}"] = emailSendDate;
-                }
+                SendDailyItineraryEmail(planId, 1);
             }
         }
 
@@ -428,7 +404,16 @@ namespace FYP_TravelPlanner.Traveller
             try
             {
                 string fromEmail = "puajq-wm21@student.tarc.edu.my";
-                string toEmail = Session["account_email"] as string ?? "jiaqianpua@gmail.com";
+                string toEmail;
+
+                if (!string.IsNullOrEmpty(Session["account_email"] as string))
+                {
+                    toEmail = Session["account_email"] as string;
+                }
+                else
+                {
+                    toEmail = "takemytrip2024@gmail.com";
+                }
                 string subject = $"Day {dayNumber} Itinerary Reminder for Your Travel Plan!";
 
                 string accountName = "";
