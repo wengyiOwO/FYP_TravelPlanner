@@ -250,11 +250,14 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-            SendNotifyEmail(email, planId);
 
-            duration = Convert.ToInt32(Session["duration"]);
-            Session["duration"] = duration;
-            ScheduleItineraryEmails(planId, startDate, duration);
+            if (Session["NotifyEmailSent"] == null)
+            {
+             //   SendNotifyEmail(email, planId);
+                Session["NotifyEmailSent"] = true;
+            }
+
+          //  ScheduleItineraryEmails(planId, startDate);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)
