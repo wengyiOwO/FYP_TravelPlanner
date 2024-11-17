@@ -30,16 +30,16 @@
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script src="/js/overallPieChart.js"></script>
 
 
-<script type="text/javascript">
-    var ratingData = <%= RatingDataJson %>; 
-    console.log("Rating Data:", ratingData); // Check data in console to verify
+    <script type="text/javascript">
+        var ratingData = <%= RatingDataJson %>;
+        console.log("Rating Data:", ratingData); // Check data in console to verify
 
-</script>
+    </script>
 
 
 
@@ -56,10 +56,11 @@
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
 
-                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
-                ></asp:Button>
-             
-                                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" Style="margin-right: 20px; width: 150px;" OnClick="btnGenerate_Click"></asp:Button>
+
+                    <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+                    
+
 
                 </td>
             </tr>
