@@ -113,7 +113,7 @@
                             </Columns>
                         </asp:GridView>
 
-                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [account_id], [account_name], [account_phoneNo], [account_email], [account_status] FROM [Account] ORDER BY [account_id]" DeleteCommand="DELETE FROM [ACCOUNT] WHERE [account_id] = @account_id" UpdateCommand="UPDATE [Account] SET [account_name] = @account_name, [account_phoneNo] = @account_phoneNo, [account_email] = @account_email , [account_status] = @account_status WHERE [account_id] = @account_id
+                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [account_id], [account_name], [account_phoneNo], [account_email], [account_status] FROM [Account] WHERE [account_role] <> 'Admin' ORDER BY [account_id]" DeleteCommand="DELETE FROM [ACCOUNT] WHERE [account_id] = @account_id" UpdateCommand="UPDATE [Account] SET [account_name] = @account_name, [account_phoneNo] = @account_phoneNo, [account_email] = @account_email , [account_status] = @account_status WHERE [account_id] = @account_id
 ">
                             <DeleteParameters>
                                 <asp:Parameter Name="account_id" />
