@@ -80,15 +80,11 @@ namespace FYP_TravelPlanner.Traveller
             else if (fileType == "video")
             {
                 string videoPath = ResolveUrl($"~/Uploads/Videos/{postId}.mp4");
-                string thumbnailPath = ResolveUrl($"~/Uploads/Images/{postId}_1.jpg");
 
+                // Display only the video without any associated image
                 previewHtml += $"<div class='video-preview-container'>" +
                                $"<video src='{videoPath}' controls style='width: 100%; height: 100%; object-fit: cover;'></video>" +
                                $"<button class='delete-button' onclick=\"removeFile('{videoPath}')\">x</button>" +
-                               $"</div>";
-
-                previewHtml += $"<div class='image-preview-container'>" +
-                               $"<img src='{thumbnailPath}' alt='Video Thumbnail' style='width: 100%; height: 100%; object-fit: cover;' />" +
                                $"</div>";
             }
 
@@ -100,7 +96,7 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (fileUpload.HasFile)
             {
-                // Delete existing files only if new files are uploaded
+                // New files are uploaded, handle them
                 DeleteExistingFiles(postId);
 
                 string[] allowedImageExtensions = { ".jpg", ".jpeg", ".png" };
@@ -121,10 +117,34 @@ namespace FYP_TravelPlanner.Traveller
                 else
                 {
                     lblMessage.Text = "Invalid file type. Please upload images or a video.";
+                    lblMessage.Visible = true;
                     return;
                 }
             }
+            else
+            {
+                // No new files uploaded, retain existing media data
+                string strCon = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(strCon))
+                {
+                    conn.Open();
+                    string query = "SELECT file_type, num_image FROM Posts WHERE post_id = @PostID";
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@PostID", postId);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                fileType = reader["file_type"].ToString();
+                                numImages = Convert.ToInt32(reader["num_image"]);
+                            }
+                        }
+                    }
+                }
+            }
 
+            // Update the post in the database
             UpdatePostInDatabase(postId, fileType, numImages);
             Response.Redirect("~/Traveller/PostDetails.aspx?post_id=" + postId);
         }
@@ -157,7 +177,7 @@ namespace FYP_TravelPlanner.Traveller
 
         private int HandleMultipleImagesUpload(string postId, string[] allowedImageExtensions)
         {
-            int imageIndex = 1;
+            int imageIndex = numImages + 1; // Start from the next available index after the existing images.
 
             foreach (HttpPostedFile file in fileUpload.PostedFiles)
             {
@@ -167,12 +187,12 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     string fileName = $"{postId}_{imageIndex}.jpg";
                     string filePath = Server.MapPath("~/Uploads/Images/" + fileName);
-                    file.SaveAs(filePath);
-                    imageIndex++;
+                    file.SaveAs(filePath); // Save the uploaded file
+                    imageIndex++; // Increment image index after saving each image
                 }
             }
 
-            return imageIndex - 1;
+            return imageIndex - 1; // Return the total number of images uploaded (not the next available index)
         }
 
         private void HandleVideoUpload(string postId)

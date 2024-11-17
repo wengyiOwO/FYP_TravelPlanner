@@ -33,13 +33,13 @@
                                 <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm" Text="Delete" OnClick="btnDelete_Click" />
                             </div>
                         </asp:Panel>
-
                         <div class="d-flex align-items-center mb-3">
                             <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle" Width="50" Height="50" alt="User Profile" />
                             <div class="ml-3 ms-3">
                                 <asp:Label ID="lblAuthorName" runat="server" CssClass="mb-0 h5" Text="Author"></asp:Label><br />
                                 <asp:Label ID="lblPostDate" runat="server" CssClass="text-muted" Text="15/8/2024 20:30:03"></asp:Label>
                             </div>
+
                         </div>
 
                         <asp:Label ID="lblPostTitle" runat="server" CssClass="h6 mb-3" Text="Post Title"></asp:Label><br />

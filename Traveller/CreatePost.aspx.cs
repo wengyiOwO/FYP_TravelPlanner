@@ -203,6 +203,7 @@ namespace FYP_TravelPlanner.Traveller
 
         private void AddPostToDatabase(string postId, string fileType, int numImages)
         {
+            string accountId = Session["account_id"] as string;
             string strCon = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(strCon))
             {
@@ -214,7 +215,7 @@ namespace FYP_TravelPlanner.Traveller
                 using (SqlCommand cmdInsert = new SqlCommand(strInsert, conn))
                 {
                     cmdInsert.Parameters.AddWithValue("@PostID", postId);
-                    cmdInsert.Parameters.AddWithValue("@AccountID", "AC0521");
+                    cmdInsert.Parameters.AddWithValue("@AccountID", accountId);
                     cmdInsert.Parameters.AddWithValue("@PostDate", DateTime.Now);
                     cmdInsert.Parameters.AddWithValue("@PostTitle", txtPostTitle.Text);
                     cmdInsert.Parameters.AddWithValue("@PostContent", txtPostContent.Text);
