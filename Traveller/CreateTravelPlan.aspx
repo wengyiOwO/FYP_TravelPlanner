@@ -17,41 +17,41 @@
         }
 
         .card-body {
-            overflow-y: auto; 
-            flex-grow: 1; 
+            overflow-y: auto;
+            flex-grow: 1;
             max-height: calc(100% - 80px);
         }
 
         .card {
-            padding: 15px; 
+            padding: 15px;
         }
 
         .search-location-container {
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    z-index: 1000; 
-    width: 250px; 
-    background-color: white;
-    padding: 10px; 
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
-}
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 250px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
 
             .search-location-container .form-group {
-    margin-bottom: 0; 
-}
+                margin-bottom: 0;
+            }
 
-.search-results-container {
-    position: absolute; 
-    background-color: white; 
-    width: 100%; 
-    z-index: 1000; 
-    max-height: 200px; 
-    overflow-y: auto;
-    border: 1px solid #ccc; 
-    border-radius: 0 0 5px 5px; 
-}
+        .search-results-container {
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+        }
 
         .search-result-item {
             padding: 10px;
@@ -63,13 +63,13 @@
             }
 
         .ui-datepicker {
-            font-size: 16px; 
-            background-color: white; 
+            font-size: 16px;
+            background-color: white;
             border: 1px solid #ccc;
         }
     </style>
 
-  
+
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </asp:Content>
@@ -84,10 +84,20 @@
                         <div class="overflow-auto flex-grow-1">
                             <!-- This div will ensure scrolling -->
 
-                            <!-- Area Selection -->
+                           <!-- Area Selection -->
                             <div class="form-group">
                                 <label for="ddlState">Select Area</label>
-                                <asp:DropDownList ID="ddlState" runat="server" CssClass="form-control"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlState" runat="server" CssClass="form-control">
+                                    <asp:ListItem Text="Select an area" Value="" />
+                                    <asp:ListItem Text="Area 1" Value="1" />
+                                    <asp:ListItem Text="Area 2" Value="2" />
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator 
+                                    runat="server" 
+                                    ControlToValidate="ddlState" 
+                                    InitialValue="" 
+                                    ErrorMessage="Area is required" 
+                                    CssClass="text-danger" />
                             </div>
 
                             <!-- Start Date Selection -->
@@ -95,18 +105,36 @@
                                 <label for="txtStartDate">Start Date</label>
                                 <asp:TextBox ID="txtStartDate" runat="server" CssClass="form-control" ReadOnly="True" />
                                 <asp:Calendar ID="calendarStartDate" runat="server" OnSelectionChanged="calendarStartDate_SelectionChanged" />
+                                <asp:RequiredFieldValidator 
+                                    runat="server" 
+                                    ControlToValidate="txtStartDate" 
+                                    ErrorMessage="Start date is required" 
+                                    CssClass="text-danger" />
+                                <asp:CustomValidator 
+                                    runat="server" 
+                                    ControlToValidate="txtStartDate" 
+                                    ErrorMessage="Start date must be today or later" 
+                                    CssClass="text-danger" 
+                                    OnServerValidate="ValidateStartDate" />
                             </div>
 
                             <!-- Duration Selection -->
                             <div class="form-group">
                                 <label for="ddlDuration">Select Duration (Days)</label>
                                 <asp:DropDownList ID="ddlDuration" runat="server" CssClass="form-control">
-                                    <asp:ListItem Text="1" Value="1" />
-                                    <asp:ListItem Text="2" Value="2" />
-                                    <asp:ListItem Text="3" Value="3" />
-                                    <asp:ListItem Text="4" Value="4" />
-                                    <asp:ListItem Text="5" Value="5" />
+                                    <asp:ListItem Text="Select duration" Value="" />
+                                    <asp:ListItem Text="1 day" Value="1" />
+                                    <asp:ListItem Text="2 days" Value="2" />
+                                    <asp:ListItem Text="3 days" Value="3" />
+                                    <asp:ListItem Text="4 days" Value="4" />
+                                    <asp:ListItem Text="5 days" Value="5" />
                                 </asp:DropDownList>
+                                <asp:RequiredFieldValidator 
+                                    runat="server" 
+                                    ControlToValidate="ddlDuration" 
+                                    InitialValue="" 
+                                    ErrorMessage="Duration is required" 
+                                    CssClass="text-danger" />
                             </div>
 
                             <!-- Budget Selection -->
@@ -118,17 +146,31 @@
                                     <asp:ListItem Text="1500" Value="1500" />
                                     <asp:ListItem Text="2000" Value="2000" />
                                 </asp:RadioButtonList>
+                                <asp:RequiredFieldValidator 
+                                    runat="server" 
+                                    ControlToValidate="rblBudget" 
+                                    ErrorMessage="Budget is required" 
+                                    CssClass="text-danger" />
                             </div>
 
+                           <!-- Activity Interest -->
                             <div class="form-group">
                                 <label>Activity Interest</label><br />
                                 <asp:CheckBoxList ID="cblActivities" runat="server" CssClass="form-check">
-                                    <asp:ListItem Value="beaches">Beaches</asp:ListItem>
-                                    <asp:ListItem Value="citySightseeing">City Sightseeing</asp:ListItem>
-                                    <asp:ListItem Value="foodExploration">Food Exploration</asp:ListItem>
-                                    <asp:ListItem Value="shopping">Shopping</asp:ListItem>
-                                    <asp:ListItem Value="outdoorAdventures">Outdoor Adventures</asp:ListItem>
-                                </asp:CheckBoxList>
+    <asp:ListItem Value="beaches">Beaches</asp:ListItem>
+    <asp:ListItem Value="citySightseeing">City Sightseeing</asp:ListItem>
+    <asp:ListItem Value="foodExploration">Food Exploration</asp:ListItem>
+    <asp:ListItem Value="shopping">Shopping</asp:ListItem>
+    <asp:ListItem Value="outdoorAdventures">Outdoor Adventures</asp:ListItem>
+</asp:CheckBoxList>
+
+<asp:CustomValidator 
+    runat="server" 
+    ID="CheckBoxRequired" 
+    EnableClientScript="true" 
+    OnServerValidate="CheckBoxRequired_ServerValidate"
+    ErrorMessage="You must select at least one activity to proceed." 
+    CssClass="text-danger" />
                             </div>
                         </div>
                         <asp:Label ID="lblLocations" runat="server" CssClass="mt-3" Text="" />
@@ -138,15 +180,15 @@
                 </div>
             </div>
             <div class="col-md-8 p-0 position-relative" style="height: 100%;">
-    <div id="map" style="height: 100%; width: 100%;"></div>
-    <div class="search-location-container">
-        <div class="form-group">
-            <label for="search-input">Search Location</label>
-            <asp:TextBox ID="txtSearchLocation" runat="server" CssClass="form-control" placeholder="Enter a location" OnKeyUp="handleSearchInput()" />
-            <div id="search-results" class="search-results-container"></div>
-        </div>
-    </div>
-</div>
+                <div id="map" style="height: 100%; width: 100%;"></div>
+                <div class="search-location-container">
+                    <div class="form-group">
+                        <label for="search-input">Search Location</label>
+                        <asp:TextBox ID="txtSearchLocation" runat="server" CssClass="form-control" placeholder="Enter a location" OnKeyUp="handleSearchInput()" />
+                        <div id="search-results" class="search-results-container"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
     <script type="text/javascript">

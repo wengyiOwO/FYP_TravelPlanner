@@ -66,7 +66,44 @@
             border-top: 1px solid #dee2e6 !important;
         }
     </style>
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+<script src="~/Scripts/jquery.signalR-2.4.3.min.js"></script>
+<script>
+    $(function () {
+        const connection = $.hubConnection();
+        const chatHub = connection.createHubProxy('chatHub');
 
+        const userId = '<%= Session["account_id"] %>';
+        connection.qs = { userId: userId };
+
+        // Receive a message and update UI
+        chatHub.on('ReceiveMessage', function (senderId, message, timestamp) {
+            const isMyMessage = senderId === userId;
+            const messageClass = isMyMessage ? 'chat-message-right' : 'chat-message-left';
+
+            $('.chat-messages').append(`
+                <div class="${messageClass} pb-4">
+                    <div>
+                        <img src="/Uploads/Profile/${senderId}.jpg" class="rounded-circle mr-1" width="40" height="40" alt="User">
+                        <div class="text-muted small text-nowrap mt-2">${timestamp}</div>
+                    </div>
+                    <div class="flex-shrink-1 bg-light rounded py-2 px-3">
+                        <div class="font-weight-bold mb-1">${isMyMessage ? 'You' : 'Friend'}</div>
+                        ${message}
+                    </div>
+                </div>
+            `);
+            $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight); // Auto-scroll
+        });
+
+        // Start the SignalR connection
+        connection.start().done(function () {
+            console.log('Connected to SignalR');
+        }).fail(function (err) {
+            console.error('SignalR connection failed:', err);
+        });
+    });
+</script>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">

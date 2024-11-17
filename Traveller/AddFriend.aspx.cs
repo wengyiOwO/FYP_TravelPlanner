@@ -14,14 +14,9 @@ namespace FYP_TravelPlanner.Traveller
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            string accountId;
             if (!IsPostBack)
             {
-                if (Session["account_id"] != null)
-                {
-                    accountId = Session["account_id"].ToString();
-                }
-                else
+                if (Session["account_id"] == null)
                 {
                     Response.Redirect("~/Login.aspx");
                 }
@@ -30,7 +25,30 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
+            BindRepeater(); 
+        }
+
+        protected void rptResults_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            string account1_id = Session["account_id"].ToString(); // Current user's ID
+            string account2_id = Convert.ToString(e.CommandArgument); // Selected user's ID
+
+            if (e.CommandName == "AddFriend")
+            {
+                AddNewFriend(account1_id, account2_id); 
+            }
+            else if (e.CommandName == "Unfriend")
+            {
+                RemoveFriend(account1_id, account2_id);
+            }
+
+            BindRepeater();
+        }
+
+        private void BindRepeater()
+        {
             string searchQuery = txtSearch.Text.Trim();
+
             if (!string.IsNullOrEmpty(searchQuery))
             {
                 string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -38,9 +56,21 @@ namespace FYP_TravelPlanner.Traveller
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     conn.Open();
-                    string query = "SELECT account_id, account_name FROM Account WHERE account_name LIKE @search";
+
+                    string query = @"
+                        SELECT 
+                            account_id, 
+                            account_name, 
+                            (SELECT friend_status 
+                             FROM Friends 
+                             WHERE (account1_id = @currentAccount AND account2_id = Account.account_id) 
+                                OR (account2_id = @currentAccount AND account1_id = Account.account_id)) AS friend_status
+                        FROM Account
+                        WHERE account_name LIKE @search";
+
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@search", "%" + searchQuery + "%");
+                    cmd.Parameters.AddWithValue("@currentAccount", Session["account_id"]);
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -49,36 +79,49 @@ namespace FYP_TravelPlanner.Traveller
                     rptResults.DataSource = dt;
                     rptResults.DataBind();
 
-                    lblNoResults.Visible = dt.Rows.Count == 0; // Display "No user found" if no results
+                    lblNoResults.Visible = dt.Rows.Count == 0;
                 }
             }
         }
 
-        protected void rptResults_ItemCommand(object source, RepeaterCommandEventArgs e)
+        private void AddNewFriend(string account1_id, string account2_id)
         {
-            if (e.CommandName == "AddFriend")
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connString))
             {
-                string account2_id = Convert.ToString(e.CommandArgument);
-                string account1_id = Convert.ToString(Session["account_id"]);
-                // Insert friend request into Friends table
-                string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                conn.Open();
 
-                using (SqlConnection conn = new SqlConnection(connString))
-                {
-                    conn.Open();
-                    string query = "INSERT INTO Friends (account1_id, account2_id, friend_date, friend_status) VALUES (@account1_id, @account2_id, @friend_date, @friend_status)";
-                    SqlCommand cmd = new SqlCommand(query, conn);
+                string query = @"INSERT INTO Friends (account1_id, account2_id, friend_date, friend_status) 
+                                 VALUES (@account1_id, @account2_id, @friend_date, @friend_status)";
+                SqlCommand cmd = new SqlCommand(query, conn);
 
-                    cmd.Parameters.AddWithValue("@account1_id", account1_id);
-                    cmd.Parameters.AddWithValue("@account2_id", account2_id);
-                    cmd.Parameters.AddWithValue("@friend_date", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@friend_status", "Request");
+                cmd.Parameters.AddWithValue("@account1_id", account1_id);
+                cmd.Parameters.AddWithValue("@account2_id", account2_id);
+                cmd.Parameters.AddWithValue("@friend_date", DateTime.Now);
+                cmd.Parameters.AddWithValue("@friend_status", "Request");
 
-                    cmd.ExecuteNonQuery();
-                }
+                cmd.ExecuteNonQuery();
+            }
+        }
 
-                // Display pop-up message
-                ScriptManager.RegisterStartupScript(this, GetType(), "Popup", "alert('Friend request sent!');", true);
+        private void RemoveFriend(string account1_id, string account2_id)
+        {
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                string query = @"DELETE FROM Friends 
+                                 WHERE (account1_id = @account1_id AND account2_id = @account2_id)
+                                    OR (account2_id = @account1_id AND account1_id = @account2_id)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@account1_id", account1_id);
+                cmd.Parameters.AddWithValue("@account2_id", account2_id);
+
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -94,8 +137,35 @@ namespace FYP_TravelPlanner.Traveller
             }
             else
             {
-                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; // Fallback image
+                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; 
             }
+        }
+
+        protected string GetButtonText(object friendStatus)
+        {
+            if (friendStatus == DBNull.Value || friendStatus == null)
+                return "Add";
+            else if (friendStatus.ToString() == "Request")
+                return "Sent";
+            else if (friendStatus.ToString() == "Accepted")
+                return "Unfriend";
+            else
+                return "Add";
+        }
+
+        protected string GetCommandName(object friendStatus)
+        {
+            if (friendStatus == DBNull.Value || friendStatus == null)
+                return "AddFriend";
+            else if (friendStatus.ToString() == "Accepted")
+                return "Unfriend";
+            else
+                return ""; 
+        }
+
+        protected bool IsButtonEnabled(object friendStatus)
+        {
+            return friendStatus == DBNull.Value || friendStatus == null || friendStatus.ToString() == "Accepted";
         }
     }
 }

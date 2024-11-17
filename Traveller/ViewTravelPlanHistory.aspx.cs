@@ -14,6 +14,10 @@ namespace FYP_TravelPlanner.Traveller
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
             if (!IsPostBack)
             {
                 LoadAreaDropdown();
@@ -63,8 +67,9 @@ namespace FYP_TravelPlanner.Traveller
 
                 query += " ORDER BY TP.plan_date DESC";
 
+                string accountId = Session["account_id"] as string;
                 SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@account_id", "AC0521");
+                cmd.Parameters.AddWithValue("@account_id", accountId);
 
                 if (!string.IsNullOrEmpty(ddlArea.SelectedValue))
                 {

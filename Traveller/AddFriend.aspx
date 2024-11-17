@@ -76,41 +76,52 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <!-- Add ScriptManager -->
+    <asp:ScriptManager ID="ScriptManager1" runat="server" />
+
     <main class="content">
-        <div class="card">
-            <div class="row g-0">
-                <div class="col-12">
-                    <div class="py-2 px-4 d-none d-lg-block">
-                        <div class="d-flex align-items-center py-1 border-bottom">
-                            <div class="flex-grow-1 pl-3">
-                                <strong>Add New Friend</strong>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                    <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control mr-2" Placeholder="Enter account name..."></asp:TextBox>
-                                    <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
-                            </div>
-                            </div>
-                            <!-- Repeater for Search Results -->
-                            <div class="py-4 px-4">
-                                <asp:Repeater ID="rptResults" runat="server" OnItemCommand="rptResults_ItemCommand">
-                                    <ItemTemplate>
-                                        <a href="#" class="list-group-item list-group-item-action border-0">
-                                            <div class="d-flex align-items-start">
-                                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle" Width="40" Height="40"
-                                                    OnDataBinding="imgProfile_DataBinding" />
-                                                <div class="flex-grow-1 ml-3">
-                                                    <asp:Label ID="lblAccountName" runat="server" Text='<%# Eval("account_name") %>'></asp:Label>
+        <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+            <ContentTemplate>
+                <div class="card">
+                    <div class="row g-0">
+                        <div class="col-12">
+                            <div class="py-2 px-4 d-none d-lg-block">
+                                <div class="d-flex align-items-center py-1 border-bottom">
+                                    <div class="flex-grow-1 pl-3">
+                                        <strong>Add New Friend</strong>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control mr-2" Placeholder="Enter account name..."></asp:TextBox>
+                                        <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+                                    </div>
+                                </div>
+                                <!-- Repeater for Search Results -->
+                                <div class="py-4 px-4">
+                                    <asp:Repeater ID="rptResults" runat="server" OnItemCommand="rptResults_ItemCommand">
+                                        <ItemTemplate>
+                                            <a href="#" class="list-group-item list-group-item-action border-0">
+                                                <div class="d-flex align-items-start">
+                                                    <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle" Width="40" Height="40"
+                                                        OnDataBinding="imgProfile_DataBinding" />
+                                                    <div class="flex-grow-1 ml-3">
+                                                        <asp:Label ID="lblAccountName" runat="server" Text='<%# Eval("account_name") %>'></asp:Label>
+                                                    </div>
+                                                    <asp:Button ID="btnAddFriend" runat="server" CssClass="btn btn-primary btn-sm" 
+                                                                Text='<%# GetButtonText(Eval("friend_status")) %>' 
+                                                                CommandName='<%# GetCommandName(Eval("friend_status")) %>' 
+                                                                CommandArgument='<%# Eval("account_id") %>' 
+                                                                Enabled='<%# IsButtonEnabled(Eval("friend_status")) %>' />
                                                 </div>
-                                                <asp:Button ID="btnAddFriend" runat="server" CssClass="btn btn-primary btn-sm" Text="Add" CommandName="AddFriend" CommandArgument='<%# Eval("account_id") %>' />
-                                            </div>
-                                        </a>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                                <asp:Label ID="lblNoResults" runat="server" CssClass="text-muted mt-3" Text="No user found." Visible="false"></asp:Label>
+                                            </a>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                    <asp:Label ID="lblNoResults" runat="server" CssClass="text-muted mt-3" Text="No user found." Visible="false"></asp:Label>
                                 </div>
                             </div>
+                        </div>
                     </div>
-            </div>
-        </div>
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
     </main>
 </asp:Content>

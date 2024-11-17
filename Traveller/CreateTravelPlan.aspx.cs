@@ -56,114 +56,140 @@ namespace FYP_TravelPlanner.Traveller
             txtStartDate.Text = selectedDate.ToString("dd-MM-yyyy");
         }
 
+        protected void ValidateStartDate(object source, ServerValidateEventArgs args)
+        {
+            if (DateTime.TryParse(args.Value, out DateTime selectedDate))
+            {
+                args.IsValid = selectedDate >= DateTime.Today;
+            }
+            else
+            {
+                args.IsValid = false;
+            }
+        }
+
+
+        protected void CheckBoxRequired_ServerValidate(object sender, ServerValidateEventArgs e)
+        {
+            // Check if at least one item is selected in the CheckBoxList
+            e.IsValid = cblActivities.SelectedIndex != -1;
+        }
+
         protected void btnPlan_Click(object sender, EventArgs e)
         {
-            string selectedAreaId = ddlState.SelectedValue;
-            if (string.IsNullOrEmpty(selectedAreaId))
+            if (Page.IsValid)
             {
-                testError.Text = "Please select an area.";
-                return;
-            }
-
-            DateTime startDate;
-            if (!DateTime.TryParse(txtStartDate.Text, out startDate))
-            {
-                testError.Text = "Please select a valid start date.";
-                return;
-            }
-
-            int duration = int.Parse(ddlDuration.SelectedValue);
-            int budget = int.Parse(rblBudget.SelectedValue);
-            var selectedInterests = cblActivities.Items.Cast<ListItem>()
-    .Where(item => item.Selected)
-    .Select(item => item.Value)
-    .ToList();
-
-            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            List<Location> locations = new List<Location>();
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                string selectedAreaId = ddlState.SelectedValue;
+                if (string.IsNullOrEmpty(selectedAreaId))
                 {
-                    conn.Open();
-                    string query = "SELECT location_id, place_name, latitude, longitude FROM Location WHERE area_id = @areaId";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    testError.Text = "Please select an area.";
+                    return;
+                }
+
+                DateTime startDate;
+                if (!DateTime.TryParse(txtStartDate.Text, out startDate))
+                {
+                    testError.Text = "Please select a valid start date.";
+                    return;
+                }
+
+                int duration = int.Parse(ddlDuration.SelectedValue);
+                int budget = int.Parse(rblBudget.SelectedValue);
+                var selectedInterests = cblActivities.Items.Cast<ListItem>()
+        .Where(item => item.Selected)
+        .Select(item => item.Value)
+        .ToList();
+
+                string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                List<Location> locations = new List<Location>();
+
+                try
+                {
+                    using (SqlConnection conn = new SqlConnection(ConnectionString))
                     {
-                        cmd.Parameters.AddWithValue("@areaId", selectedAreaId);
-                        SqlDataReader reader = cmd.ExecuteReader();
-                        while (reader.Read())
+                        conn.Open();
+                        string query = "SELECT location_id, place_name, latitude, longitude FROM Location WHERE area_id = @areaId";
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
                         {
-                            locations.Add(new Location
+                            cmd.Parameters.AddWithValue("@areaId", selectedAreaId);
+                            SqlDataReader reader = cmd.ExecuteReader();
+                            while (reader.Read())
                             {
-                                id = reader["location_id"].ToString(),
-                                name = reader["place_name"].ToString(),
-                                address = string.Empty,
-                                lat = Convert.ToDouble(reader["latitude"]),
-                                lng = Convert.ToDouble(reader["longitude"])
-                            });
+                                locations.Add(new Location
+                                {
+                                    id = reader["location_id"].ToString(),
+                                    name = reader["place_name"].ToString(),
+                                    address = string.Empty,
+                                    lat = Convert.ToDouble(reader["latitude"]),
+                                    lng = Convert.ToDouble(reader["longitude"])
+                                });
+                            }
                         }
                     }
+                    List<Location> filteredLocations = FilterLocationsByInterest(locations, selectedInterests);
+                    // Determine the number of locations based on the budget
+                    int locationCount;
+                    switch (budget)
+                    {
+                        case 500:
+                            locationCount = 4;
+                            break;
+                        case 1000:
+                            locationCount = 8;
+                            break;
+                        case 1500:
+                            locationCount = 12;
+                            break;
+                        case 2000:
+                            locationCount = 16;
+                            break;
+                        default:
+                            locationCount = 4;
+                            break;
+                    }
+
+
+                    // If filtered locations are less than needed, add random locations to meet the required count
+                    var random = new Random();
+                    if (filteredLocations.Count < locationCount)
+                    {
+                        // Add random locations from the unfiltered list, excluding duplicates
+                        var additionalLocations = locations.Except(filteredLocations)
+                                                           .OrderBy(x => random.Next())
+                                                           .Take(locationCount - filteredLocations.Count)
+                                                           .ToList();
+                        filteredLocations.AddRange(additionalLocations);
+                    }
+
+                    // Limit to the number of locations based on the budget
+                    var selectedLocations = filteredLocations.Take(locationCount).ToList();
+
+                    // Sort locations by latitude for easier routing
+                    selectedLocations = selectedLocations.OrderBy(l => l.lat).ToList();
+
+                    // Divide the locations by duration (days)
+                    int locationsPerDay = locationCount / duration;
+                    for (int i = 0; i < selectedLocations.Count; i++)
+                    {
+                        selectedLocations[i].day = (i / locationsPerDay) + 1;
+                    }
+
+                    // Store the travel plan with day-wise locations in the session
+                    Session["SelectedLocations"] = JsonConvert.SerializeObject(selectedLocations);
+                    Session["AreaID"] = selectedAreaId;
+                    Session["StartDate"] = startDate;
+                    Session["Duration"] = duration;
+                    Session["Budget"] = budget;
+                    Response.Redirect("~/Traveller/TravelPlan.aspx");
                 }
-                List<Location> filteredLocations = FilterLocationsByInterest(locations, selectedInterests);
-                // Determine the number of locations based on the budget
-                int locationCount;
-                switch (budget)
+                catch (Exception ex)
                 {
-                    case 500:
-                        locationCount = 4;
-                        break;
-                    case 1000:
-                        locationCount = 8;
-                        break;
-                    case 1500:
-                        locationCount = 12;
-                        break;
-                    case 2000:
-                        locationCount = 16;
-                        break;
-                    default:
-                        locationCount = 4;
-                        break;
+                    testError.Text = $"Error: {ex.Message}";
                 }
-
-
-                // If filtered locations are less than needed, add random locations to meet the required count
-                var random = new Random();
-                if (filteredLocations.Count < locationCount)
-                {
-                    // Add random locations from the unfiltered list, excluding duplicates
-                    var additionalLocations = locations.Except(filteredLocations)
-                                                       .OrderBy(x => random.Next())
-                                                       .Take(locationCount - filteredLocations.Count)
-                                                       .ToList();
-                    filteredLocations.AddRange(additionalLocations);
-                }
-
-                // Limit to the number of locations based on the budget
-                var selectedLocations = filteredLocations.Take(locationCount).ToList();
-
-                // Sort locations by latitude for easier routing
-                selectedLocations = selectedLocations.OrderBy(l => l.lat).ToList();
-
-                // Divide the locations by duration (days)
-                int locationsPerDay = locationCount / duration;
-                for (int i = 0; i < selectedLocations.Count; i++)
-                {
-                    selectedLocations[i].day = (i / locationsPerDay) + 1;
-                }
-
-                // Store the travel plan with day-wise locations in the session
-                Session["SelectedLocations"] = JsonConvert.SerializeObject(selectedLocations);
-                Session["AreaID"] = selectedAreaId;
-                Session["StartDate"] = startDate;
-                Session["Duration"] = duration;
-                Session["Budget"] = budget;
-                Response.Redirect("~/Traveller/TravelPlan.aspx");
             }
-            catch (Exception ex)
+            else
             {
-                testError.Text = $"Error: {ex.Message}";
+                testError.Text = "Please correct the highlighted errors.";
             }
         }
 
@@ -215,7 +241,7 @@ namespace FYP_TravelPlanner.Traveller
             public string address { get; set; }
             public double lat { get; set; }
             public double lng { get; set; }
-            public int day { get; set; } 
+            public int day { get; set; }
         }
     }
 }

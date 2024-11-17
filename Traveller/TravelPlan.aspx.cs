@@ -174,20 +174,11 @@ namespace FYP_TravelPlanner.Traveller
 
             // 1. Generate a new unique plan_id
             string planId = GeneratePlanId();
-            string email;
-
-            if (!string.IsNullOrEmpty(Session["account_email"] as string))
-            {
-                email = Session["account_email"] as string;
-            }
-            else
-            {
-                email = "jiaqianpua@gmail.com";
-            }
+            string email = Session["account_email"] as string;
+            
             // 2. Retrieve session values for Travel_Plan details
 
-            //string accountId = Session["account_id"].ToString();
-            string accountId = "AC0521";
+            string accountId = Session["account_id"].ToString();
             string areaId = Session["AreaID"].ToString();
             DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
             int duration = Convert.ToInt32(Session["Duration"]);
@@ -259,11 +250,11 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-            //SendNotifyEmail(email, planId);
+            SendNotifyEmail(email, planId);
 
             duration = Convert.ToInt32(Session["duration"]);
-            Session["duration"] = duration; // Store duration in Session to make it available across pages
-            //ScheduleItineraryEmails(planId, startDate, duration);
+            Session["duration"] = duration;
+            ScheduleItineraryEmails(planId, startDate, duration);
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)

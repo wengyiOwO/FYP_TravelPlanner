@@ -14,21 +14,31 @@ namespace FYP_TravelPlanner
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
             if (!IsPostBack)
             {
-                string profileId = Request.QueryString["u"] != null ? Request.QueryString["u"] : "AC0521"; // Replace with Session["account_id"] if session is available
-                string currentUserId = "AC0521"; // Replace with Session["account_id"] if session is available
-
+                string profileId;
+                if (!string.IsNullOrEmpty(Request.QueryString["u"]))
+                {
+                    profileId = Request.QueryString["u"];
+                }
+                else
+                {
+                    profileId = Convert.ToString(Session["account_id"]);
+                }
+                string currentUserId = Convert.ToString(Session["account_id"]);
                 LoadProfile(profileId);
                 LoadPosts(profileId);
                 ConfigureFriendButton(profileId, currentUserId);
             }
         }
 
-        // Method to configure the friend button based on the friendship status
         private void ConfigureFriendButton(string profileId, string currentUserId)
         {
-            if (profileId == currentUserId)
+            if (!string.IsNullOrEmpty(profileId) && !string.IsNullOrEmpty(currentUserId) && profileId == currentUserId)
             {
                 btnEdit.Visible = true;
                 friendButtonContainer.Visible = false;
@@ -98,7 +108,7 @@ namespace FYP_TravelPlanner
         protected void btnAdd_Click(object sender, EventArgs e)
         {
             string account2_id = Request.QueryString["u"];
-            string account1_id = "AC0521"; // Replace with Session["account_id"] if session is available
+            string account1_id = Session["account_id"] as string;
 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connString))
@@ -119,7 +129,7 @@ namespace FYP_TravelPlanner
         protected void btnAccept_Click(object sender, EventArgs e)
         {
             string friendId = Request.QueryString["u"];
-            string accountId = "AC0521"; // Replace with Session["account_id"] if session is available
+            string accountId = Session["account_id"] as string;
 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connString))
@@ -139,8 +149,7 @@ namespace FYP_TravelPlanner
         protected void btnReject_Click(object sender, EventArgs e)
         {
             // Assume the current user's account ID is stored in the session
-            string accountId = "AC0521";
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
             // The profile user's ID from the query string
             string friendId = Request.QueryString["u"];
 
@@ -180,8 +189,7 @@ namespace FYP_TravelPlanner
         protected void btnUnfriend_Click(object sender, EventArgs e)
         { 
             string friendId = Request.QueryString["u"];
-            string accountId = "AC0521";
-            //string accountId = Convert.ToString(Session["account_id"]);
+            string accountId = Convert.ToString(Session["account_id"]);
 
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connString))

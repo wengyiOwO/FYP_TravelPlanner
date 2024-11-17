@@ -48,18 +48,16 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="container my-2 posts-container">
-        <div class="px-4 d-none d-md-block">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <input type="text" class="form-control my-3" placeholder="Search...">
-                </div>
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">
-                        <i class="fas fa-search fa-sm"></i>
-                    </button>
-                </div>
+       <div class="px-4 d-none d-md-block">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control my-3" Placeholder="Search..." />
+            </div>
+            <div class="input-group-append">
+                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
             </div>
         </div>
+    </div>
 
         <div class="row row-cols-1 row-cols-md-4 g-4">
             <asp:Repeater ID="PostsRepeater" runat="server">

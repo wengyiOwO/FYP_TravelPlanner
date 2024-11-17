@@ -33,15 +33,6 @@ namespace FYP_TravelPlanner
         protected global::System.Web.UI.WebControls.Label lblAccountName;
 
         /// <summary>
-        /// friendButtonContainer control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl friendButtonContainer;
-
-        /// <summary>
         /// btnEdit control.
         /// </summary>
         /// <remarks>
@@ -49,6 +40,15 @@ namespace FYP_TravelPlanner
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnEdit;
+
+        /// <summary>
+        /// friendButtonContainer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl friendButtonContainer;
 
         /// <summary>
         /// btnAdd control.

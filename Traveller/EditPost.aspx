@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/TakeMyTrip.Master" AutoEventWireup="true" CodeBehind="EditPost.aspx.cs" Inherits="FYP_TravelPlanner.Traveller.EditPost" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
         /* Same styles as CreatePost.aspx */
@@ -14,12 +15,12 @@
             cursor: pointer;
         }
 
-        #uploadWrapper::before {
-            content: '+'; 
-            font-size: 48px; 
-            color: #999999; 
-            position: absolute;
-        }
+            #uploadWrapper::before {
+                content: '+';
+                font-size: 48px;
+                color: #999999;
+                position: absolute;
+            }
 
         #imageUpload {
             position: absolute;
@@ -65,9 +66,9 @@
             margin: 20px 0;
         }
 
-        .visibility-options label {
-            margin-right: 15px;
-        }
+            .visibility-options label {
+                margin-right: 15px;
+            }
     </style>
 </asp:Content>
 
@@ -79,10 +80,10 @@
 
                 <div class="mb-3 upload-section">
                     <div id="uploadWrapper">
-                        <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" Style="opacity:0; width:100%; height:100%; position:absolute; cursor:pointer;" />
+                        <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" Style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer;" />
                     </div>
                     <div id="previewContainer" class="d-flex flex-wrap mt-3">
-                                            <asp:Literal ID="previewLiteral" runat="server"></asp:Literal>
+                        <asp:Literal ID="previewLiteral" runat="server"></asp:Literal>
 
                         <!-- Existing image and video previews will be added here -->
                     </div>
@@ -91,11 +92,15 @@
                 <div class="mb-3">
                     <label for="postTitle" class="form-label">Title</label>
                     <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" placeholder="Enter title" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostTitle" ErrorMessage="Title is required" CssClass="text-danger" />
+
                 </div>
 
                 <div class="mb-3">
                     <label for="postDescription" class="form-label">Description</label>
                     <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" placeholder="Enter description" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostContent" ErrorMessage="Content is required" CssClass="text-danger" />
+
                 </div>
 
                 <div class="visibility-options">
@@ -105,6 +110,8 @@
                         <asp:ListItem Value="Friend" Text="Friend" />
                         <asp:ListItem Value="Owner" Text="Owner Only" />
                     </asp:RadioButtonList>
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="rblPostPermission" ErrorMessage="Selection is required" CssClass="text-danger" />
+
                 </div>
 
                 <asp:Button ID="btnUpdatePost" runat="server" CssClass="btn btn-primary" Text="Update Post" OnClick="btnUpdatePost_Click" />

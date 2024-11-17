@@ -2,24 +2,24 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
-       #uploadWrapper {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    background-color: #f0f0f0;
-    border: 2px dashed #cccccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
+        #uploadWrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background-color: #f0f0f0;
+            border: 2px dashed #cccccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
 
-#uploadWrapper::before {
-    content: '+'; 
-    font-size: 48px; 
-    color: #999999; 
-    position: absolute;
-}
+            #uploadWrapper::before {
+                content: '+';
+                font-size: 48px;
+                color: #999999;
+                position: absolute;
+            }
 
         #imageUpload {
             position: absolute;
@@ -97,19 +97,23 @@
                 <h5 class="card-title"><strong>Create Post</strong></h5>
                 <div class="mb-3 upload-section">
                     <div id="uploadWrapper">
-    <asp:FileUpload ID="fileUpload" runat="server" accept="image/*" AllowMultiple="true" Style="opacity:0; width:100%; height:100%; position:absolute; cursor:pointer;" />
-</div>
-<div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
+                        <asp:FileUpload ID="fileUpload" runat="server" accept="image/*" AllowMultiple="true" Style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer;" />
+                    </div>
+                    <div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
                     <!-- Container for all image previews -->
                 </div>
                 <div class="mb-3">
                     <label for="postTitle" class="form-label">Title</label>
                     <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" placeholder="Enter title, you might get more likes~" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostTitle" ErrorMessage="Title is required" CssClass="text-danger" />
+
                 </div>
 
                 <div class="mb-3">
                     <label for="postDescription" class="form-label">Description</label>
                     <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" placeholder="Provide a detailed description to help more people see your post!" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostContent" ErrorMessage="Content is required" CssClass="text-danger" />
+
                 </div>
 
                 <div class="visibility-options">
@@ -119,6 +123,8 @@
                         <asp:ListItem Value="Friend" Text="Friend" />
                         <asp:ListItem Value="Owner" Text="Owner Only" />
                     </asp:RadioButtonList>
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="rblPostPermission" ErrorMessage="Selection is required" CssClass="text-danger" />
+
                 </div>
 
                 <asp:Button ID="btnCreatePost" runat="server" CssClass="btn btn-primary" Text="Create Post" OnClick="btnCreatePost_Click" />
@@ -185,7 +191,7 @@
             const imageUpload = document.getElementById('<%= fileUpload.ClientID %>');
             const preview = document.getElementById('imagePreview');
 
-            imageUpload.value = ''; 
+            imageUpload.value = '';
             preview.src = '';
             previewContainer.style.display = 'none';
         };

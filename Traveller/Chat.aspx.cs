@@ -9,6 +9,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Script.Serialization;
 using System.Web.Services;
+using FYP_TravelPlanner.Hubs;
 
 
 namespace FYP_TravelPlanner.Traveller
@@ -186,7 +187,7 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (!string.IsNullOrWhiteSpace(txtMessage.Text) && !string.IsNullOrEmpty(selectedFriendId))
             {
-                string newChatId = GenerateChatId(accountId, DateTime.Now); 
+                string newChatId = GenerateChatId(accountId, DateTime.Now);
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
@@ -202,8 +203,13 @@ namespace FYP_TravelPlanner.Traveller
                     cmd.ExecuteNonQuery();
                 }
 
+                // Notify clients via SignalR
+                var hubContext = Microsoft.AspNet.SignalR.GlobalHost.ConnectionManager.GetHubContext<Hubs.ChatHub>();
+                string timestamp = DateTime.Now.ToString("hh:mm tt");
+                hubContext.Clients.Group(selectedFriendId).ReceiveMessage(accountId, txtMessage.Text.Trim(), timestamp);
+
                 txtMessage.Text = "";
-                LoadChatMessages();
+                LoadChatMessages(); // Refresh UI
             }
         }
 

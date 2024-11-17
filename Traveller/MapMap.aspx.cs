@@ -26,7 +26,7 @@ namespace FYP_TravelPlanner.Traveller
             {
                 var columns = line.Split(',');
 
-                if (columns[2].Trim().Equals("Perak", StringComparison.OrdinalIgnoreCase))
+                if (columns[2].Trim().Equals("Penang", StringComparison.OrdinalIgnoreCase))
                 {
                     // Add to list of locations
                     locations.Add(new LocationData
@@ -43,12 +43,12 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
-                int locationCounter = 57;
+                int locationCounter = 246;
 
                 foreach (var location in locations)
                 {
                     string locationId = $"P{locationCounter:D7}"; // Generates IDs like P0000001, P0000002, etc.
-                    string areaId = location.State == "Perak" ? "A0000001" : "A0000002"; // Assign based on state
+                    string areaId = location.State == "Penang" ? "A0000008" : ""; // Assign based on state
 
                     string query = "INSERT INTO Location (location_id, area_id, place_name, latitude, longitude) " +
                                    "VALUES (@locationId, @areaId, @place_name, @latitude, @longitude)";

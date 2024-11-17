@@ -10,18 +10,22 @@
             background-color: #f2f6fc;
             color: #69707a;
         }
+
         .img-account-profile {
             width: 150px;
             height: 150px;
             object-fit: cover;
             border-radius: 50%;
         }
+
         .card {
             box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
         }
-        .card .card-header {
-            font-weight: 500;
-        }
+
+            .card .card-header {
+                font-weight: 500;
+            }
+
         .form-control, .dataTable-input {
             width: 100%;
             padding: 0.875rem 1.125rem;
@@ -71,10 +75,12 @@
                 <div class="card mb-4">
                     <div class="card-header">Account Details</div>
                     <div class="card-body">
-                        <asp:Label ID="StatusMessage" runat="server" ForeColor="Red" />                        
+                        <asp:Label ID="StatusMessage" runat="server" ForeColor="Red" />
                         <div class="mb-3">
                             <label class="small mb-1" for="inputName">Name</label>
                             <asp:TextBox ID="inputName" runat="server" CssClass="form-control" />
+                            <asp:RequiredFieldValidator runat="server" ControlToValidate="inputName" ErrorMessage="Name is required" CssClass="text-danger" />
+
                         </div>
                         <div class="mb-3">
                             <label class="small mb-1" for="inputEmailAddress">Email address</label>
@@ -83,6 +89,8 @@
                         <div class="mb-3">
                             <label class="small mb-1" for="inputPhone">Phone number</label>
                             <asp:TextBox ID="inputPhone" runat="server" CssClass="form-control" TextMode="Phone" />
+                            <asp:RequiredFieldValidator runat="server" ControlToValidate="inputPhone" ErrorMessage="Phone number is required" CssClass="text-danger" />
+                            <asp:RegularExpressionValidator ID="RegularExpressionValidator3" runat="server" ControlToValidate="inputPhone" Display="Dynamic" ErrorMessage="Invalid phone number format(Eg.0102049999)" ForeColor="Red" ValidationExpression="^\d{10,11}$"></asp:RegularExpressionValidator>
                         </div>
 
                         <asp:Button ID="SaveChanges" runat="server" Text="Save changes" CssClass="btn btn-primary" OnClick="SaveChanges_Click" />
@@ -90,7 +98,5 @@
                 </div>
             </div>
         </div>
-    </div>
-</asp:Content>        </div>
     </div>
 </asp:Content>

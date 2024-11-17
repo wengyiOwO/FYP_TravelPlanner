@@ -22,6 +22,11 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
+
             postId = Request.QueryString["p"];
             if (!IsPostBack)
             {
