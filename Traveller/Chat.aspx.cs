@@ -9,7 +9,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Script.Serialization;
 using System.Web.Services;
-using FYP_TravelPlanner.Hubs;
+//using FYP_TravelPlanner.Hubs;
 
 
 namespace FYP_TravelPlanner.Traveller
@@ -204,9 +204,9 @@ namespace FYP_TravelPlanner.Traveller
                 }
 
                 // Notify clients via SignalR
-                var hubContext = Microsoft.AspNet.SignalR.GlobalHost.ConnectionManager.GetHubContext<Hubs.ChatHub>();
-                string timestamp = DateTime.Now.ToString("hh:mm tt");
-                hubContext.Clients.Group(selectedFriendId).ReceiveMessage(accountId, txtMessage.Text.Trim(), timestamp);
+                //var hubContext = Microsoft.AspNet.SignalR.GlobalHost.ConnectionManager.GetHubContext<Hubs.ChatHub>();
+                //string timestamp = DateTime.Now.ToString("hh:mm tt");
+                //hubContext.Clients.Group(selectedFriendId).ReceiveMessage(accountId, txtMessage.Text.Trim(), timestamp);
 
                 txtMessage.Text = "";
                 LoadChatMessages(); // Refresh UI

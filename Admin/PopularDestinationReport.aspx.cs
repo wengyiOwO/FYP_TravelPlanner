@@ -159,7 +159,7 @@ namespace FYP_TravelPlanner
             if (File.Exists(logoPath))
             {
                 Image logo = Image.GetInstance(logoPath);
-                logo.ScaleToFit(140f, 140f); // Scale the logo as needed
+                logo.ScaleToFit(140f, 140f); 
                 PdfPCell logoCell = new PdfPCell(logo);
                 logoCell.Border = PdfPCell.NO_BORDER;
                 logoCell.HorizontalAlignment = Element.ALIGN_CENTER; // Center-align the logo within the cell

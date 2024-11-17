@@ -243,14 +243,13 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-
             if (Session["NotifyEmailSent"] == null)
             {
-             //   SendNotifyEmail(email, planId);
+                SendNotifyEmail(email, planId);
                 Session["NotifyEmailSent"] = true;
             }
 
-          //  ScheduleItineraryEmails(planId, startDate);
+            ScheduleItineraryEmails(planId, startDate);
     
         }
 
@@ -395,10 +394,15 @@ namespace FYP_TravelPlanner.Traveller
             DateTime today = DateTime.Today;
 
             // Send Day 1 itinerary immediately if the start date is today
-            if (startDate == today)
+            if (startDate == today )
             {
-                SendDailyItineraryEmail(planId, 1);
+                if (Session[$"ItineraryEmail_Day1"] == null)
+                {
+                    SendDailyItineraryEmail(planId, 1);
+                    Session[$"ItineraryEmail_Day1"] = true;
+                }
             }
+
         }
 
         private bool SendDailyItineraryEmail(string planId, int dayNumber)
