@@ -29,7 +29,7 @@
         .search-location-container {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 50px;
             z-index: 1000;
             width: 250px;
             background-color: white;

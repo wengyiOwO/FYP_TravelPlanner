@@ -56,12 +56,12 @@ namespace FYP_TravelPlanner.Traveller
                         lblPostDate.Text = Convert.ToDateTime(reader["post_date"]).ToString("dd/MM/yyyy HH:mm:ss");
 
                         // Load the profile image
-                        string accountId = reader["account_id"].ToString();
-                        string imagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
+                        string authorId = reader["account_id"].ToString();
+                        string imagePath = Server.MapPath("~/Uploads/Profile/") + authorId + ".jpg";
 
                         if (System.IO.File.Exists(imagePath))
                         {
-                            imgProfile.ImageUrl = "~/Uploads/Profile/" + accountId + ".jpg";
+                            imgProfile.ImageUrl = "~/Uploads/Profile/" + authorId + ".jpg";
                         }
                         else
                         {
@@ -73,13 +73,11 @@ namespace FYP_TravelPlanner.Traveller
                         int numImages = Convert.ToInt32(reader["num_image"]);
                         if (fileType == "video")
                         {
-                            // Load video if file type is video
                             LoadPostVideo(postId);
                             carouselControls.Visible = false;
                         }
                         else if (numImages > 0)
                         {
-                            // Load images into carousel if there are images
                             LoadPostImages(postId, numImages);
                             carouselControls.Visible = numImages > 1;
                         }
@@ -87,6 +85,23 @@ namespace FYP_TravelPlanner.Traveller
                         {
                             carouselControls.Visible = false;
                         }
+
+                        // Show buttons only if logged-in user is the post author
+                        string sessionAccountId = Session["account_id"]?.ToString();
+                        if (sessionAccountId == authorId)
+                        {
+                            btnEdit.Visible = true;
+                            btnDelete.Visible = true;
+                        }
+                        else
+                        {
+                            btnEdit.Visible = false;
+                            btnDelete.Visible = false;
+                        }
+                    }
+                    else
+                    {
+                        Response.Write("Post not found.");
                     }
                     con.Close();
                 }

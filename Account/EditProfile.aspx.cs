@@ -52,7 +52,7 @@ namespace FYP_TravelPlanner
 
         protected void SaveChanges_Click(object sender, EventArgs e)
         {
-            string accountId = "AC0521";
+            string accountId = Session["account_id"] as string;
             string accountName = inputName.Text;
             string phone = inputPhone.Text;
 
@@ -73,13 +73,14 @@ namespace FYP_TravelPlanner
             StatusMessage.Text = "Your changes have been saved successfully!";
             StatusMessage.ForeColor = System.Drawing.Color.Green;
             StatusMessage.Visible = true;
+            LoadAccountDetails(accountId);
         }
 
         protected void UploadProfileImage_Click(object sender, EventArgs e)
         {
             if (ProfileImageUpload.HasFile)
             {
-                string accountId = "AC0521";
+                string accountId = Session["account_id"] as string;
                 string filePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
 
                 ProfileImageUpload.SaveAs(filePath);
@@ -87,6 +88,7 @@ namespace FYP_TravelPlanner
                 StatusMessage.Text = "Profile image uploaded successfully!";
                 StatusMessage.ForeColor = System.Drawing.Color.Green;
                 StatusMessage.Visible = true;
+                LoadAccountDetails(accountId);
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "refreshImage", "refreshProfileImage();", true);
             }
@@ -96,6 +98,7 @@ namespace FYP_TravelPlanner
                 StatusMessage.ForeColor = System.Drawing.Color.Red;
                 StatusMessage.Visible = true;
             }
+
         }
     }
 }
