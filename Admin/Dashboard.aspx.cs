@@ -139,6 +139,8 @@ namespace FYP_TravelPlanner
                     Area a ON tp.area_id = a.area_id
                 JOIN 
                     Location l ON l.area_id = a.area_id
+                JOIN
+                    Travel_Activity ta ON ta.location_id = l.location_id
                 GROUP BY 
                     l.location_id, l.place_name
                 ORDER BY 

@@ -38,7 +38,6 @@ namespace FYP_TravelPlanner.js.demo
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
             GetTopDestinationsJson(selectedYear);
-            // Register the updated data as a JavaScript function call to populateChart
             ClientScript.RegisterStartupScript(this.GetType(), "setDestinationData", $"var DestinationDataJson = {DestinationDataJson};", true);
         }
 
@@ -60,6 +59,8 @@ namespace FYP_TravelPlanner.js.demo
                     Area a ON tp.area_id = a.area_id
                 JOIN 
                     Location l ON l.area_id = a.area_id
+               JOIN
+                    Travel_Activity ta ON ta.location_id = l.location_id
                 WHERE 
                      YEAR(tp.plan_date) = @Year
                 GROUP BY 
@@ -90,7 +91,7 @@ namespace FYP_TravelPlanner.js.demo
             int barWidth = 60;
             int spacing = 35;
             int labelOffset = 15;
-            int maxLabelLength = 10; // Shorten max length to allow more lines
+            int maxLabelLength = 10;
             int labelPadding = 8;
 
             using (Bitmap bmp = new Bitmap(width, height))
@@ -155,7 +156,7 @@ namespace FYP_TravelPlanner.js.demo
             }
         }
 
-        private void GeneratePopularDestinationPDF(DataTable destinationData)
+        private void GeneratePopularDestinationPDF(DataTable destinationData,int year)
         {
             // Generate chart image bytes
             byte[] chartImageBytes = GenerateBarChartImage(destinationData);
@@ -188,22 +189,37 @@ namespace FYP_TravelPlanner.js.demo
             // Add the header table to the document
             pdfDoc.Add(headerTable);
             // Title
-            pdfDoc.Add(new Paragraph("Annual Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
-            pdfDoc.Add(new Paragraph(" ")); // Add space after title
+            string yearTitle = $"Annual Popular Destination Report for {year}";
+            Paragraph title = new Paragraph(yearTitle,
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD));
+            title.Alignment = Element.ALIGN_CENTER;
+            pdfDoc.Add(title);
 
-            // Add data table
-            PdfPTable pdfTable = new PdfPTable(2);
-            pdfTable.AddCell("Location");
-            pdfTable.AddCell("Visit Count");
+            // Add current date and time
+            Paragraph dateParagraph = new Paragraph("Date: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 11));
+            dateParagraph.Alignment = Element.ALIGN_RIGHT;
+            pdfDoc.Add(dateParagraph);
+            pdfDoc.Add(new Paragraph(" "));
 
+            Paragraph listTitle = new Paragraph("Top 8 Popular Destinations:",
+      new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD));
+            pdfDoc.Add(listTitle);
+
+            int counter = 1; // Counter for numbering
             foreach (DataRow row in destinationData.Rows)
             {
-                pdfTable.AddCell(row["location_name"].ToString());
-                pdfTable.AddCell(row["visit_count"].ToString());
-            }
+                string location = row["location_name"].ToString();
+                string visits = row["visit_count"].ToString();
+                string formattedEntry = $"{counter}. {location} - {visits} visits";
 
-            pdfDoc.Add(pdfTable);
-            pdfDoc.Add(new Paragraph(" ")); // Add space after table
+                Paragraph listItem = new Paragraph(formattedEntry,
+                    new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12));
+                pdfDoc.Add(listItem);
+
+                counter++; // Increment counter
+            }
+            pdfDoc.Add(new Paragraph(" "));
 
             // Add chart image
             if (chartImageBytes != null && chartImageBytes.Length > 0)
@@ -240,7 +256,7 @@ namespace FYP_TravelPlanner.js.demo
             }
 
             // Generate PDF report
-            GeneratePopularDestinationPDF(destinationData);
+            GeneratePopularDestinationPDF(destinationData,selectedYear);
             lblMessage.Text = "Annual Popular Destination Report has been generated successfully. <a href='/AnnualPopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
         }
     }

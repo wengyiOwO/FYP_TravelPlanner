@@ -54,6 +54,8 @@
             const labels = destinationData.map(d => d.location_name);
             const dataCounts = destinationData.map(d => d.visit_count);
 
+            const minValue = Math.min(...dataCounts);
+            const maxValue = Math.max(...dataCounts);
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -69,14 +71,18 @@
                 options: {
                     scales: {
                         x: {
-                            beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Popular Destinations'
                             }
                         },
                         y: {
-                            beginAtZero: true,
+                            beginAtZero: true, // Always start the axis from zero
+                            min: 0, // Force the y-axis to start from zero
+                            max: maxValue + 10, // Add some padding above the highest value
+                            ticks: {
+                                stepSize: 10 // Define step increments for better readability
+                            },
                             title: {
                                 display: true,
                                 text: 'Number of Visits'
@@ -85,11 +91,12 @@
                     },
                     plugins: {
                         legend: {
-                            display: false
+                            display: false // Disable the legend
                         }
                     }
                 }
             });
+
 
             const rankingList = document.getElementById("rankingList");
             const top8Destinations = destinationData.slice(0, 8); // Get top 8 destinations

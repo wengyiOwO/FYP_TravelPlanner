@@ -30,27 +30,33 @@
                             }
                         },
                         y: {
-                            beginAtZero: true,
+                            beginAtZero: false, 
+                            min: 0, 
+                            max: 100, 
+                            ticks: {
+                                beginAtZero: false
+                            },
                             title: {
                                 display: true,
-                                text: 'Number of Visits'
-                            }
-                        }
+                                text: 'Number of Visits',
+                            },
+                        },
                     },
                     plugins: {
                         legend: {
-                            display: false
-                        }
-                    }
-                }
+                            display: false, // Disable the legend
+                        },
+                    },
+                },
             });
+
 
             // Populate ranking list
             const topThree = data.slice(0, 3);
             const rankingList = document.getElementById("rankingList");
             rankingList.innerHTML = topThree.map((item, index) => `<li>${item.Name}</li>`).join('');
         }
-   </script>
+    </script>
     <script src="/js/overallPieChart.js"></script>
     <script type="text/javascript">
         var ratingData = <%= RatingDataJson %>;

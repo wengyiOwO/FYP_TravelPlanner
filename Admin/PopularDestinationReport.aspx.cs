@@ -45,6 +45,8 @@ namespace FYP_TravelPlanner
                     Area a ON tp.area_id = a.area_id
                 JOIN 
                     Location l ON l.area_id = a.area_id
+                JOIN
+                    Travel_Activity ta ON ta.location_id = l.location_id
                 GROUP BY 
                     l.place_name
                 ORDER BY 
@@ -159,7 +161,7 @@ namespace FYP_TravelPlanner
             if (File.Exists(logoPath))
             {
                 Image logo = Image.GetInstance(logoPath);
-                logo.ScaleToFit(140f, 140f); 
+                logo.ScaleToFit(140f, 140f);
                 PdfPCell logoCell = new PdfPCell(logo);
                 logoCell.Border = PdfPCell.NO_BORDER;
                 logoCell.HorizontalAlignment = Element.ALIGN_CENTER; // Center-align the logo within the cell
@@ -170,22 +172,35 @@ namespace FYP_TravelPlanner
             // Add the header table to the document
             pdfDoc.Add(headerTable);
             // Title
-            pdfDoc.Add(new Paragraph("Overall Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
-            pdfDoc.Add(new Paragraph(" ")); // Add space after title
+            Paragraph title = new Paragraph("Overall Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK));
+            title.Alignment = Element.ALIGN_CENTER;
+            pdfDoc.Add(title);
 
-            // Add data table
-            PdfPTable pdfTable = new PdfPTable(2);
-            pdfTable.AddCell("Location");
-            pdfTable.AddCell("Visit Count");
+            // Add current date and time
+            Paragraph dateParagraph = new Paragraph("Date: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 11));
+            dateParagraph.Alignment = Element.ALIGN_RIGHT;
+            pdfDoc.Add(dateParagraph);
+            pdfDoc.Add(new Paragraph(" ")); // Add space after table
 
+            Paragraph listTitle = new Paragraph("Top 8 Popular Destinations:",
+       new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD));
+            pdfDoc.Add(listTitle);
+
+            int counter = 1; // Counter for numbering
             foreach (DataRow row in destinationData.Rows)
             {
-                pdfTable.AddCell(row["location_name"].ToString());
-                pdfTable.AddCell(row["visit_count"].ToString());
-            }
+                string location = row["location_name"].ToString();
+                string visits = row["visit_count"].ToString();
+                string formattedEntry = $"{counter}. {location} - {visits} visits";
 
-            pdfDoc.Add(pdfTable);
-            pdfDoc.Add(new Paragraph(" ")); // Add space after table
+                Paragraph listItem = new Paragraph(formattedEntry,
+                    new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12));
+                pdfDoc.Add(listItem);
+
+                counter++; // Increment counter
+            }
+            pdfDoc.Add(new Paragraph(" ")); 
 
             // Add chart image
             if (chartImageBytes != null && chartImageBytes.Length > 0)

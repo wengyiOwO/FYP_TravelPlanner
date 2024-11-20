@@ -182,7 +182,7 @@ namespace FYP_TravelPlanner
             pdfDoc.Add(headerTable);
 
             // Center-align title text
-            Paragraph title = new Paragraph("Overall User Ratings Report in 2024",
+            Paragraph title = new Paragraph("Overall User Ratings Report",
                 new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD));
             title.Alignment = Element.ALIGN_CENTER;
             pdfDoc.Add(title);
