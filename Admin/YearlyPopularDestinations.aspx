@@ -43,20 +43,31 @@
             color: #4e73df;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
     <script type="text/javascript">
         var destinationData = <%= DestinationDataJson %>;
         console.log("Destination Data:", destinationData);
+
+        var chart = null;
         function generateBarChart() {
             const ctx = document.getElementById("myBarChart").getContext("2d");
 
             const labels = destinationData.map(d => d.location_name);
             const dataCounts = destinationData.map(d => d.visit_count);
 
+            // Calculate the min and max values
             const minValue = Math.min(...dataCounts);
             const maxValue = Math.max(...dataCounts);
-            new Chart(ctx, {
+            console.log("Min Value:", minValue, "Max Value:", maxValue);
+
+            // Destroy previous chart instance if exists
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Create a new chart
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -69,19 +80,27 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
                             title: {
                                 display: true,
                                 text: 'Popular Destinations'
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         },
                         y: {
-                            beginAtZero: true, // Always start the axis from zero
-                            min: 0, // Force the y-axis to start from zero
-                            max: maxValue + 10, // Add some padding above the highest value
+                            beginAtZero: true,
+                            min: 0, // Force start from zero
+                            max: maxValue + 10, // Add padding to maximum
                             ticks: {
-                                stepSize: 10 // Define step increments for better readability
+                                stepSize: Math.ceil((maxValue - minValue) / 5),
+                                precision: 0 // Ensure whole numbers
                             },
                             title: {
                                 display: true,
@@ -91,25 +110,25 @@
                     },
                     plugins: {
                         legend: {
-                            display: false // Disable the legend
+                            display: false
                         }
                     }
                 }
             });
 
-
+            // Populate the ranking list
             const rankingList = document.getElementById("rankingList");
-            const top8Destinations = destinationData.slice(0, 8); // Get top 8 destinations
+            const top8Destinations = destinationData.slice(0, 8);
 
             rankingList.innerHTML = top8Destinations
                 .map((d, index) => `<li>${d.location_name} - ${d.visit_count} visits</li>`)
                 .join('');
         }
 
-
         document.addEventListener("DOMContentLoaded", function () {
             generateBarChart();
         });
+
 
     </script>
 </asp:Content>
