@@ -393,7 +393,6 @@ namespace FYP_TravelPlanner.Traveller
         {
             DateTime today = DateTime.Today;
 
-            // Send Day 1 itinerary immediately if the start date is today
             if (startDate.AddDays(-1) == today )
             {
                 if (Session["ItineraryEmail_1DayBefore"] == null)

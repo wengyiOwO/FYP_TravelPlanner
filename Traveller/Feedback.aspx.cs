@@ -22,7 +22,17 @@ namespace FYP_TravelPlanner.Traveller
                 DisplayOverallRating();
             }
         }
-
+        protected void Page_PreInit(object sender, EventArgs e)
+        {
+            if (Session["account_id"] != null)
+            {
+                MasterPageFile = "~/TakeMyTrip.Master";
+            }
+            else
+            {
+                MasterPageFile = "~/TakeMyTrip_Anonymous.Master";
+            }
+        }
         protected void ratingFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             BindFeedbackData();

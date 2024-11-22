@@ -23,7 +23,8 @@ namespace FYP_TravelPlanner
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-
+            Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            Response.Cache.SetNoStore();
         }
 
         protected void Application_AuthenticateRequest(object sender, EventArgs e)
