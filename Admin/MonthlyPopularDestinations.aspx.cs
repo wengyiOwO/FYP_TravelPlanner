@@ -54,21 +54,23 @@ namespace FYP_TravelPlanner.js.demo
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             string query = @"
                 SELECT TOP 8
-                    l.location_id,
-                    l.place_name AS location_name,
-                    COUNT(tp.plan_id) AS visit_count
-                FROM 
-                    Travel_Plan tp
-                JOIN 
-                    Area a ON tp.area_id = a.area_id
-                JOIN 
-                    Location l ON l.area_id = a.area_id
-                WHERE 
-                    MONTH(tp.plan_date) = @Month AND YEAR(tp.plan_date) = @Year
-                GROUP BY 
-                    l.location_id, l.place_name
-                ORDER BY 
-                    visit_count DESC;";
+    l.location_id,
+    l.place_name AS location_name,
+    COUNT(ta.location_id) AS visit_count
+FROM 
+    Travel_Activity ta
+INNER JOIN 
+    Daily_Itinerary di ON ta.itinerary_id = di.itinerary_id
+INNER JOIN 
+    Travel_Plan tp ON di.plan_id = tp.plan_id
+INNER JOIN 
+    Location l ON ta.location_id = l.location_id
+WHERE 
+    MONTH(tp.plan_date) = @Month and YEAR(tp.plan_date) = @Year 
+GROUP BY 
+    l.location_id, l.place_name, MONTH(tp.plan_date), YEAR(tp.plan_date)
+ORDER BY 
+    visit_count DESC;";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -160,7 +162,7 @@ namespace FYP_TravelPlanner.js.demo
         }
 
 
-        private void GeneratePopularDestinationPDF(DataTable destinationData)
+        private void GeneratePopularDestinationPDF(DataTable destinationData,int month, int year)
         {
             // Generate chart image bytes
             byte[] chartImageBytes = GenerateBarChartImage(destinationData);
@@ -193,22 +195,37 @@ namespace FYP_TravelPlanner.js.demo
             // Add the header table to the document
             pdfDoc.Add(headerTable);
             // Title
-            pdfDoc.Add(new Paragraph("Monthly Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK)));
+            string monthYearTitle = $"Monthly Popular Destination Report for {new DateTime(year, month, 1):MMMM yyyy}";
+            Paragraph title = new Paragraph(monthYearTitle,
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD));
+            title.Alignment = Element.ALIGN_CENTER;
+            pdfDoc.Add(title);
+
+            // Add current date and time
+            Paragraph dateParagraph = new Paragraph("Date: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 11));
+            dateParagraph.Alignment = Element.ALIGN_RIGHT;
+            pdfDoc.Add(dateParagraph);
             pdfDoc.Add(new Paragraph(" ")); // Add space after title
 
-            // Add data table
-            PdfPTable pdfTable = new PdfPTable(2);
-            pdfTable.AddCell("Location");
-            pdfTable.AddCell("Visit Count");
+            Paragraph listTitle = new Paragraph("Top 8 Popular Destinations:",
+       new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD));
+            pdfDoc.Add(listTitle);
 
+            int counter = 1; // Counter for numbering
             foreach (DataRow row in destinationData.Rows)
             {
-                pdfTable.AddCell(row["location_name"].ToString());
-                pdfTable.AddCell(row["visit_count"].ToString());
-            }
+                string location = row["location_name"].ToString();
+                string visits = row["visit_count"].ToString();
+                string formattedEntry = $"{counter}. {location} - {visits} visits";
 
-            pdfDoc.Add(pdfTable);
-            pdfDoc.Add(new Paragraph(" ")); // Add space after table
+                Paragraph listItem = new Paragraph(formattedEntry,
+                    new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12));
+                pdfDoc.Add(listItem);
+
+                counter++; // Increment counter
+            }
+            pdfDoc.Add(new Paragraph(" "));
 
             // Add chart image
             if (chartImageBytes != null && chartImageBytes.Length > 0)
@@ -246,7 +263,7 @@ namespace FYP_TravelPlanner.js.demo
             }
 
             // Generate PDF report
-            GeneratePopularDestinationPDF(destinationData);
+            GeneratePopularDestinationPDF(destinationData,selectedMonth,selectedYear);
             lblMessage.Text = "Monthly Popular Destination Report has been generated successfully. <a href='/MonthlyPopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
         }
     }

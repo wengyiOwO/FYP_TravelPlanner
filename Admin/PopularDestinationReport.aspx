@@ -47,66 +47,91 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
- <script type="text/javascript">
-     var destinationData = <%= DestinationDataJson %>;
-     console.log("Destination Data:", destinationData); 
-     function generateBarChart() {
-         const ctx = document.getElementById("barChart").getContext("2d");
+    <script type="text/javascript">
+        var destinationData = <%= DestinationDataJson %>;
+        console.log("Destination Data:", destinationData);
+        var chart = null; // Declare chart variable globally to manage instances
 
-         const labels = destinationData.map(d => d.location_name); 
-         const dataCounts = destinationData.map(d => d.visit_count); 
+        function generateBarChart() {
+            const ctx = document.getElementById("myBarChart").getContext("2d");
 
-         new Chart(ctx, {
-             type: 'bar',
-             data: {
-                 labels: labels,
-                 datasets: [{
-                     label: 'Number of Visits',
-                     data: dataCounts,
-                     backgroundColor: 'rgba(78, 115, 223, 0.5)',
-                     borderColor: 'rgba(78, 115, 223, 1)',
-                     borderWidth: 1
-                 }]
-             },
-             options: {
-                 scales: {
-                     x: {
-                         beginAtZero: true,
-                         title: {
-                             display: true,
-                             text: 'Popular Destinations'
-                         }
-                     },
-                     y: {
-                         beginAtZero: true,
-                         title: {
-                             display: true,
-                             text: 'Number of Visits'
-                         }
-                     }
-                 },
-                 plugins: {
-                     legend: {
-                         display: false
-                     }
-                 }
-             }
-         });
+            const labels = destinationData.map(d => d.location_name);
+            const dataCounts = destinationData.map(d => d.visit_count);
 
-         const rankingList = document.getElementById("rankingList");
-         const top8Destinations = destinationData.slice(0, 8); // Get top 8 destinations
+            // Calculate the min and max values
+            const minValue = Math.min(...dataCounts);
+            const maxValue = Math.max(...dataCounts);
+            console.log("Min Value:", minValue, "Max Value:", maxValue);
 
-         rankingList.innerHTML = top8Destinations
-             .map((d, index) => `<li>${d.location_name} - ${d.visit_count} visits</li>`)
-             .join('');
-     }
+            // Destroy previous chart instance if exists
+            if (chart) {
+                chart.destroy();
+            }
 
-  
-     document.addEventListener("DOMContentLoaded", function () {
-         generateBarChart();
-     });
+            // Create a new chart
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: dataCounts,
+                        backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Popular Destinations'
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            min: 0, // Force start from zero
+                            max: maxValue + 10, // Add padding to maximum
+                            ticks: {
+                                stepSize: Math.ceil((maxValue - minValue) / 5),
+                                precision: 0 // Ensure whole numbers
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
 
- </script>
+            // Populate the ranking list
+            const rankingList = document.getElementById("rankingList");
+            const top8Destinations = destinationData.slice(0, 8);
+
+            rankingList.innerHTML = top8Destinations
+                .map((d, index) => `<li>${d.location_name} - ${d.visit_count} visits</li>`)
+                .join('');
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            generateBarChart();
+        });
+
+    </script>
 
 
 </asp:Content>
@@ -121,10 +146,9 @@
                 <td class="auto-style2">
 
 
-    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
-></asp:Button>
-             
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" Style="margin-right: 20px; width: 150px;" OnClick="btnGenerate_Click"></asp:Button>
+
+                    <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
                 </td>
             </tr>
@@ -145,7 +169,7 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-area" style="height: 500px;">
-                            <canvas id="barChart" style="max-height: 100%;"></canvas>
+                            <canvas id="myBarChart"></canvas>
                         </div>
                     </div>
                 </div>

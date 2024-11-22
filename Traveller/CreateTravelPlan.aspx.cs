@@ -24,7 +24,17 @@ namespace FYP_TravelPlanner.Traveller
                 PopulateAreaDropdown();
             }
         }
-
+        protected void Page_PreInit(object sender, EventArgs e)
+        {
+            if (Session["account_id"] != null) 
+            {
+                MasterPageFile = "~/TakeMyTrip.Master"; 
+            }
+            else
+            {
+                MasterPageFile = "~/TakeMyTrip_Anonymous.Master"; 
+            }
+        }
         private void PopulateAreaDropdown()
         {
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

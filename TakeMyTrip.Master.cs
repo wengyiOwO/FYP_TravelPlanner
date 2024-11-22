@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
@@ -14,12 +16,25 @@ namespace FYP_TravelPlanner
         {
             if (!IsPostBack)
             {
-                if (Session["account_name"] != null && userDropdownName != null)
+                if (Session["account_name"] != null)
                 {
-                    userDropdownName.Text = Session["account_name"].ToString();
+                    if (userDropdownName != null)
+                    {
+                        userDropdownName.Text = Session["account_name"].ToString();
+                    }
                 }
+               
+                string profileId;
+                if (!string.IsNullOrEmpty(Request.QueryString["u"]))
+                {
+                    profileId = Request.QueryString["u"];
+                }
+                else
+                {
+                    profileId = Convert.ToString(Session["account_id"]);
+                }
+                LoadProfile(profileId);
 
-             
             }
 
         }
@@ -37,6 +52,39 @@ namespace FYP_TravelPlanner
             };
             HttpContext.Current.Response.Cookies.Add(authCookie);
 
+        }
+
+        private void LoadProfile(string accountId)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT account_name FROM Account WHERE account_id = @AccountId";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@AccountId", accountId);
+                    con.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        // Set account name
+                        Session["account_name"] = reader["account_name"].ToString();
+
+                        // Load profile image, use unknown.jpg if image not found
+                        string imagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
+                        if (System.IO.File.Exists(imagePath))
+                        {
+                            imgProfile.ImageUrl = "~/Uploads/Profile/" + accountId + ".jpg";
+                        }
+                        else
+                        {
+                            imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+                        }
+                    }
+                    con.Close();
+                }
+            }
         }
     }
 }

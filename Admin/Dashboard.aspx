@@ -3,12 +3,26 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript">
+
+        var chart = null;
         function populateChart(data) {
+            const ctx = document.getElementById("myBarChart").getContext("2d");
+
             const labels = data.map(item => item.Name);
             const visits = data.map(item => item.Visits);
 
-            var ctx = document.getElementById('myBarChart').getContext('2d');
-            new Chart(ctx, {
+            // Calculate the min and max values
+            const minValue = Math.min(...visits);
+            const maxValue = Math.max(...visits);
+            console.log("Min Value:", minValue, "Max Value:", maxValue);
+
+            // Destroy previous chart instance if exists
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Create a new chart
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -21,16 +35,28 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
-                            beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Popular Destinations'
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         },
                         y: {
                             beginAtZero: true,
+                            min: 0, // Force start from zero
+                            max: maxValue + 10, // Add padding to maximum
+                            ticks: {
+                                stepSize: Math.ceil((maxValue - minValue) / 5),
+                                precision: 0 // Ensure whole numbers
+                            },
                             title: {
                                 display: true,
                                 text: 'Number of Visits'
@@ -45,12 +71,13 @@
                 }
             });
 
+
             // Populate ranking list
             const topThree = data.slice(0, 3);
             const rankingList = document.getElementById("rankingList");
             rankingList.innerHTML = topThree.map((item, index) => `<li>${item.Name}</li>`).join('');
         }
-   </script>
+    </script>
     <script src="/js/overallPieChart.js"></script>
     <script type="text/javascript">
         var ratingData = <%= RatingDataJson %>;
