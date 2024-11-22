@@ -54,23 +54,23 @@ namespace FYP_TravelPlanner.js.demo
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             string query = @"
                 SELECT TOP 8
-                    l.location_id,
-                    l.place_name AS location_name,
-                    COUNT(tp.plan_id) AS visit_count
-                FROM 
-                    Travel_Plan tp
-                JOIN 
-                    Area a ON tp.area_id = a.area_id
-                JOIN 
-                    Location l ON l.area_id = a.area_id
-               JOIN
-                    Travel_Activity ta ON ta.location_id = l.location_id
-                WHERE 
-                    MONTH(tp.plan_date) = @Month AND YEAR(tp.plan_date) = @Year
-                GROUP BY 
-                    l.location_id, l.place_name
-                ORDER BY 
-                    visit_count DESC;";
+    l.location_id,
+    l.place_name AS location_name,
+    COUNT(ta.location_id) AS visit_count
+FROM 
+    Travel_Activity ta
+INNER JOIN 
+    Daily_Itinerary di ON ta.itinerary_id = di.itinerary_id
+INNER JOIN 
+    Travel_Plan tp ON di.plan_id = tp.plan_id
+INNER JOIN 
+    Location l ON ta.location_id = l.location_id
+WHERE 
+    MONTH(tp.plan_date) = @Month and YEAR(tp.plan_date) = @Year 
+GROUP BY 
+    l.location_id, l.place_name, MONTH(tp.plan_date), YEAR(tp.plan_date)
+ORDER BY 
+    visit_count DESC;";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
