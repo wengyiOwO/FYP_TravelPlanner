@@ -70,8 +70,6 @@
         let currentDay = 1;
 
         function initMap() {
-
-            const allLocations = JSON.parse('<%= AllLocationsJson %>');
             map = L.map('map').setView([locations[0].lat, locations[0].lng], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -79,45 +77,57 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
+            // Define the routing control
             control = L.Routing.control({
                 waypoints: locations.map(loc => L.latLng(loc.lat, loc.lng)),
-                createMarker: function () { return null; },
-                routeWhileDragging: false,
-                show: false,
+                createMarker: function () { return null; }, 
+                routeWhileDragging: true,
                 addWaypoints: false,
-                draggableWaypoints: false,
-                routeLineOptions: {
-                    styles: [{ color: '#ff0000', opacity: 0.8, weight: 5 }]
-                }
+                draggableWaypoints: false
             }).addTo(map);
 
-            showDay(1);
+            control.on('routesfound', function (e) {
+                console.log('Routes found:', e.routes); 
+                e.routes.forEach(function (route) {
+                    if (route._line) {
+                        route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
+                    }
+                });
+            });
+
+            control.getPlan().on('routefound', function (e) {
+                console.log('Route found on plan:', e.routes); 
+                e.routes.forEach(function (route) {
+                    if (route._line) {
+                        route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
+                    }
+                });
+            });
+
+            showDay(1); 
         }
 
         function findNearbyLocation(lat, lng, event) {
-            event.preventDefault(); // Prevents the default postback behavior
+            event.preventDefault(); 
 
             var allLocations = JSON.parse('<%= AllLocationsJson %>');
-            var selectedLocations = JSON.parse('<%= LocationsJson %>');
+            var selectedLocations = locations;
 
-            // Get all locations within 2 km that are not already in the travel plan
             var nearbyLocations = allLocations.filter(function (location) {
                 var distance = calculateDistance(lat, lng, location.lat, location.lng);
 
-                // Check if location is nearby and not in the selected locations list
+               
                 var isSelected = selectedLocations.some(
                     selected => selected.lat === location.lat && selected.lng === location.lng
                 );
 
-                return distance <= 2 && !isSelected; // Exclude locations already in travel plan
+                return distance <= 4 && !isSelected; 
             });
 
-            // Display the nearby locations list
             displayNearbyLocationsList(nearbyLocations);
         }
-        // Calculate the distance between two lat/lng points using Haversine formula
         function calculateDistance(lat1, lng1, lat2, lng2) {
-            var R = 6371; // Radius of the Earth in km
+            var R = 6371; 
             var dLat = degreesToRadians(lat2 - lat1);
             var dLng = degreesToRadians(lng2 - lng1);
             var a =
@@ -125,19 +135,17 @@
                 Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            var distance = R * c; // Distance in km
+            var distance = R * c; 
             return distance;
         }
 
-        // Convert degrees to radians
         function degreesToRadians(degrees) {
             return degrees * Math.PI / 180;
         }
 
-        // Display the nearby locations on the map
         function displayNearbyLocationsList(locations) {
             var list = document.getElementById('nearbyLocationList');
-            list.innerHTML = ''; // Clear previous entries
+            list.innerHTML = ''; 
 
             if (locations.length === 0) {
                 list.innerHTML = '<li class="list-group-item">No nearby locations found</li>';
@@ -153,7 +161,6 @@
         }
 
         function addLocationToPlan(lat, lng, name) {
-            // Find the location object in AllLocationsJson to get its id
             const locationObj = JSON.parse('<%= AllLocationsJson %>').find(loc => loc.lat === lat && loc.lng === lng);
             if (!locationObj) {
                 alert("Error: Location not found.");
@@ -162,49 +169,60 @@
 
             const id = locationObj.id;
 
-            // Add the new location to the markers array for tracking on the map
-            var icon = L.divIcon({ html: `<div class="custom-div-icon">${markers.length + 1}</div>`, className: 'custom-div-icon' });
-            var newMarker = L.marker([lat, lng], { icon: icon }).addTo(map);
-            markers.push(newMarker);
-
-            // Add the new location to the locations array for the current day, including the id
             locations.push({ id: id, lat: lat, lng: lng, name: name, day: currentDay });
 
-            // Sort the locations array for the current day by latitude
             locations.sort((a, b) => a.lat - b.lat);
 
-            // Update the table to reflect the sorted locations
-            const tableBody = document.getElementById('locationTable');
-            tableBody.innerHTML = '';  // Clear existing rows
+            updateTable(currentDay);
 
-            // Add the sorted locations back to the table
-            locations.filter(loc => loc.day === currentDay).forEach((loc, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${index + 1}</td><td>${loc.name}</td>
-                         <td style="text-align: center;"><button class="btn btn-delete" onclick="deleteLocation(${loc.lat}, ${loc.lng}, ${loc.day}, this)">&times;</button></td>`;
-                tableBody.appendChild(row);
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = []; 
+
+            locations.filter(loc => loc.day === currentDay).forEach((location, index) => {
+                var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
+                var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
+                markers.push(marker);
+                marker.bindPopup(`<b>${location.name}</b><br><button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
             });
 
+            control.setWaypoints(locations.filter(loc => loc.day === currentDay).map(loc => L.latLng(loc.lat, loc.lng)));
 
-            // Update the route on the map to include the new location
-            updateRoute();
-
-            // Clear the nearby locations list
             document.getElementById('nearbyLocationList').innerHTML = '';
         }
 
-        function showDay(day) {
-            currentDay = day; // Update the current day
 
-            // Filter locations for the specified day from the updated locations array
+
+        function deleteLocation(lat, lng, day, button) {
+            locations = locations.filter(location => !(location.lat === lat && location.lng === lng && location.day === day));
+
+            // Remove the from the map
+            markers = markers.filter(marker => {
+                if (marker.getLatLng().lat === lat && marker.getLatLng().lng === lng) {
+                    map.removeLayer(marker);
+                    return false; // Remove this marker from the array
+                }
+                return true;
+            });
+
+            // Remove the row from the table
+            var row = button.closest('tr');
+            row.parentNode.removeChild(row);
+
+            updateMarkerNumbers();
+            updateTable(day);
+
+            updateRoute();
+        }
+
+
+        function showDay(day) {
+            currentDay = day;
             const dayLocations = locations.filter(loc => loc.day === day);
 
-            // Clear existing markers and update map route
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
             control.setWaypoints([]);
 
-            // Add markers and display in table
             dayLocations.forEach((location, index) => {
                 var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
                 var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
@@ -212,25 +230,71 @@
                 marker.bindPopup(`<b>${location.name}</b><br><button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
             });
 
-            // Set waypoints for the routing control
             control.setWaypoints(dayLocations.map(loc => L.latLng(loc.lat, loc.lng)));
-
-            // Update the table to display the day's locations
             updateTable(day);
         }
 
         function updateTable(day) {
             const tableBody = document.getElementById('locationTable');
-            tableBody.innerHTML = ''; // Clear the table
+            tableBody.innerHTML = ''; 
 
             const dayLocations = locations.filter(loc => loc.day === day);
+            let totalDistance = 0;
 
             dayLocations.forEach((location, index) => {
-                var row = document.createElement('tr');
-                row.innerHTML = `<td>${index + 1}</td><td>${location.name}</td>
-                         <td style="text-align: center;"><button class="btn btn-delete" onclick="deleteLocation(${location.lat}, ${location.lng}, ${day}, this)">&times;</button></td>`;
+                const distance = index > 0 ? calculateDistance(dayLocations[index - 1].lat, dayLocations[index - 1].lng, location.lat, location.lng) : 0;
+                totalDistance += distance;
+
+                // Convert distance to time in minutes
+                const timeInMinutes = totalDistance * 60; 
+
+                let timeDisplay = '';
+                if (timeInMinutes >= 60) {
+                    // Convert to hours and minutes
+                    const hours = Math.floor(timeInMinutes / 60);
+                    const minutes = Math.round(timeInMinutes % 60);
+                    timeDisplay = `${hours} h${hours > 1 ? 's' : ''} ${minutes} min`;
+                } else {
+                    // If time is less than 60 minutes, display only minutes
+                    timeDisplay = `${Math.round(timeInMinutes)} min`;
+                }
+
+                let row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${location.name}</td>
+            <td>${distance.toFixed(2)} km</td>
+            <td>${timeDisplay}</td> <!-- Display time in formatted hours and minutes -->
+            <td style="text-align: center;">
+                <button class="btn btn-delete" onclick="deleteLocation(${location.lat}, ${location.lng}, ${day}, this)">&times;</button>
+            </td>
+        `;
                 tableBody.appendChild(row);
             });
+        }
+
+
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            var R = 6371; // Earth's radius in km
+            var dLat = degreesToRadians(lat2 - lat1);
+            var dLng = degreesToRadians(lng2 - lng1);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        }
+
+        function degreesToRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        function formatTime(hours) {
+            const totalMinutes = Math.floor(hours * 60);
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return `${h}:${m.toString().padStart(2, '0')}`;
         }
 
         function focusLocation(lat, lng) {
@@ -238,42 +302,18 @@
             map.setView(location, 15);
             markers.find(marker => marker.getLatLng().equals(location)).openPopup();
         }
-
-        function deleteLocation(lat, lng, day, button) {
-            // Remove the marker from the map and the markers array
-            const markerIndex = markers.findIndex(marker => marker.getLatLng().equals([lat, lng]));
-            if (markerIndex > -1) {
-                map.removeLayer(markers[markerIndex]);
-                markers.splice(markerIndex, 1);
-            }
-
-            // Remove the location from the locations array
-            const locationIndex = locations.findIndex(loc => loc.lat === lat && loc.lng === lng && loc.day === day);
-            if (locationIndex > -1) {
-                locations.splice(locationIndex, 1);
-            }
-
-            // Remove the row from the table
-            var row = button.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-
-            // Update the route and markers on the map
-            updateRoute();
-            updateMarkerNumbers(); // Reorder marker numbers after deletion
-
-            // Refresh the table to reflect the updated list for the current day
-            updateTable(day);
-        }
-
         function updateRoute() {
-            // Set waypoints based on the updated markers array
+            // Set the waypoints for the routing control
             control.setWaypoints(markers.map(marker => marker.getLatLng()));
+
+            // Update the route line color to blue
+            control.getPlan().getRoute(0).setStyle({ color: 'blue' });
         }
 
         function updateMarkerNumbers() {
             markers.forEach((marker, i) => {
                 var newIcon = L.divIcon({
-                    html: '<div class="custom-div-icon">' + (i + 1) + '</div>',
+                    html: `<div class="custom-div-icon">${i + 1}</div>`,
                     className: 'custom-div-icon'
                 });
                 marker.setIcon(newIcon);
@@ -308,28 +348,30 @@
                 }
             });
         }
-
         function generatePDF() {
             const { jsPDF } = window.jspdf; // Get the jsPDF constructor
             const doc = new jsPDF();
 
-            // Add header to the first page
-            const header = 'Take My Trip';
-            doc.setFontSize(20);
-            doc.text(header, 20, 10); // Header at the top left
+            const headerImage = '../img/logo.png';
+            const imageWidth = 80; 
+            const imageHeight = 40; 
+            const imageX = (doc.internal.pageSize.width - imageWidth) / 2;
+            const imageY = 10;
+
+            doc.addImage(headerImage, 'PNG', imageX, imageY, imageWidth, imageHeight);
 
             // Footer text
             const footer = 'Thank you for using the Take My Trip\'s trip planning system';
-            const footerY = 280; // Position for the footer (near bottom of the page)
+            const footerY = 280; 
 
-            // Title for the document
+            // Title
             doc.setFontSize(16);
-            doc.text('Travel Plan', 20, 20);
+            doc.text('Travel Plan', 20, imageY + imageHeight + 10);  
 
-            let y = 30; // Starting y-position for the content
+            let y = imageY + imageHeight + 20; 
 
             // Iterate through each day of the itinerary
-            const uniqueDays = Array.from(new Set(locations.map(loc => loc.day))); // Get all unique days
+            const uniqueDays = Array.from(new Set(locations.map(loc => loc.day)));
 
             uniqueDays.forEach(day => {
                 // Add a header for the day
@@ -341,38 +383,54 @@
                 doc.setFontSize(12);
                 doc.text('No.', 20, y);
                 doc.text('Location', 40, y);
+                doc.text('Distance', 100, y); 
+                doc.text('Time', 140, y);    
                 y += 10;
 
                 // Add the locations for the specific day
                 const dayLocations = locations.filter(loc => loc.day === day);
 
                 dayLocations.forEach((location, index) => {
-                    // Display each row
+                    const distance = index > 0 ? calculateDistance(dayLocations[index - 1].lat, dayLocations[index - 1].lng, location.lat, location.lng) : 0;
+                    const timeInMinutes = distance * 60;
+
+                    let timeDisplay = '';
+                    if (timeInMinutes >= 60) {
+                        const hours = Math.floor(timeInMinutes / 60);
+                        const minutes = Math.round(timeInMinutes % 60);
+                        timeDisplay = `${hours} h${hours > 1 ? 's' : ''} ${minutes} min`;
+                    } else {
+                        timeDisplay = `${Math.round(timeInMinutes)} min`;
+                    }
+
                     doc.text(`${index + 1}`, 20, y);
                     doc.text(location.name, 40, y);
+                    doc.text(distance.toFixed(2) + ' km', 100, y);  
+                    doc.text(timeDisplay, 140, y);                  
                     y += 10;
 
-                    // Add a page if content goes beyond the page limit
-                    if (y > 270) { // If y goes beyond the page limit, add a new page
+                    if (y > 270) { 
                         doc.addPage();
-                        doc.setFontSize(20);
-                        doc.text(header, 20, 10); // Re-add header
-                        y = 30;
+                        doc.setFontSize(16);
+                        doc.text('Travel Plan', 20, 20);
+                        doc.addImage(headerImage, 'PNG', imageX, imageY, imageWidth, imageHeight);
+                        y = imageY + imageHeight + 10; 
                     }
                 });
 
-                // Add a line separator between days
-                doc.line(20, y, 190, y); // Draw a line
-                y += 10; // Move down after the line
+                doc.line(20, y, 190, y); 
+                y += 10;
             });
 
             // Add footer
             doc.setFontSize(10);
-            doc.text(footer, 20, footerY); // Footer near the bottom of the page
+            doc.text(footer, 20, footerY); 
 
             // Open the PDF in a new tab
             doc.output('dataurlnewwindow');
         }
+
+
 
         window.addEventListener("load", initMap);
     </script>
@@ -411,6 +469,8 @@
                                 <tr>
                                     <th>No.</th>
                                     <th>Location</th>
+                                    <th>Distance</th>
+                                    <th>Time</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -426,7 +486,7 @@
                             <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClick="btnSave_Click" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" />
                             <asp:Button ID="btnPDF" runat="server" Text="Generate PDF" CssClass="btn btn-sm btn-primary shadow-sm" OnClientClick="generatePDF(); return false;" />
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
-
+                                <asp:HiddenField ID="hiddenPlanId" runat="server" />
                         </div>
                     </div>
                 </div>

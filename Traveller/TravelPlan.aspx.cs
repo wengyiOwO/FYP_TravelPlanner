@@ -37,7 +37,7 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     // Load the travel plan details from the database
                     LoadTravelPlanData(planId);
-                   
+
 
                 }
                 else if (Session["SelectedLocations"] != null)
@@ -142,6 +142,22 @@ namespace FYP_TravelPlanner.Traveller
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize(locations);
         }
+        private bool TravelPlanExists(string areaId, DateTime planDate)
+        {
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                string query = @"SELECT COUNT(*) FROM Travel_Plan WHERE area_id = @area_id AND plan_date = @plan_date";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@area_id", areaId);
+                    cmd.Parameters.AddWithValue("@plan_date", planDate);
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+        }
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
@@ -155,9 +171,31 @@ namespace FYP_TravelPlanner.Traveller
                 return;
             }
 
+            if (ViewState["IsTravelPlanSaved"] != null && (bool)ViewState["IsTravelPlanSaved"])
+            {
+                lblMessage.Text = "Travel plan has already been saved.";
+                return;
+            }
+            // 2. Retrieve session values for Travel_Plan details
+            
+            string accountId = Session["account_id"].ToString();
+            string areaId = Session["AreaID"].ToString();
+            DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
+            int duration = Convert.ToInt32(Session["Duration"]);
+            int budget = Convert.ToInt32(Session["Budget"]);
+
+            if (TravelPlanExists(areaId, startDate))
+            {
+                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+                return;
+            }
+           
+            // Mark the travel plan as saved for this session
+            ViewState["IsTravelPlanSaved"] = true;
 
             // 1. Generate a new unique plan_id
             string planId = GeneratePlanId();
+
 
             string email;
 
@@ -169,13 +207,6 @@ namespace FYP_TravelPlanner.Traveller
             {
                 email = "takemytrip2024@gmail.com";
             }
-            // 2. Retrieve session values for Travel_Plan details
-
-            string accountId = Session["account_id"].ToString();
-            string areaId = Session["AreaID"].ToString();
-            DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
-            int duration = Convert.ToInt32(Session["Duration"]);
-            int budget = Convert.ToInt32(Session["Budget"]);
 
             // 3. Insert the new travel plan
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -250,7 +281,7 @@ namespace FYP_TravelPlanner.Traveller
             }
 
             ScheduleItineraryEmails(planId, startDate);
-    
+
         }
 
         private bool SendNotifyEmail(string toEmail, string planId)
@@ -393,13 +424,12 @@ namespace FYP_TravelPlanner.Traveller
         {
             DateTime today = DateTime.Today;
 
-            // Send Day 1 itinerary immediately if the start date is today
-            if (startDate.AddDays(-1) == today )
+            if (startDate.AddDays(-1) == today)
             {
                 if (Session["ItineraryEmail_1DayBefore"] == null)
                 {
                     SendDailyItineraryEmail(planId, 1);
-                    Session["ItineraryEmail_1DayBefore"] = true;  
+                    Session["ItineraryEmail_1DayBefore"] = true;
                 }
             }
 

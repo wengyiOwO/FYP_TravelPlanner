@@ -38,7 +38,7 @@ namespace FYP_TravelPlanner.Traveller
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = @"SELECT P.post_title, P.post_content, P.post_date, P.file_type, P.num_image, A.account_id, A.account_name 
+                string query = @"SELECT P.post_title, P.post_content, P.post_date, P.file_type, P.num_image, A.account_id, A.account_name, A.profile_image 
                          FROM Posts P
                          INNER JOIN Account A ON P.account_id = A.account_id
                          WHERE P.post_id = @PostID";
@@ -57,11 +57,11 @@ namespace FYP_TravelPlanner.Traveller
 
                         // Load the profile image
                         string authorId = reader["account_id"].ToString();
-                        string imagePath = Server.MapPath("~/Uploads/Profile/") + authorId + ".jpg";
+                        string profileImage = reader["profile_image"].ToString();
 
-                        if (System.IO.File.Exists(imagePath))
+                        if (!string.IsNullOrEmpty(profileImage))
                         {
-                            imgProfile.ImageUrl = "~/Uploads/Profile/" + authorId + ".jpg";
+                            imgProfile.ImageUrl = "~/Uploads/Profile/" + profileImage;
                         }
                         else
                         {

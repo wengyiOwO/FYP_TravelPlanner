@@ -18,7 +18,7 @@
         }
 
         .chat-messages {
-            flex-grow: 1; /* Expands to take up available space */
+            flex-grow: 1;
             overflow-y: auto; /* Scroll if content overflows */
             padding: 20px;
         }
@@ -36,6 +36,20 @@
         .chat-message-right {
             flex-direction: row-reverse;
             margin-left: auto;
+        }
+
+            .chat-message-left img,
+            .chat-message-right img {
+                order: -1;
+            }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .bg-light {
+            border-radius: 10px;
+            padding: 8px;
         }
 
         .chat-section {
@@ -66,44 +80,6 @@
             border-top: 1px solid #dee2e6 !important;
         }
     </style>
-    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
-<script src="~/Scripts/jquery.signalR-2.4.3.min.js"></script>
-<script>
-    $(function () {
-        const connection = $.hubConnection();
-        const chatHub = connection.createHubProxy('chatHub');
-
-        const userId = '<%= Session["account_id"] %>';
-        connection.qs = { userId: userId };
-
-        // Receive a message and update UI
-        chatHub.on('ReceiveMessage', function (senderId, message, timestamp) {
-            const isMyMessage = senderId === userId;
-            const messageClass = isMyMessage ? 'chat-message-right' : 'chat-message-left';
-
-            $('.chat-messages').append(`
-                <div class="${messageClass} pb-4">
-                    <div>
-                        <img src="/Uploads/Profile/${senderId}.jpg" class="rounded-circle mr-1" width="40" height="40" alt="User">
-                        <div class="text-muted small text-nowrap mt-2">${timestamp}</div>
-                    </div>
-                    <div class="flex-shrink-1 bg-light rounded py-2 px-3">
-                        <div class="font-weight-bold mb-1">${isMyMessage ? 'You' : 'Friend'}</div>
-                        ${message}
-                    </div>
-                </div>
-            `);
-            $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight); // Auto-scroll
-        });
-
-        // Start the SignalR connection
-        connection.start().done(function () {
-            console.log('Connected to SignalR');
-        }).fail(function (err) {
-            console.error('SignalR connection failed:', err);
-        });
-    });
-</script>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -123,7 +99,7 @@
                     <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
                         <ItemTemplate>
                             <div class="d-flex align-items-start position-relative mb-3 ml-5">
-                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
+                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# ResolveUrl("~/Uploads/Profile/" + Eval("profile_image", "{0}")) %>' AlternateText="Profile Image" />
                                 <div class="flex-grow-1 ml-3">
                                     <%# Eval("account_name") %>
                                 </div>
@@ -142,8 +118,9 @@
                 <div class="col-12 col-lg-7 col-xl-9 chat-section<%= ViewState["SelectedFriendId"] != null ? " visible" : "" %>">
                     <div class="py-2 px-4 border-bottom d-none d-lg-block">
                         <div class="d-flex align-items-center py-1">
+                            <!-- Selected Friend Image -->
                             <div class="position-relative">
-                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
+                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# Eval("profile_image", "{0}") %>' AlternateText="Profile Image" />
                             </div>
                             <div class="flex-grow-1 pl-3">
                                 <strong>
@@ -156,7 +133,7 @@
                             <ItemTemplate>
                                 <div class='<%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "chat-message-right" : "chat-message-left" %> pb-4'>
                                     <div>
-                                        <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
+                                        <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# ResolveUrl("~/Uploads/Profile/" + Eval("profile_image", "{0}")) %>' AlternateText="Profile Image" />
                                         <div class="text-muted small text-nowrap mt-2"><%# Eval("chat_datetime", "{0:hh:mm tt}") %></div>
                                     </div>
                                     <div class="flex-shrink-1 bg-light rounded py-2 px-3">
@@ -165,13 +142,14 @@
                                         </div>
                                         <%# Eval("chat_message") %>
                                     </div>
+
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
                     <div class="flex-grow-0 py-3 px-4 border-top">
                         <div class="input-group">
-                            <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message" AutoPostBack="true"></asp:TextBox>
+                            <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
                             <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
                         </div>
                     </div>
@@ -179,9 +157,63 @@
             </div>
         </div>
     </main>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         document.getElementById('<%= txtMessage.ClientID %>').addEventListener('input', function () {
             document.getElementById('<%= btnSend.ClientID %>').disabled = this.value.trim() === '';
         });
+
+        let accountId = '<%= Session["account_id"] %>';
+        let selectedFriendId = '<%= ViewState["SelectedFriendId"] ?? "" %>';
+
+        function loadMessages() {
+            if (!selectedFriendId) return;
+
+            $.ajax({
+                type: "POST",
+                url: "Chat.aspx/GetChatMessages",
+                data: JSON.stringify({ accountId: accountId, friendId: selectedFriendId }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    const messages = JSON.parse(response.d);
+                    const chatContainer = $(".chat-messages");
+                    chatContainer.empty();
+
+                    messages.forEach((msg) => {
+                        const align = msg.sender_id === accountId ? "chat-message-right" : "chat-message-left";
+                        const profileImg = msg.profile_image ? "../Uploads/Profile/" + msg.profile_image : "../Uploads/Profile/unknown.jpg";
+                        const senderName = msg.sender_id === accountId ? "You" : msg.sender_name;
+                        const messageTime = msg.formatted_time;
+
+                        const messageHtml = `<div class="${align} pb-4">
+                        <div>
+                            <img src="${profileImg}" class="rounded-circle mr-1" style="width: 40px; height: 40px;" alt="${senderName}" />
+                            <div class="text-muted small text-nowrap mt-2">${messageTime}</div>
+                        </div>
+                        <div class="flex-shrink-1 bg-light rounded py-2 px-3">
+                            <div class="font-weight-bold mb-1">
+                                ${senderName}
+                            </div>
+                            <div>${msg.chat_message}</div>
+                        </div>
+                    </div>`;
+
+                        chatContainer.append(messageHtml);
+                    });
+
+                    // Scroll to bottom
+                    chatContainer.scrollTop(chatContainer[0].scrollHeight);
+                },
+                error: function () {
+                    console.error("Error loading messages");
+                },
+            });
+        }
+
+        // Poll for new messages every 1 seconds
+        if (selectedFriendId) {
+            setInterval(loadMessages, 1000);
+        }
     </script>
 </asp:Content>
