@@ -212,7 +212,7 @@ namespace FYP_TravelPlanner
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "SELECT account_name FROM Account WHERE account_id = @AccountId";
+                string query = "SELECT account_name, profile_image FROM Account WHERE account_id = @AccountId";
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@AccountId", accountId);
@@ -223,11 +223,11 @@ namespace FYP_TravelPlanner
                         // Set account name
                         lblAccountName.Text = reader["account_name"].ToString();
 
-                        // Load profile image, use unknown.jpg if image not found
-                        string imagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
-                        if (System.IO.File.Exists(imagePath))
+                        string profileImage = reader["profile_image"].ToString();
+
+                        if (!string.IsNullOrEmpty(profileImage))
                         {
-                            imgProfile.ImageUrl = "~/Uploads/Profile/" + accountId + ".jpg";
+                            imgProfile.ImageUrl = "~/Uploads/Profile/" + profileImage;
                         }
                         else
                         {

@@ -294,7 +294,6 @@
     <Content Include="Admin\Dashboard.aspx" />
     <Content Include="Account\EditProfile.aspx" />
     <Content Include="ForgotPassword.aspx" />
-    <Content Include="Global.asax" />
     <Content Include="img\logo.png" />
     <Content Include="img\logo_small.png" />
     <Content Include="img\undraw_posting_photo.svg" />
@@ -2062,9 +2061,6 @@
     <Compile Include="Account\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
     <Compile Include="Hubs\ChatHub.cs" />
     <Compile Include="SessionTimeout.aspx.cs">
       <DependentUpon>SessionTimeout.aspx</DependentUpon>
@@ -2073,7 +2069,6 @@
     <Compile Include="SessionTimeout.aspx.designer.cs">
       <DependentUpon>SessionTimeout.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Startup.cs" />
     <Compile Include="TakeMyTrip.Master.cs">
       <DependentUpon>TakeMyTrip.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

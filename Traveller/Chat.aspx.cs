@@ -7,29 +7,15 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 using System.Web.Services;
-//using FYP_TravelPlanner.Hubs;
-
 
 namespace FYP_TravelPlanner.Traveller
 {
     public partial class Chat : System.Web.UI.Page
     {
-        private string _accountId;
-        private string _selectedFriendId;
-
-        public string accountId
-        {
-            get { return _accountId; }
-            set { _accountId = value; }
-        }
-
-        public string selectedFriendId
-        {
-            get { return _selectedFriendId; }
-            set { _selectedFriendId = value; }
-        }
+        private string accountId;
+        private string selectedFriendId;
         private string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
@@ -81,7 +67,7 @@ namespace FYP_TravelPlanner.Traveller
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT account_name FROM Account WHERE account_id = @FriendId";
+                string query = "SELECT account_name, profile_image FROM Account WHERE account_id = @FriendId";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@FriendId", selectedFriendId);
 
@@ -91,9 +77,19 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     litSelectedFriendName.Text = reader["account_name"].ToString();
 
-                    ViewState["SelectedFriendId"] = selectedFriendId;
+                    string profileImage = reader["profile_image"].ToString();
 
-                    imgProfile.DataBind();
+                    if (!string.IsNullOrEmpty(profileImage))
+                    {
+                        imgProfile.ImageUrl = "~/Uploads/Profile/" + profileImage;
+                    }
+                    else
+                    {
+                        imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+                    }
+
+
+                    ViewState["SelectedFriendId"] = selectedFriendId;
                 }
                 reader.Close();
             }
@@ -107,7 +103,7 @@ namespace FYP_TravelPlanner.Traveller
             {
                 conn.Open();
                 string query = @"
-                    SELECT a.account_id, a.account_name
+                    SELECT a.account_id, a.account_name, a.profile_image
                     FROM Account a
                     INNER JOIN Friends f ON 
                         (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
@@ -133,7 +129,7 @@ namespace FYP_TravelPlanner.Traveller
             {
                 conn.Open();
                 string query = @"
-                    SELECT a.account_id, a.account_name
+                    SELECT a.account_id, a.account_name, a.profile_image
                     FROM Account a
                     INNER JOIN Friends f ON 
                         (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
@@ -159,7 +155,7 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-            SELECT Chat.sender_id, Chat.chat_message, Chat.chat_datetime, Account.account_name AS sender_name
+            SELECT Chat.sender_id, Chat.chat_message, Chat.chat_datetime, Account.account_name AS sender_name, Account.profile_image
             FROM Chat
             INNER JOIN Account ON Chat.sender_id = Account.account_id
             WHERE (Chat.sender_id = @account_id AND Chat.receiver_id = @friend_id) 
@@ -203,65 +199,60 @@ namespace FYP_TravelPlanner.Traveller
                     cmd.ExecuteNonQuery();
                 }
 
-                // Notify clients via SignalR
-                //var hubContext = Microsoft.AspNet.SignalR.GlobalHost.ConnectionManager.GetHubContext<Hubs.ChatHub>();
-                //string timestamp = DateTime.Now.ToString("hh:mm tt");
-                //hubContext.Clients.Group(selectedFriendId).ReceiveMessage(accountId, txtMessage.Text.Trim(), timestamp);
-
                 txtMessage.Text = "";
-                LoadChatMessages(); // Refresh UI
             }
         }
+
 
         private string GenerateChatId(string accountId, DateTime dateTime)
         {
             return $"C{accountId}{dateTime:yyyyMMddHHmmss}";
         }
 
-        protected void imgProfile_DataBinding(object sender, EventArgs e)
-        {
-            Image img = (Image)sender;
-            string accountId = null;
+        //protected void imgProfile_DataBinding(object sender, EventArgs e)
+        //{
+        //    Image img = (Image)sender;
+        //    string accountId = null;
 
-            if (img.NamingContainer is RepeaterItem repeaterItem)
-            {
-                if (repeaterItem.Parent == rptFriendsList)
-                {
-                    accountId = DataBinder.Eval(repeaterItem.DataItem, "account_id")?.ToString();
-                }
-                else if (repeaterItem.Parent == rptChatMessages)
-                {
-                    accountId = DataBinder.Eval(repeaterItem.DataItem, "sender_id")?.ToString();
-                }
-            }
-            else if (ViewState["SelectedFriendId"] != null)
-            {
-                accountId = ViewState["SelectedFriendId"].ToString();
-            }
+        //    if (img.NamingContainer is RepeaterItem repeaterItem)
+        //    {
+        //        if (repeaterItem.Parent == rptFriendsList)
+        //        {
+        //            accountId = DataBinder.Eval(repeaterItem.DataItem, "account_id")?.ToString();
+        //        }
+        //        else if (repeaterItem.Parent == rptChatMessages)
+        //        {
+        //            accountId = DataBinder.Eval(repeaterItem.DataItem, "sender_id")?.ToString();
+        //        }
+        //    }
+        //    else if (ViewState["SelectedFriendId"] != null)
+        //    {
+        //        accountId = ViewState["SelectedFriendId"].ToString();
+        //    }
 
-            if (!string.IsNullOrEmpty(accountId))
-            {
-                BindProfileImage(img, accountId);
-            }
-            else
-            {
-                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; 
-            }
-        }
+        //    if (!string.IsNullOrEmpty(accountId))
+        //    {
+        //        BindProfileImage(img, accountId);
+        //    }
+        //    else
+        //    {
+        //        img.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+        //    }
+        //}
 
-        protected void BindProfileImage(Image img, string accountId)
-        {
-            string imagePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
+        //protected void BindProfileImage(Image img, string accountId)
+        //{
+        //    string imagePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
 
-            if (System.IO.File.Exists(imagePath))
-            {
-                img.ImageUrl = $"~/Uploads/Profile/{accountId}.jpg";
-            }
-            else
-            {
-                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; 
-            }
-        }
+        //    if (System.IO.File.Exists(imagePath))
+        //    {
+        //        img.ImageUrl = $"~/Uploads/Profile/{accountId}.jpg";
+        //    }
+        //    else
+        //    {
+        //        img.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+        //    }
+        //}
 
         [WebMethod]
         public static string GetChatMessages(string accountId, string friendId)
@@ -271,12 +262,17 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-            SELECT Chat.sender_id, Chat.chat_message, Chat.chat_datetime, Account.account_name AS sender_name
-            FROM Chat
-            INNER JOIN Account ON Chat.sender_id = Account.account_id
-            WHERE (Chat.sender_id = @account_id AND Chat.receiver_id = @friend_id) 
-               OR (Chat.sender_id = @friend_id AND Chat.receiver_id = @account_id)
-            ORDER BY Chat.chat_datetime";
+        SELECT 
+            Chat.sender_id, 
+            Chat.chat_message, 
+            FORMAT(Chat.chat_datetime, 'hh:mm tt') AS formatted_time, 
+            Account.account_name AS sender_name, 
+            Account.profile_image
+        FROM Chat
+        INNER JOIN Account ON Chat.sender_id = Account.account_id
+        WHERE (Chat.sender_id = @account_id AND Chat.receiver_id = @friend_id) 
+           OR (Chat.sender_id = @friend_id AND Chat.receiver_id = @account_id)
+        ORDER BY Chat.chat_datetime";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
@@ -287,8 +283,7 @@ namespace FYP_TravelPlanner.Traveller
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                return serializer.Serialize(dt);
+                return JsonConvert.SerializeObject(dt);
             }
         }
     }

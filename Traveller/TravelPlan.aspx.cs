@@ -37,7 +37,7 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     // Load the travel plan details from the database
                     LoadTravelPlanData(planId);
-                   
+
 
                 }
                 else if (Session["SelectedLocations"] != null)
@@ -161,71 +161,60 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            // Check if the user is logged in
+
             if (Session["account_id"] == null)
             {
+
                 var locations = (List<Location>)Session["SelectedLocations"];
                 Session["LocationsToSave"] = JsonConvert.SerializeObject(locations);
                 Response.Redirect("~/Login.aspx");
                 return;
             }
 
-            // Prevent duplicate submissions in the same session
             if (ViewState["IsTravelPlanSaved"] != null && (bool)ViewState["IsTravelPlanSaved"])
             {
                 lblMessage.Text = "Travel plan has already been saved.";
                 return;
             }
-
-            // Retrieve session values for the travel plan details
+            // 2. Retrieve session values for Travel_Plan details
+            
             string accountId = Session["account_id"].ToString();
             string areaId = Session["AreaID"].ToString();
             DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
             int duration = Convert.ToInt32(Session["Duration"]);
             int budget = Convert.ToInt32(Session["Budget"]);
 
-            // Check for an existing travel plan for the same area and date
             if (TravelPlanExists(areaId, startDate))
             {
                 Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
                 return;
             }
-            // Mark the travel plan as saved in ViewState
+           
+            // Mark the travel plan as saved for this session
             ViewState["IsTravelPlanSaved"] = true;
 
-            // Generate a new unique plan_id
+            // 1. Generate a new unique plan_id
             string planId = GeneratePlanId();
 
-            string email = !string.IsNullOrEmpty(Session["account_email"] as string)
-                ? Session["account_email"].ToString()
-                : "takemytrip2024@gmail.com";
 
-            // Save the travel plan, daily itinerary, and associated activities
-            SaveTravelPlan(planId, accountId, areaId, startDate, duration, budget);
+            string email;
 
-            // Notify user of successful save and redirect to the Rating page
-            Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
-
-            // Send notification email if not already sent
-            if (Session["NotifyEmailSent"] == null)
+            if (!string.IsNullOrEmpty(Session["account_email"] as string))
             {
-                SendNotifyEmail(email, planId);
-                Session["NotifyEmailSent"] = true;
+                email = Session["account_email"] as string;
+            }
+            else
+            {
+                email = "takemytrip2024@gmail.com";
             }
 
-            // Schedule daily itinerary emails
-            ScheduleItineraryEmails(planId, startDate);
-        }
-
-        private void SaveTravelPlan(string planId, string accountId, string areaId, DateTime startDate, int duration, int budget)
-        {
+            // 3. Insert the new travel plan
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
-                // Insert into the Travel_Plan table
+                // Insert into Travel_Plan table
                 string travelPlanQuery = @"INSERT INTO Travel_Plan (plan_id, account_id, area_id, plan_date, duration, budget) 
                                    VALUES (@plan_id, @account_id, @area_id, @plan_date, @duration, @budget)";
                 using (SqlCommand cmd = new SqlCommand(travelPlanQuery, conn))
@@ -239,16 +228,16 @@ namespace FYP_TravelPlanner.Traveller
                     cmd.ExecuteNonQuery();
                 }
 
-                // Retrieve the selected locations from the session
+                // Get the list of locations from session
                 var selectedLocations = (List<Location>)Session["SelectedLocations"];
 
-                // Insert each day's itinerary and associated locations into the database
+                // Insert each day into Daily_Itinerary and locations into Travel_Activity
                 for (int day = 1; day <= duration; day++)
                 {
-                    // Generate a unique itinerary ID
+                    // Generate a unique itinerary_id for each day
                     string itineraryId = GenerateItineraryId();
 
-                    // Insert into the Daily_Itinerary table
+                    // Insert into Daily_Itinerary table
                     string dailyItineraryQuery = @"INSERT INTO Daily_Itinerary (itinerary_id, plan_id, day_number)
                                            VALUES (@itinerary_id, @plan_id, @day_number)";
                     using (SqlCommand cmd = new SqlCommand(dailyItineraryQuery, conn))
@@ -259,9 +248,10 @@ namespace FYP_TravelPlanner.Traveller
                         cmd.ExecuteNonQuery();
                     }
 
-                    // Insert locations for the current day into Travel_Activity
+                    // Insert associated locations for the current day into Travel_Activity
                     foreach (var location in selectedLocations.Where(loc => loc.day == day))
                     {
+                        // Generate a new unique activity_id for each location
                         string activityId = GenerateActivityId();
 
                         string travelActivityQuery = @"INSERT INTO Travel_Activity (activity_id, itinerary_id, location_id) 
@@ -275,9 +265,24 @@ namespace FYP_TravelPlanner.Traveller
                         }
                     }
                 }
-            }
-        }
 
+                conn.Close();
+            }
+
+            // Redirect or notify the user of successful save
+            Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+
+
+
+            if (Session["NotifyEmailSent"] == null)
+            {
+                SendNotifyEmail(email, planId);
+                Session["NotifyEmailSent"] = true;
+            }
+
+            ScheduleItineraryEmails(planId, startDate);
+
+        }
 
         private bool SendNotifyEmail(string toEmail, string planId)
         {
@@ -419,12 +424,12 @@ namespace FYP_TravelPlanner.Traveller
         {
             DateTime today = DateTime.Today;
 
-            if (startDate.AddDays(-1) == today )
+            if (startDate.AddDays(-1) == today)
             {
                 if (Session["ItineraryEmail_1DayBefore"] == null)
                 {
                     SendDailyItineraryEmail(planId, 1);
-                    Session["ItineraryEmail_1DayBefore"] = true;  
+                    Session["ItineraryEmail_1DayBefore"] = true;
                 }
             }
 
