@@ -11,6 +11,8 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Collections;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace FYP_TravelPlanner.Traveller
 {
@@ -161,10 +163,8 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-
             if (Session["account_id"] == null)
             {
-
                 var locations = (List<Location>)Session["SelectedLocations"];
                 Session["LocationsToSave"] = JsonConvert.SerializeObject(locations);
                 Response.Redirect("~/Login.aspx");
@@ -176,56 +176,88 @@ namespace FYP_TravelPlanner.Traveller
                 lblMessage.Text = "Travel plan has already been saved.";
                 return;
             }
-            // 2. Retrieve session values for Travel_Plan details
-            
+
             string accountId = Session["account_id"].ToString();
-            string areaId = Session["AreaID"].ToString();
-            DateTime startDate = DateTime.Parse(Session["StartDate"].ToString());
-            int duration = Convert.ToInt32(Session["Duration"]);
-            int budget = Convert.ToInt32(Session["Budget"]);
+            
+            string existingPlanId = Request.QueryString["tp"];
+            string planId,ownerId, areaId;
+            DateTime startDate;
+            int duration, budget;
 
-            if (TravelPlanExists(areaId, startDate))
-            {
-                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
-                return;
-            }
-           
-            // Mark the travel plan as saved for this session
-            ViewState["IsTravelPlanSaved"] = true;
-
-            // 1. Generate a new unique plan_id
-            string planId = GeneratePlanId();
-
-
-            string email;
-
-            if (!string.IsNullOrEmpty(Session["account_email"] as string))
-            {
-                email = Session["account_email"] as string;
-            }
-            else
-            {
-                email = "takemytrip2024@gmail.com";
-            }
-
-            // 3. Insert the new travel plan
+            // If `tp` is not empty, delete existing records and use the existing `plan_id`
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
-                // Insert into Travel_Plan table
-                string travelPlanQuery = @"INSERT INTO Travel_Plan (plan_id, account_id, area_id, plan_date, duration, budget) 
-                                   VALUES (@plan_id, @account_id, @area_id, @plan_date, @duration, @budget)";
-                using (SqlCommand cmd = new SqlCommand(travelPlanQuery, conn))
+                if (!string.IsNullOrEmpty(existingPlanId))
                 {
-                    cmd.Parameters.AddWithValue("@plan_id", planId);
-                    cmd.Parameters.AddWithValue("@account_id", accountId);
-                    cmd.Parameters.AddWithValue("@area_id", areaId);
-                    cmd.Parameters.AddWithValue("@plan_date", startDate);
-                    cmd.Parameters.AddWithValue("@duration", duration);
-                    cmd.Parameters.AddWithValue("@budget", budget);
-                    cmd.ExecuteNonQuery();
+
+                    // Delete associated activities and itineraries for the provided plan_id
+                    string deleteActivitiesQuery = @"DELETE FROM Travel_Activity 
+                                             WHERE itinerary_id IN 
+                                             (SELECT itinerary_id FROM Daily_Itinerary WHERE plan_id = @plan_id)";
+                    string deleteItinerariesQuery = @"DELETE FROM Daily_Itinerary WHERE plan_id = @plan_id";
+
+                    using (SqlCommand cmd = new SqlCommand(deleteActivitiesQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@plan_id", existingPlanId);
+                        cmd.ExecuteNonQuery();
+                    }
+                    using (SqlCommand cmd = new SqlCommand(deleteItinerariesQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@plan_id", existingPlanId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Use the existing plan_id
+                    string planQuery = @"SELECT account_id, area_id, plan_date, duration, budget 
+                         FROM Travel_Plan 
+                         WHERE plan_id = @plan_id";
+                    using (SqlCommand cmd = new SqlCommand(planQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@plan_id", existingPlanId);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                ownerId = reader["account_id"].ToString();
+                                areaId = reader["area_id"].ToString();
+                                startDate = DateTime.Parse(reader["plan_date"].ToString());
+                                duration = Convert.ToInt32(reader["duration"]);
+                                budget = Convert.ToInt32(reader["budget"]);
+                            }
+                            else
+                            {
+                                throw new Exception("Travel Plan not found for the provided plan_id.");
+                            }
+                        }
+                    }
+
+                    planId = existingPlanId;
+
+
+                }
+                else
+                {
+                    // Generate a new plan_id if none exists
+                    planId = GeneratePlanId();
+                    areaId = Session["AreaID"].ToString();
+                    startDate = DateTime.Parse(Session["StartDate"].ToString());
+                    duration = Convert.ToInt32(Session["Duration"]);
+                    budget = Convert.ToInt32(Session["Budget"]);
+                    string travelPlanQuery = @"INSERT INTO Travel_Plan (plan_id, account_id, area_id, plan_date, duration, budget) 
+                                   VALUES (@plan_id, @account_id, @area_id, @plan_date, @duration, @budget)";
+                    using (SqlCommand cmd = new SqlCommand(travelPlanQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@plan_id", planId);
+                        cmd.Parameters.AddWithValue("@account_id", accountId);
+                        cmd.Parameters.AddWithValue("@area_id", areaId);
+                        cmd.Parameters.AddWithValue("@plan_date", startDate);
+                        cmd.Parameters.AddWithValue("@duration", duration);
+                        cmd.Parameters.AddWithValue("@budget", budget);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
                 // Get the list of locations from session
@@ -234,7 +266,6 @@ namespace FYP_TravelPlanner.Traveller
                 // Insert each day into Daily_Itinerary and locations into Travel_Activity
                 for (int day = 1; day <= duration; day++)
                 {
-                    // Generate a unique itinerary_id for each day
                     string itineraryId = GenerateItineraryId();
 
                     // Insert into Daily_Itinerary table
@@ -251,7 +282,6 @@ namespace FYP_TravelPlanner.Traveller
                     // Insert associated locations for the current day into Travel_Activity
                     foreach (var location in selectedLocations.Where(loc => loc.day == day))
                     {
-                        // Generate a new unique activity_id for each location
                         string activityId = GenerateActivityId();
 
                         string travelActivityQuery = @"INSERT INTO Travel_Activity (activity_id, itinerary_id, location_id) 
@@ -269,20 +299,23 @@ namespace FYP_TravelPlanner.Traveller
                 conn.Close();
             }
 
-            // Redirect or notify the user of successful save
+            ViewState["IsTravelPlanSaved"] = true;
+
+            string email = !string.IsNullOrEmpty(Session["account_email"] as string)
+                ? Session["account_email"] as string
+                : "takemytrip2024@gmail.com";
+
             Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
 
+            //if (Session["NotifyEmailSent"] == null)
+            //{
+            //    SendNotifyEmail(email, planId);
+            //    Session["NotifyEmailSent"] = true;
+            //}
 
-
-            if (Session["NotifyEmailSent"] == null)
-            {
-                SendNotifyEmail(email, planId);
-                Session["NotifyEmailSent"] = true;
-            }
-
-            ScheduleItineraryEmails(planId, startDate);
-
+            //ScheduleItineraryEmails(planId, startDate);
         }
+
 
         private bool SendNotifyEmail(string toEmail, string planId)
         {
