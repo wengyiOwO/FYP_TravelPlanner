@@ -40,7 +40,20 @@
 
             .chat-message-left img,
             .chat-message-right img {
-                order: -1;
+                max-width: 100%; /* Allow the image to scale responsively */
+                max-height: 300px; /* Limit the maximum height of images */
+                width: auto; /* Keep the image's aspect ratio */
+                height: auto;
+                object-fit: contain; /* Ensure the image fits within the container */
+            }
+
+            /* Video size */
+            .chat-message-left video,
+            .chat-message-right video {
+                max-width: 100%; /* Allow the video to scale responsively */
+                max-height: 300px; /* Limit the maximum height of videos */
+                width: auto; /* Keep the video's aspect ratio */
+                height: auto;
             }
 
         .text-right {
@@ -129,29 +142,39 @@
                         </div>
                     </div>
                     <div class="position-relative chat-messages p-4">
-                        <asp:Repeater ID="rptChatMessages" runat="server">
+                        <asp:Repeater ID="rptChatMessages" runat="server" OnItemDataBound="rptChatMessages_ItemDataBound">
                             <ItemTemplate>
                                 <div class='<%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "chat-message-right" : "chat-message-left" %> pb-4'>
                                     <div>
-                                        <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# ResolveUrl("~/Uploads/Profile/" + Eval("profile_image", "{0}")) %>' AlternateText="Profile Image" />
-                                        <div class="text-muted small text-nowrap mt-2"><%# Eval("chat_datetime", "{0:hh:mm tt}") %></div>
+                                        <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" />
+                                        <div class="text-muted small text-nowrap mt-2">
+                                            <asp:Literal ID="litTime" runat="server"></asp:Literal>
+                                        </div>
                                     </div>
                                     <div class="flex-shrink-1 bg-light rounded py-2 px-3">
                                         <div class="font-weight-bold mb-1">
-                                            <%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "You" : Eval("sender_name") %>
+                                            <asp:Literal ID="litSender" runat="server"></asp:Literal>
                                         </div>
-                                        <%# Eval("chat_message") %>
+                                        <asp:PlaceHolder ID="phMessageContent" runat="server"></asp:PlaceHolder>
                                     </div>
-
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
                     <div class="flex-grow-0 py-3 px-4 border-top">
                         <div class="input-group">
+                            <!-- Text Input for Message -->
                             <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
+
+                            <!-- File Upload Button -->
+                            <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="cursor: pointer;" onchange="previewFiles(event)" />
+
+                            <!-- Send Button -->
                             <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
                         </div>
+
+                        <!-- Preview Container for Images and Videos -->
+                        <div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -186,18 +209,31 @@
                         const senderName = msg.sender_id === accountId ? "You" : msg.sender_name;
                         const messageTime = msg.formatted_time;
 
-                        const messageHtml = `<div class="${align} pb-4">
-                        <div>
-                            <img src="${profileImg}" class="rounded-circle mr-1" style="width: 40px; height: 40px;" alt="${senderName}" />
-                            <div class="text-muted small text-nowrap mt-2">${messageTime}</div>
-                        </div>
-                        <div class="flex-shrink-1 bg-light rounded py-2 px-3">
-                            <div class="font-weight-bold mb-1">
-                                ${senderName}
-                            </div>
-                            <div>${msg.chat_message}</div>
-                        </div>
-                    </div>`;
+                        let messageContent = "";
+
+                        if (msg.message_type === "text") {
+                            // Text message
+                            messageContent = "<div>" + msg.chat_message + "</div>";
+                        } else if (msg.message_type === "image") {
+                            // Image message
+                            const imageUrl = "../Uploads/Chat/" + msg.chat_message;
+                            messageContent = '<img src="' + imageUrl + '" class="img-fluid" alt="Image Message" />';
+                        } else if (msg.message_type === "video") {
+                            // Video message
+                            const videoUrl = "../Uploads/Chat/" + msg.chat_message;
+                            messageContent = '<video src="' + videoUrl + '" class="w-100" controls></video>';
+                        }
+
+                        const messageHtml = '<div class="' + align + ' pb-4">' +
+                            '<div>' +
+                            '<img src="' + profileImg + '" class="rounded-circle mr-1" style="width: 40px; height: 40px;" alt="' + senderName + '" />' +
+                            '<div class="text-muted small text-nowrap mt-2">' + messageTime + '</div>' +
+                            '</div>' +
+                            '<div class="flex-shrink-1 bg-light rounded py-2 px-3">' +
+                            '<div class="font-weight-bold mb-1">' + senderName + '</div>' +
+                            messageContent +
+                            '</div>' +
+                            '</div>';
 
                         chatContainer.append(messageHtml);
                     });
@@ -211,9 +247,62 @@
             });
         }
 
+
         // Poll for new messages every 1 seconds
         if (selectedFriendId) {
             setInterval(loadMessages, 1000);
         }
+
+        document.getElementById('<%= fileUpload.ClientID %>').onchange = function (event) {
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = ''; // Clear existing previews
+
+            Array.from(event.target.files).forEach((file, index) => {
+                const fileType = file.type.split('/')[0];
+                const previewDiv = document.createElement('div');
+                previewDiv.classList.add('image-preview-container');
+
+                if (fileType === 'image') {
+                    // Display image preview
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('img-thumbnail');
+                        img.style.width = '100px';
+                        img.style.height = '100px';
+                        img.style.objectFit = 'cover';
+
+                        previewDiv.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                } else if (fileType === 'video') {
+                    // Display video preview
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(file);
+                    video.classList.add('img-thumbnail');
+                    video.controls = true;
+                    video.style.width = '100px';
+                    video.style.height = '100px';
+                    video.style.objectFit = 'cover';
+
+                    previewDiv.appendChild(video);
+                }
+
+                // Add delete button to remove file from preview
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.innerHTML = 'x';
+                deleteButton.onclick = function () {
+                    previewDiv.remove();
+                    const files = Array.from(event.target.files);
+                    files.splice(index, 1);
+                    event.target.files = new FileList(...files);
+                };
+
+                previewDiv.appendChild(deleteButton);
+                previewContainer.appendChild(previewDiv);
+            });
+        };
     </script>
 </asp:Content>

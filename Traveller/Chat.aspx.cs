@@ -9,6 +9,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using System.Web.Services;
+using System.IO;
 
 namespace FYP_TravelPlanner.Traveller
 {
@@ -155,7 +156,7 @@ namespace FYP_TravelPlanner.Traveller
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-            SELECT Chat.sender_id, Chat.chat_message, Chat.chat_datetime, Account.account_name AS sender_name, Account.profile_image
+            SELECT Chat.sender_id, Chat.chat_message, Chat.message_type, Chat.chat_datetime, Account.account_name AS sender_name, Account.profile_image
             FROM Chat
             INNER JOIN Account ON Chat.sender_id = Account.account_id
             WHERE (Chat.sender_id = @account_id AND Chat.receiver_id = @friend_id) 
@@ -181,78 +182,84 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnSend_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(txtMessage.Text) && !string.IsNullOrEmpty(selectedFriendId))
+            if (!string.IsNullOrEmpty(txtMessage.Text) || fileUpload.HasFiles)
             {
                 string newChatId = GenerateChatId(accountId, DateTime.Now);
 
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                // Process text message
+                if (!string.IsNullOrEmpty(txtMessage.Text))
                 {
-                    string query = "INSERT INTO Chat (chat_id, sender_id, receiver_id, chat_datetime, chat_message) VALUES (@ChatId, @SenderId, @ReceiverId, @DateTime, @Message)";
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@ChatId", newChatId);
-                    cmd.Parameters.AddWithValue("@SenderId", accountId);
-                    cmd.Parameters.AddWithValue("@ReceiverId", selectedFriendId);
-                    cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@Message", txtMessage.Text.Trim());
-
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    string messageType = "text";
+                    string messageContent = txtMessage.Text.Trim();
+                    // Save text message
+                    SaveMessage(messageContent, messageType);
                 }
 
+                // Process file uploads (images/videos)
+                if (fileUpload.HasFiles)
+                {
+                    foreach (HttpPostedFile file in fileUpload.PostedFiles)
+                    {
+                        string fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
+                        string fileName = $"{newChatId}_{Guid.NewGuid()}"; // Unique file name based on chatId and GUID
+
+                        if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
+                        {
+                            string filePath = Server.MapPath($"~/Uploads/Chat/{fileName}.jpg");
+                            file.SaveAs(filePath);
+                            string messageContent = fileName + ".jpg"; // File name for the message content
+                            string messageType = "image"; // Message type is image
+                                                          // Save image file
+                            SaveMessage(messageContent, messageType);
+                        }
+                        else if (fileExtension == ".mp4" || fileExtension == ".mov" || fileExtension == ".avi")
+                        {
+                            string filePath = Server.MapPath($"~/Uploads/Chat/{fileName}.mp4");
+                            file.SaveAs(filePath);
+                            string messageContent = fileName + ".mp4"; // File name for the message content
+                            string messageType = "video"; // Message type is video
+                                                          // Save video file
+                            SaveMessage(messageContent, messageType);
+                        }
+                    }
+                }
+
+                // Clear the input fields
                 txtMessage.Text = "";
+                fileUpload.Attributes.Clear();
+
+                // Reload chat messages after sending
+                LoadChatMessages();
+            }
+        }
+
+        private void SaveMessage(string messageContent, string messageType)
+        {
+            string newChatId = GenerateChatId(accountId, DateTime.Now);
+            // Save the message (text or file) in the database
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "INSERT INTO Chat (chat_id, sender_id, receiver_id, chat_datetime, chat_message, message_type) " +
+                               "VALUES (@ChatId, @SenderId, @ReceiverId, @DateTime, @Message, @MessageType)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ChatId", newChatId);
+                cmd.Parameters.AddWithValue("@SenderId", accountId);
+                cmd.Parameters.AddWithValue("@ReceiverId", selectedFriendId);
+                cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
+                cmd.Parameters.AddWithValue("@Message", messageContent);
+                cmd.Parameters.AddWithValue("@MessageType", messageType);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
             }
         }
 
 
         private string GenerateChatId(string accountId, DateTime dateTime)
         {
-            return $"C{accountId}{dateTime:yyyyMMddHHmmss}";
+            // Append a GUID to make it more unique
+            return $"C{accountId}{dateTime:yyyyMMddHHmmss}_{Guid.NewGuid()}";
         }
-
-        //protected void imgProfile_DataBinding(object sender, EventArgs e)
-        //{
-        //    Image img = (Image)sender;
-        //    string accountId = null;
-
-        //    if (img.NamingContainer is RepeaterItem repeaterItem)
-        //    {
-        //        if (repeaterItem.Parent == rptFriendsList)
-        //        {
-        //            accountId = DataBinder.Eval(repeaterItem.DataItem, "account_id")?.ToString();
-        //        }
-        //        else if (repeaterItem.Parent == rptChatMessages)
-        //        {
-        //            accountId = DataBinder.Eval(repeaterItem.DataItem, "sender_id")?.ToString();
-        //        }
-        //    }
-        //    else if (ViewState["SelectedFriendId"] != null)
-        //    {
-        //        accountId = ViewState["SelectedFriendId"].ToString();
-        //    }
-
-        //    if (!string.IsNullOrEmpty(accountId))
-        //    {
-        //        BindProfileImage(img, accountId);
-        //    }
-        //    else
-        //    {
-        //        img.ImageUrl = "~/Uploads/Profile/unknown.jpg";
-        //    }
-        //}
-
-        //protected void BindProfileImage(Image img, string accountId)
-        //{
-        //    string imagePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
-
-        //    if (System.IO.File.Exists(imagePath))
-        //    {
-        //        img.ImageUrl = $"~/Uploads/Profile/{accountId}.jpg";
-        //    }
-        //    else
-        //    {
-        //        img.ImageUrl = "~/Uploads/Profile/unknown.jpg";
-        //    }
-        //}
 
         [WebMethod]
         public static string GetChatMessages(string accountId, string friendId)
@@ -264,7 +271,7 @@ namespace FYP_TravelPlanner.Traveller
                 string query = @"
         SELECT 
             Chat.sender_id, 
-            Chat.chat_message, 
+            Chat.chat_message, Chat.message_type,
             FORMAT(Chat.chat_datetime, 'hh:mm tt') AS formatted_time, 
             Account.account_name AS sender_name, 
             Account.profile_image
@@ -284,6 +291,54 @@ namespace FYP_TravelPlanner.Traveller
                 da.Fill(dt);
 
                 return JsonConvert.SerializeObject(dt);
+            }
+        }
+
+        protected void rptChatMessages_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                var dataItem = (DataRowView)e.Item.DataItem;
+
+                // Profile image
+                var imgProfile = (Image)e.Item.FindControl("imgMessageProfile");
+                var profileImage = dataItem["profile_image"].ToString();
+                imgProfile.ImageUrl = !string.IsNullOrEmpty(profileImage)
+                    ? ResolveUrl("~/Uploads/Profile/" + profileImage)
+                    : ResolveUrl("~/Uploads/Profile/unknown.jpg");
+
+                // Timestamp
+                var litTime = (Literal)e.Item.FindControl("litTime");
+                litTime.Text = Convert.ToDateTime(dataItem["chat_datetime"]).ToString("hh:mm tt");
+
+                // Sender name
+                var litSender = (Literal)e.Item.FindControl("litSender");
+                var senderId = dataItem["sender_id"].ToString();
+                litSender.Text = senderId == Session["account_id"].ToString() ? "You" : dataItem["sender_name"].ToString();
+
+                // Message content
+                var phMessageContent = (PlaceHolder)e.Item.FindControl("phMessageContent");
+                var messageType = dataItem["message_type"].ToString();
+                var message = dataItem["chat_message"].ToString();
+
+                if (messageType == "text")
+                {
+                    phMessageContent.Controls.Add(new Literal { Text = message });
+                }
+                else if (messageType == "image")
+                {
+                    phMessageContent.Controls.Add(new Literal
+                    {
+                        Text = $"<img src='{ResolveUrl("~/Uploads/Chat/" + message)}' class='img-fluid' />"
+                    });
+                }
+                else if (messageType == "video")
+                {
+                    phMessageContent.Controls.Add(new Literal
+                    {
+                        Text = $"<video src='{ResolveUrl("~/Uploads/Chat/" + message)}' class='w-100' controls></video>"
+                    });
+                }
             }
         }
     }
