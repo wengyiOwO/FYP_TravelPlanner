@@ -118,7 +118,17 @@ namespace FYP_TravelPlanner.Traveller
                 }
 
                 AddPostToDatabase(postId, fileType, numImages);
-                Response.Redirect("~/Traveller/PostDetails.aspx?post_id=" + postId);
+                successPanel.Visible = true;
+
+                // Inject JavaScript to redirect after 2 seconds
+                string redirectScript = $@"
+            <script type='text/javascript'>
+                setTimeout(function() {{
+                    window.location.href = 'PostDetails.aspx?post_id={postId}';
+                }}, 2000);
+            </script>";
+
+                ClientScript.RegisterStartupScript(this.GetType(), "RedirectScript", redirectScript);
             }
             else
             {

@@ -94,6 +94,9 @@
     <div class="container-fluid p-0">
         <div class="card">
             <div class="card-body">
+                <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-success" Visible="false">
+                    <strong>Success!</strong> Your post has been created. Redirecting to the post details page...
+                </asp:Panel>
                 <h5 class="card-title"><strong>Create Post</strong></h5>
                 <div class="mb-3 upload-section">
                     <div id="uploadWrapper">

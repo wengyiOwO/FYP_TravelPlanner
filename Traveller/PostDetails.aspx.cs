@@ -155,7 +155,7 @@ namespace FYP_TravelPlanner.Traveller
             Response.Redirect("~/Traveller/EditPost.aspx?p=" + postId);
         }
 
-        protected void btnDelete_Click(object sender, EventArgs e)
+        protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {
             string postId = Request.QueryString["post_id"];
 
@@ -174,6 +174,19 @@ namespace FYP_TravelPlanner.Traveller
                     }
                 }
             }
+
+
+            successPanel.Visible = true;
+
+            // Inject JavaScript to redirect after 2 seconds
+            string redirectScript = $@"
+            <script type='text/javascript'>
+                setTimeout(function() {{
+                    window.location.href = 'Post.aspx';
+                }}, 2000);
+            </script>";
+
+            ClientScript.RegisterStartupScript(this.GetType(), "RedirectScript", redirectScript);
         }
     }
 }

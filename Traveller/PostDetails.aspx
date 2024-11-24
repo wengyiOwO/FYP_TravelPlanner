@@ -27,10 +27,30 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
+                        <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-danger" Visible="false">
+                            <strong>Success!</strong> Your post has been deleted. Redirecting to the post page...
+                        </asp:Panel>
                         <asp:Panel runat="server">
                             <div class="d-flex justify-content-end mb-3">
                                 <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Edit" OnClick="btnEdit_Click" />
-                                <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm" Text="Delete" OnClick="btnDelete_Click" />
+                                <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm" Text="Delete" OnClientClick="showDeleteConfirmation(); return false;" />
+                            </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlConfirmDelete" runat="server" CssClass="modal" Style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Delete</h5>
+                                        <button type="button" class="close" onclick="hideDeleteConfirmation();">&times;</button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete this post?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <asp:Button ID="btnConfirmDelete" runat="server" CssClass="btn btn-danger" Text="Delete" OnClick="btnConfirmDelete_Click" />
+                                        <button type="button" class="btn btn-secondary" onclick="hideDeleteConfirmation();">Cancel</button>
+                                    </div>
+                                </div>
                             </div>
                         </asp:Panel>
                         <div class="d-flex align-items-center mb-3">
@@ -75,4 +95,12 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function showDeleteConfirmation() {
+            document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'block';
+        }
+        function hideDeleteConfirmation() {
+            document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'none';
+        }
+    </script>
 </asp:Content>
