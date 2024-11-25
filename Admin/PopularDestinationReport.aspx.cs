@@ -66,12 +66,12 @@ ORDER BY
 
         private byte[] GenerateBarChartImage(DataTable destinationData)
         {
-            int width = 800;
-            int height = 400;
+            int width = 950;
+            int height = 750;
             int barWidth = 60;
             int spacing = 35;
-            int labelOffset = 15;
-            int maxLabelLength = 10; // Shorten max length to allow more lines
+            int labelOffset = 80;
+            int maxLabelLength = 10;
             int labelPadding = 8;
 
             using (Bitmap bmp = new Bitmap(width, height))
@@ -83,11 +83,29 @@ ORDER BY
                     // Determine max visit count for scaling
                     int maxVisits = destinationData.AsEnumerable()
                         .Max(row => Convert.ToInt32(row["visit_count"]));
+                    int numberOfGridlines = 5; // Number of gridlines
+                    int gridlineSpacing = (height - 220) / numberOfGridlines;
 
-                    // Define fonts and brushes
                     System.Drawing.Font font = new System.Drawing.Font("Arial", 12);
+                    System.Drawing.Font axisFont = new System.Drawing.Font("Arial", 16, FontStyle.Bold);
                     Brush brush = new SolidBrush(Color.Black);
                     Brush barBrush = new SolidBrush(Color.Blue);
+                    Pen gridlinePen = new Pen(Color.LightGray, 1);
+
+                    // Draw horizontal gridlines
+                    for (int i = 0; i <= numberOfGridlines; i++)
+                    {
+                        int y = height - 145 - (i * gridlineSpacing); // Y-coordinate for gridline
+                        g.DrawLine(gridlinePen, labelOffset, y, width - 50, y); // Draw gridline across the chart
+
+                        // Add value labels next to gridlines
+                        int value = maxVisits * i / numberOfGridlines;
+                        g.DrawString(value.ToString(), font, brush, labelOffset - 40, y - 8);
+                    }
+                    // Draw Y-axis label (vertical, top-left corner)
+                    g.RotateTransform(-90); // Rotate to draw vertically
+                    g.DrawString("Number of Visits", axisFont, brush, -height / 2 - 50, 12);
+                    g.RotateTransform(90); // Rotate back to original orientation
 
                     // Draw bars
                     for (int i = 0; i < destinationData.Rows.Count; i++)
@@ -96,11 +114,11 @@ ORDER BY
                         int visitCount = Convert.ToInt32(destinationData.Rows[i]["visit_count"]);
 
                         // Calculate bar height
-                        int barHeight = (int)((double)visitCount / maxVisits * (height - 100));
+                        int barHeight = (int)((double)visitCount / maxVisits * (height - 220));
 
                         // Calculate positions
                         int x = i * (barWidth + spacing) + labelOffset;
-                        int y = height - barHeight - 50;
+                        int y = height - barHeight - 145;
 
                         // Draw bar
                         g.FillRectangle(barBrush, x, y, barWidth, barHeight);
@@ -108,9 +126,9 @@ ORDER BY
                         // Draw visit count above bar
                         g.DrawString(visitCount.ToString(), font, brush, x + barWidth / 4, y - 20);
 
-                        // Split label into up to four lines
+                        // Split label into multiple lines if it's too long
                         List<string> labelLines = new List<string>();
-                        while (locationName.Length > maxLabelLength && labelLines.Count < 3)
+                        while (locationName.Length > maxLabelLength && labelLines.Count < 4)
                         {
                             int splitIndex = locationName.LastIndexOf(' ', maxLabelLength);
                             if (splitIndex == -1) splitIndex = maxLabelLength;
@@ -123,9 +141,17 @@ ORDER BY
                         // Draw each line with appropriate spacing
                         for (int j = 0; j < labelLines.Count; j++)
                         {
-                            g.DrawString(labelLines[j], font, brush, x, height - 55 + (j * 15) + labelPadding);
+                            g.DrawString(labelLines[j], font, brush, x, height - 120 + (j * 15) + labelPadding);
                         }
                     }
+
+                    // Draw X-axis label (horizontal, bottom center of the chart)
+                    string xAxisLabel = "Top 8 Popular Destinations";
+                    SizeF labelSize = g.MeasureString(xAxisLabel, axisFont);
+                    float labelX = (width - labelSize.Width) / 2; // Center horizontally
+                    float labelY = height - 35;
+                    g.DrawString(xAxisLabel, axisFont, brush, labelX, labelY);
+
                 }
 
                 using (MemoryStream ms = new MemoryStream())
@@ -135,6 +161,7 @@ ORDER BY
                 }
             }
         }
+
 
         private void GeneratePopularDestinationPDF(DataTable destinationData)
         {
@@ -146,14 +173,9 @@ ORDER BY
             PdfWriter.GetInstance(pdfDoc, new FileStream(pdfPath, FileMode.Create));
             pdfDoc.Open();
 
-            // Create a table with a single column to stack the logo and company name vertically
             PdfPTable headerTable = new PdfPTable(1);
-            headerTable.WidthPercentage = 100; // Set the table width to full width for easier centering
+            headerTable.WidthPercentage = 100;
 
-            // Center the table horizontally on the page
-            headerTable.HorizontalAlignment = Element.ALIGN_CENTER;
-
-            // Add company logo to the first cell and center it
             string logoPath = Server.MapPath("~/img/logo.png");
             if (File.Exists(logoPath))
             {
@@ -161,15 +183,15 @@ ORDER BY
                 logo.ScaleToFit(140f, 140f);
                 PdfPCell logoCell = new PdfPCell(logo);
                 logoCell.Border = PdfPCell.NO_BORDER;
-                logoCell.HorizontalAlignment = Element.ALIGN_CENTER; // Center-align the logo within the cell
+                logoCell.HorizontalAlignment = Element.ALIGN_CENTER;
                 headerTable.AddCell(logoCell);
             }
 
-
-            // Add the header table to the document
             pdfDoc.Add(headerTable);
+
             // Title
-            Paragraph title = new Paragraph("Overall Popular Destination Report", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK));
+            Paragraph title = new Paragraph("Overall Popular Destination Report",
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 20, iTextSharp.text.Font.BOLD, BaseColor.BLACK));
             title.Alignment = Element.ALIGN_CENTER;
             pdfDoc.Add(title);
 
@@ -178,42 +200,74 @@ ORDER BY
                 new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 11));
             dateParagraph.Alignment = Element.ALIGN_RIGHT;
             pdfDoc.Add(dateParagraph);
-            pdfDoc.Add(new Paragraph(" ")); // Add space after table
 
-            Paragraph listTitle = new Paragraph("Top 8 Popular Destinations:",
-       new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD));
-            pdfDoc.Add(listTitle);
+            pdfDoc.Add(new Paragraph(" ")); 
 
-            int counter = 1; // Counter for numbering
-            foreach (DataRow row in destinationData.Rows)
+            // Create the data table
+            PdfPTable dataTable = new PdfPTable(3); 
+            dataTable.WidthPercentage = 100;
+            dataTable.SetWidths(new float[] { 1, 4, 2 }); // Column width proportions
+
+            // Add column headers with horizontal line below
+            AddTableCell(dataTable, "No", true, false, true);
+            AddTableCell(dataTable, "Destinations", true, false, true);
+            AddTableCell(dataTable, "Number of Visits", true, false, true);
+
+            // Populate table rows without borders
+            int totalVisits = 0;
+            for (int i = 0; i < destinationData.Rows.Count; i++)
             {
-                string location = row["location_name"].ToString();
-                string visits = row["visit_count"].ToString();
-                string formattedEntry = $"{counter}. {location} - {visits} visits";
+                int visitCount = Convert.ToInt32(destinationData.Rows[i]["visit_count"]);
+                totalVisits += visitCount;
 
-                Paragraph listItem = new Paragraph(formattedEntry,
-                    new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12));
-                pdfDoc.Add(listItem);
-
-                counter++; // Increment counter
+                AddTableCell(dataTable, (i + 1).ToString(), false, false, false);
+                AddTableCell(dataTable, destinationData.Rows[i]["location_name"].ToString(), false, false, false);
+                AddTableCell(dataTable, visitCount.ToString(), false, false, false);
             }
-            pdfDoc.Add(new Paragraph(" "));
+
+            // Add total row with border line above and below
+            AddTableCell(dataTable, " ", false, true, true); 
+            AddTableCell(dataTable, "Total", true, true, true);
+            AddTableCell(dataTable, totalVisits.ToString(), true, true, true); // Total value with borders
+
+            pdfDoc.Add(dataTable);
 
             // Add chart image
             if (chartImageBytes != null && chartImageBytes.Length > 0)
             {
+                pdfDoc.Add(new Paragraph(" ")); // Add some space before the chart
                 Image chartImage = Image.GetInstance(chartImageBytes);
-                chartImage.ScaleToFit(500f, 300f); // Adjust image size
+                chartImage.ScaleToFit(500f, 300f);
                 chartImage.Alignment = Element.ALIGN_CENTER;
                 pdfDoc.Add(chartImage);
             }
             else
             {
-                pdfDoc.Add(new Paragraph("Chart image could not be generated.", new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
+                pdfDoc.Add(new Paragraph("Chart image could not be generated.",
+                    new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 12)));
             }
 
             pdfDoc.Close();
         }
+
+
+        //add a cell to the table
+        private void AddTableCell(PdfPTable table, string text, bool isHeader, bool drawTopBorder, bool drawBottomBorder)
+        {
+            PdfPCell cell = new PdfPCell(new Phrase(text,
+                new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, isHeader ? 12 : 10, isHeader ? iTextSharp.text.Font.BOLD : iTextSharp.text.Font.NORMAL)));
+            cell.HorizontalAlignment = Element.ALIGN_CENTER;
+            cell.VerticalAlignment = Element.ALIGN_MIDDLE;
+            cell.Padding = 5;
+
+            // Set border options
+            cell.Border = PdfPCell.NO_BORDER;
+            if (drawTopBorder) cell.Border |= PdfPCell.TOP_BORDER;
+            if (drawBottomBorder) cell.Border |= PdfPCell.BOTTOM_BORDER;
+
+            table.AddCell(cell);
+        }
+
 
         protected void btnGenerate_Click(object sender, EventArgs e)
         {

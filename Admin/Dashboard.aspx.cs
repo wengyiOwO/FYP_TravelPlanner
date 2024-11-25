@@ -129,22 +129,18 @@ namespace FYP_TravelPlanner
 
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             string query = @"
-                SELECT TOP 8
-                    l.location_id,
-                    l.place_name AS location_name,
-                    COUNT(tp.plan_id) AS visit_count
-                FROM 
-                    Travel_Plan tp
-                JOIN 
-                    Area a ON tp.area_id = a.area_id
-                JOIN 
-                    Location l ON l.area_id = a.area_id
-                JOIN
-                    Travel_Activity ta ON ta.location_id = l.location_id
-                GROUP BY 
-                    l.location_id, l.place_name
-                ORDER BY 
-                    visit_count DESC;";
+              SELECT TOP 8
+    l.location_id,
+    l.place_name AS location_name,
+    COUNT(ta.location_id) AS visit_count
+FROM 
+    Travel_Activity ta
+INNER JOIN 
+    Location l ON ta.location_id = l.location_id
+GROUP BY 
+    l.location_id, l.place_name 
+ORDER BY 
+    visit_count DESC;";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {

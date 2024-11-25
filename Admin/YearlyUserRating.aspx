@@ -68,7 +68,7 @@
                     <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
-                        <asp:ListItem></asp:ListItem>
+                        <asp:ListItem>2025</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 

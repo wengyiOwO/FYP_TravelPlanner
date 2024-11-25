@@ -51,7 +51,7 @@
                         },
                         y: {
                             beginAtZero: true,
-                            min: 0, // Force start from zero
+                            min: 0, 
                             max: maxValue + 10, // Add padding to maximum
                             ticks: {
                                 stepSize: Math.ceil((maxValue - minValue) / 5),
