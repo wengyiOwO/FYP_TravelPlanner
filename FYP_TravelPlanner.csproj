@@ -2061,7 +2061,6 @@
     <Compile Include="Account\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Hubs\ChatHub.cs" />
     <Compile Include="SessionTimeout.aspx.cs">
       <DependentUpon>SessionTimeout.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
