@@ -16,6 +16,11 @@ namespace FYP_TravelPlanner
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
+
             if (!IsPostBack)
             {
                 var data = GetPopularDestinations();
@@ -28,7 +33,7 @@ namespace FYP_TravelPlanner
                 GetAnnualTravelPlan(DateTime.Now.Year);
             }
         }
-
+        
         private void GetRatingData()
         {
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

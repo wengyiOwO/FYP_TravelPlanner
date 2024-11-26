@@ -23,6 +23,10 @@ namespace FYP_TravelPlanner
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
             if (!IsPostBack)
             {
                 LoadRatingData(DateTime.Now.Year);
@@ -35,7 +39,7 @@ namespace FYP_TravelPlanner
             // Load data for the selected month and year
             LoadRatingData(selectedYear);
         }
-
+  
         private void LoadRatingData(int year)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

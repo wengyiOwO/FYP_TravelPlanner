@@ -20,6 +20,10 @@ namespace FYP_TravelPlanner
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
             if (!IsPostBack)
             {
                 GetRatingData();
@@ -29,7 +33,7 @@ namespace FYP_TravelPlanner
 
             }
         }
-
+   
         private void GetRatingData()
         {
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

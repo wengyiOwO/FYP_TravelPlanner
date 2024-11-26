@@ -23,6 +23,10 @@ namespace FYP_TravelPlanner.js.demo
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
             if (!IsPostBack)
             {
                 // Get the current  year
