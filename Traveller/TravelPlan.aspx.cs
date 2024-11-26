@@ -171,12 +171,11 @@ namespace FYP_TravelPlanner.Traveller
                 return;
             }
 
-            if (ViewState["IsTravelPlanSaved"] != null && (bool)ViewState["IsTravelPlanSaved"])
+            if (Session["SavePlan"] != null && Session["SavePlan"].ToString() == "saved")
             {
-                lblMessage.Text = "Travel plan has already been saved.";
+                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
                 return;
             }
-
             string accountId = Session["account_id"].ToString();
             
             string existingPlanId = Request.QueryString["tp"];
@@ -184,12 +183,11 @@ namespace FYP_TravelPlanner.Traveller
             DateTime startDate;
             int duration, budget;
 
-            // If `tp` is not empty, delete existing records and use the existing `plan_id`
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
-
+                //check tp exist
                 if (!string.IsNullOrEmpty(existingPlanId))
                 {
 
@@ -299,21 +297,24 @@ namespace FYP_TravelPlanner.Traveller
                 conn.Close();
             }
 
-            ViewState["IsTravelPlanSaved"] = true;
+            Session["SavePlan"] = "saved";
 
             string email = !string.IsNullOrEmpty(Session["account_email"] as string)
                 ? Session["account_email"] as string
                 : "takemytrip2024@gmail.com";
 
-            Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+            if (Session["NotifyEmailSent"] == null)
+            {
+                  SendNotifyEmail(email, planId);
+                Session["NotifyEmailSent"] = true;
+            }
 
-            //if (Session["NotifyEmailSent"] == null)
-            //{
-            //    SendNotifyEmail(email, planId);
-            //    Session["NotifyEmailSent"] = true;
-            //}
-
-            //ScheduleItineraryEmails(planId, startDate);
+            ScheduleItineraryEmails(planId, startDate);
+            if (Session["SavePlan"] != null && Session["SavePlan"].ToString() == "saved")
+            {
+                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+                return;
+            }
         }
 
 

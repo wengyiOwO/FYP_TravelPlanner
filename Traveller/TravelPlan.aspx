@@ -335,19 +335,29 @@
             // Serialize the current locations array to JSON
             const updatedLocationsJson = JSON.stringify(locations);
 
-            // Use an AJAX call to send the updated locations to the server
-            $.ajax({
+            // Perform the AJAX call
+            return $.ajax({
                 type: "POST",
                 url: "TravelPlan.aspx/UpdateSelectedLocations",
                 data: JSON.stringify({ updatedLocations: updatedLocationsJson }),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
+                async: false, // Ensures this completes before returning
                 success: function (response) {
-                    // After updating the session on the server, trigger the btnSave click
-                    document.getElementById('<%= btnSave.ClientID %>').click();
+                   //
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to save travel plan. Error: " + error);
                 }
+            }).then(function () {
+                
+                return true;
+            }).catch(function () {
+                // Block postback if there's an error
+                return false;
             });
         }
+
         function generatePDF() {
             const { jsPDF } = window.jspdf; // Get the jsPDF constructor
             const doc = new jsPDF();
@@ -483,7 +493,7 @@
 
 
                         <div class="d-flex justify-content-between mt-4">
-                            <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClick="btnSave_Click" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" />
+                            <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:Button ID="btnPDF" runat="server" Text="Generate PDF" CssClass="btn btn-sm btn-primary shadow-sm" OnClientClick="generatePDF(); return false;" />
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                                 <asp:HiddenField ID="hiddenPlanId" runat="server" />
