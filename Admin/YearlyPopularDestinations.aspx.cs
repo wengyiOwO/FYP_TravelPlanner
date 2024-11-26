@@ -249,7 +249,7 @@ ORDER BY
                 AddTableCell(dataTable, visitCount.ToString(), false, false, false);
             }
 
-            // Add total row with border line above and below
+            // Add total row with border line
             AddTableCell(dataTable, " ", false, true, true);
             AddTableCell(dataTable, "Total", true, true, true);
             AddTableCell(dataTable, totalVisits.ToString(), true, true, true); // Total value with borders
@@ -259,7 +259,7 @@ ORDER BY
             // Add chart image
             if (chartImageBytes != null && chartImageBytes.Length > 0)
             {
-                pdfDoc.Add(new Paragraph(" ")); // Add some space before the chart
+                pdfDoc.Add(new Paragraph(" ")); 
                 Image chartImage = Image.GetInstance(chartImageBytes);
                 chartImage.ScaleToFit(500f, 300f);
                 chartImage.Alignment = Element.ALIGN_CENTER;
