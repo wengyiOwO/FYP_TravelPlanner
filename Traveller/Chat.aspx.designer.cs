@@ -42,6 +42,15 @@ namespace FYP_TravelPlanner.Traveller
         protected global::System.Web.UI.WebControls.Repeater rptFriendsList;
 
         /// <summary>
+        /// chatPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel chatPanel;
+
+        /// <summary>
         /// imgProfile control.
         /// </summary>
         /// <remarks>

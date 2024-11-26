@@ -66,7 +66,7 @@ namespace FYP_TravelPlanner.Traveller
             if (e.CommandName == "SelectFriend")
             {
                 string selectedFriendId = e.CommandArgument.ToString();
-                Response.Redirect("~/Account/Profile.aspx?account_id=" + selectedFriendId);
+                Response.Redirect("~/Account/Profile.aspx?u=" + selectedFriendId);
             }
         }
 

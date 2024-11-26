@@ -94,23 +94,24 @@
                             <asp:Button ID="btnSearch" runat="server" CssClass="btn btn-primary ml-2" Text="Search" OnClick="btnSearch_Click" />
                         </div>
                     </div>
-                   <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
-    <ItemTemplate>
-        <div class="d-flex align-items-start position-relative mb-3 ml-5"> <!-- Add margin-bottom and margin-left -->
-            <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
-            <div class="flex-grow-1 ml-3">
-                <%# Eval("account_name") %>
-            </div>
-            <asp:LinkButton ID="btnSelectFriend" runat="server" 
-                CommandName="SelectFriend" 
-                CommandArgument='<%# Eval("account_id") %>' 
-                CssClass="btn btn-link position-absolute w-100 h-100" 
-                style="top: 0; left: 0; z-index: 1; opacity: 0;">
-                Select
-            </asp:LinkButton>
-        </div>
-    </ItemTemplate>
-</asp:Repeater>
+                    <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
+                        <ItemTemplate>
+                            <div class="d-flex align-items-start position-relative mb-3 ml-5">
+                                <!-- Add margin-bottom and margin-left -->
+                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" OnDataBinding="imgProfile_DataBinding" />
+                                <div class="flex-grow-1 ml-3">
+                                    <%# Eval("account_name") %>
+                                </div>
+                                <asp:LinkButton ID="btnSelectFriend" runat="server"
+                                    CommandName="SelectFriend"
+                                    CommandArgument='<%# Eval("account_id") %>'
+                                    CssClass="btn btn-link position-absolute w-100 h-100"
+                                    Style="top: 0; left: 0; z-index: 1; opacity: 0;">
+                                    Select
+                                </asp:LinkButton>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
 
                 <!-- Friend Request Section -->

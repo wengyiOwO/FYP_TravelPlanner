@@ -27,7 +27,7 @@ namespace FYP_TravelPlanner
         private void LoadAccountDetails(string accountId)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            string query = "SELECT account_name, account_email, account_phoneNo FROM Account WHERE account_id = @Account_ID";
+            string query = "SELECT account_name, account_email, account_phoneNo, profile_image FROM Account WHERE account_id = @Account_ID";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -41,13 +41,18 @@ namespace FYP_TravelPlanner
                     inputName.Text = reader["account_name"].ToString();
                     inputEmailAddress.Text = reader["account_email"].ToString();
                     inputPhone.Text = reader["account_phoneNo"].ToString();
+                    string profileImage = reader["profile_image"].ToString();
+
+                    if (!string.IsNullOrEmpty(profileImage))
+                    {
+                        imgProfile.ImageUrl = "~/Uploads/Profile/" + profileImage;
+                    }
+                    else
+                    {
+                        imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+                    }
                 }
             }
-
-            string profileImagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
-            imgProfile.ImageUrl = System.IO.File.Exists(profileImagePath)
-                ? $"~/Uploads/Profile/{accountId}.jpg"
-                : "~/Uploads/Profile/unknown.jpg";
         }
 
         protected void SaveChanges_Click(object sender, EventArgs e)
@@ -84,6 +89,19 @@ namespace FYP_TravelPlanner
                 string filePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
 
                 ProfileImageUpload.SaveAs(filePath);
+                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                string updateQuery = "UPDATE Account SET profile_image = @profileImage WHERE account_id = @Account_ID";
+                string profileImage = accountId + ".jpg";
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand(updateQuery, conn);
+                    cmd.Parameters.AddWithValue("@profileImage", profileImage);
+                    cmd.Parameters.AddWithValue("@Account_ID", accountId);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
 
                 StatusMessage.Text = "Profile image uploaded successfully!";
                 StatusMessage.ForeColor = System.Drawing.Color.Green;

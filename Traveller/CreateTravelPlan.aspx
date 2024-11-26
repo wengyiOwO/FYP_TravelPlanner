@@ -84,7 +84,7 @@
                         <div class="overflow-auto flex-grow-1">
                             <!-- This div will ensure scrolling -->
 
-                           <!-- Area Selection -->
+                            <!-- Area Selection -->
                             <div class="form-group">
                                 <label for="ddlState">Select Area</label>
                                 <asp:DropDownList ID="ddlState" runat="server" CssClass="form-control">
@@ -92,11 +92,11 @@
                                     <asp:ListItem Text="Area 1" Value="1" />
                                     <asp:ListItem Text="Area 2" Value="2" />
                                 </asp:DropDownList>
-                                <asp:RequiredFieldValidator 
-                                    runat="server" 
-                                    ControlToValidate="ddlState" 
-                                    InitialValue="" 
-                                    ErrorMessage="Area is required" 
+                                <asp:RequiredFieldValidator
+                                    runat="server"
+                                    ControlToValidate="ddlState"
+                                    InitialValue=""
+                                    ErrorMessage="Area is required"
                                     CssClass="text-danger" />
                             </div>
 
@@ -105,16 +105,16 @@
                                 <label for="txtStartDate">Start Date</label>
                                 <asp:TextBox ID="txtStartDate" runat="server" CssClass="form-control" ReadOnly="True" />
                                 <asp:Calendar ID="calendarStartDate" runat="server" OnSelectionChanged="calendarStartDate_SelectionChanged" />
-                                <asp:RequiredFieldValidator 
-                                    runat="server" 
-                                    ControlToValidate="txtStartDate" 
-                                    ErrorMessage="Start date is required" 
+                                <asp:RequiredFieldValidator
+                                    runat="server"
+                                    ControlToValidate="txtStartDate"
+                                    ErrorMessage="Start date is required"
                                     CssClass="text-danger" />
-                                <asp:CustomValidator 
-                                    runat="server" 
-                                    ControlToValidate="txtStartDate" 
-                                    ErrorMessage="Start date must be today or later" 
-                                    CssClass="text-danger" 
+                                <asp:CustomValidator
+                                    runat="server"
+                                    ControlToValidate="txtStartDate"
+                                    ErrorMessage="Start date must be today or later"
+                                    CssClass="text-danger"
                                     OnServerValidate="ValidateStartDate" />
                             </div>
 
@@ -129,11 +129,11 @@
                                     <asp:ListItem Text="4 days" Value="4" />
                                     <asp:ListItem Text="5 days" Value="5" />
                                 </asp:DropDownList>
-                                <asp:RequiredFieldValidator 
-                                    runat="server" 
-                                    ControlToValidate="ddlDuration" 
-                                    InitialValue="" 
-                                    ErrorMessage="Duration is required" 
+                                <asp:RequiredFieldValidator
+                                    runat="server"
+                                    ControlToValidate="ddlDuration"
+                                    InitialValue=""
+                                    ErrorMessage="Duration is required"
                                     CssClass="text-danger" />
                             </div>
 
@@ -146,36 +146,53 @@
                                     <asp:ListItem Text="1500" Value="1500" />
                                     <asp:ListItem Text="2000" Value="2000" />
                                 </asp:RadioButtonList>
-                                <asp:RequiredFieldValidator 
-                                    runat="server" 
-                                    ControlToValidate="rblBudget" 
-                                    ErrorMessage="Budget is required" 
+                                <asp:RequiredFieldValidator
+                                    runat="server"
+                                    ControlToValidate="rblBudget"
+                                    ErrorMessage="Budget is required"
                                     CssClass="text-danger" />
                             </div>
 
-                           <!-- Activity Interest -->
+                            <!-- Activity Interest -->
                             <div class="form-group">
                                 <label>Activity Interest</label><br />
                                 <asp:CheckBoxList ID="cblActivities" runat="server" CssClass="form-check">
-    <asp:ListItem Value="beaches">Beaches</asp:ListItem>
-    <asp:ListItem Value="citySightseeing">City Sightseeing</asp:ListItem>
-    <asp:ListItem Value="foodExploration">Food Exploration</asp:ListItem>
-    <asp:ListItem Value="shopping">Shopping</asp:ListItem>
-    <asp:ListItem Value="outdoorAdventures">Outdoor Adventures</asp:ListItem>
-</asp:CheckBoxList>
+                                    <asp:ListItem Value="beaches">Beaches</asp:ListItem>
+                                    <asp:ListItem Value="citySightseeing">City Sightseeing</asp:ListItem>
+                                    <asp:ListItem Value="foodExploration">Food Exploration</asp:ListItem>
+                                    <asp:ListItem Value="shopping">Shopping</asp:ListItem>
+                                    <asp:ListItem Value="outdoorAdventures">Outdoor Adventures</asp:ListItem>
+                                </asp:CheckBoxList>
 
-<asp:CustomValidator 
-    runat="server" 
-    ID="CheckBoxRequired" 
-    EnableClientScript="true" 
-    OnServerValidate="CheckBoxRequired_ServerValidate"
-    ErrorMessage="You must select at least one activity to proceed." 
-    CssClass="text-danger" />
+                                <asp:CustomValidator
+                                    runat="server"
+                                    ID="CheckBoxRequired"
+                                    EnableClientScript="true"
+                                    OnServerValidate="CheckBoxRequired_ServerValidate"
+                                    ErrorMessage="You must select at least one activity to proceed."
+                                    CssClass="text-danger" />
+                            </div>
+                            <div class="form-group">
+                                <label><b>You can add locations to your travel plan by searching for them in the search bar.</b></label>
+                                <table class="table table-bordered" id="interestLocationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>No. </th>
+                                            <th>Location Name</th>
+                                            <th>Area</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <asp:Label ID="lblLocations" runat="server" CssClass="mt-3" Text="" />
                         <asp:Label ID="testError" runat="server" CssClass="mt-3" Text="" />
-                        <asp:Button ID="btnPlan" runat="server" CssClass="btn btn-primary mt-3" Text="Plan" OnClick="btnPlan_Click" />
+                        <asp:Button ID="btnPlan" runat="server" CssClass="btn btn-primary mt-3" Text="Plan" OnClick="btnPlan_Click" OnClientClick="prepareLocationsForSubmission()" />
+                        <asp:HiddenField ID="hfSelectedLocations" runat="server" />
+
                     </div>
                 </div>
             </div>
@@ -194,7 +211,8 @@
     <script type="text/javascript">
         var map;
         var markers = [];
-
+        var selectedLocations = [];
+        var ddlStates = [];
         // zoom on KL
         function initMap() {
             map = L.map('map').setView([3.1390, 101.6869], 13);
@@ -204,6 +222,9 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
         }
+
+
+
 
         // search locations using Nominatim API
         function searchLocations(query) {
@@ -249,8 +270,12 @@
 
             markers.push(marker);
 
-            document.getElementById('<%= txtSearchLocation.ClientID %>').value = location.display_name;
-            document.getElementById('search-results').innerHTML = '';
+            // Add the selected location to the array and table
+            addSelectedLocation(location);
+
+            // Clear the search box and results
+            document.getElementById('<%= txtSearchLocation.ClientID %>').value = "";
+            document.getElementById('search-results').innerHTML = "";
         }
 
         // Event handler for search input
@@ -262,6 +287,7 @@
                 document.getElementById('search-results').innerHTML = '';
             }
         }
+
 
         $(document).ready(function () {
             // Initialize datepicker on the txtStartDate TextBox
@@ -287,8 +313,87 @@
             });
         });
 
+        function initializeDDLStates() {
+            $('#<%= ddlState.ClientID %> option').each(function () {
+                var text = $(this).text().trim();
+                var value = $(this).val();
+                if (value) {
+                    ddlStates.push({ text: text, value: value });
+                }
+            });
+        }
+
+        function addSelectedLocation(location) {
+            var locationName = location.display_name.split(",")[0]; // Extract name before the first comma
+            var lat = location.lat;
+            var lon = location.lon;
+            var area_id;
+            var area = "Unsupported Area";
+
+            // Match area with ddlState
+            for (var i = 0; i < ddlStates.length; i++) {
+                if (location.display_name.includes(ddlStates[i].text)) {
+                    area = ddlStates[i].text;
+                    area_id = ddlStates[i].value;
+                    break;
+                }
+            }
+
+            var locationObj;
+            if (area === "Unsupported Area") {
+                alert("This system does not support the selected area.");
+                return;
+            } else {
+                locationObj = { name: locationName, area: area, area_id:area_id,lat: lat, lng: lon };
+                 selectedLocations.push(locationObj);
+            }
+
+            // Add to selectedLocations array
+           
+
+            // Update the table
+            updateLocationsTable();
+        }
+
+        // Update the dynamic table
+        function updateLocationsTable() {
+            var tbody = document.querySelector("#interestLocationsTable tbody");
+            tbody.innerHTML = ""; // Clear the table
+
+            selectedLocations.forEach((location, index) => {
+                var row = document.createElement("tr");
+                row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${location.name}</td>
+            <td>${location.area}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeLocation(${index})">Remove</button></td>
+        `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Remove a location from the array and update the table
+        function removeLocation(index) {
+            selectedLocations.splice(index, 1); // Remove from array
+            updateLocationsTable(); // Refresh the table
+        }
+
+        function prepareLocationsForSubmission() {
+            var hiddenField = document.getElementById('<%= hfSelectedLocations.ClientID %>');
+            hiddenField.value = JSON.stringify(selectedLocations);
+        }
+
+        // Initialize ddlStates on page load
+        $(document).ready(function () {
+            initializeDDLStates();
+        });
+
+
         window.onload = function () {
             initMap();
         }
+
+
+
     </script>
 </asp:Content>

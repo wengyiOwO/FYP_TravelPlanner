@@ -16,25 +16,39 @@ namespace FYP_TravelPlanner
         {
             if (!IsPostBack)
             {
-                if (Session["account_name"] != null)
+                if (Session["account_id"] != null)
                 {
-                    if (userDropdownName != null)
+                    string accountId = Session["account_id"] as string;
+
+                    string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+                    using (SqlConnection con = new SqlConnection(connectionString))
                     {
-                        userDropdownName.Text = Session["account_name"].ToString();
+                        string query = "SELECT account_name, profile_image FROM Account WHERE account_id = @AccountId";
+                        using (SqlCommand cmd = new SqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue("@AccountId", accountId);
+                            con.Open();
+                            SqlDataReader reader = cmd.ExecuteReader();
+                            if (reader.Read())
+                            {
+                                userDropdownName.Text = reader["account_name"].ToString();
+
+                                string profileImage = reader["profile_image"].ToString();
+
+                                if (!string.IsNullOrEmpty(profileImage))
+                                {
+                                    imgProfile.ImageUrl = "~/Uploads/Profile/" + profileImage;
+                                }
+                                else
+                                {
+                                    imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
+                                }
+                            }
+                            con.Close();
+                        }
                     }
                 }
-               
-                string profileId;
-                if (!string.IsNullOrEmpty(Request.QueryString["u"]))
-                {
-                    profileId = Request.QueryString["u"];
-                }
-                else
-                {
-                    profileId = Convert.ToString(Session["account_id"]);
-                }
-                LoadProfile(profileId);
-
             }
 
         }
@@ -54,37 +68,5 @@ namespace FYP_TravelPlanner
 
         }
 
-        private void LoadProfile(string accountId)
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
-            using (SqlConnection con = new SqlConnection(connectionString))
-            {
-                string query = "SELECT account_name FROM Account WHERE account_id = @AccountId";
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@AccountId", accountId);
-                    con.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        // Set account name
-                        Session["account_name"] = reader["account_name"].ToString();
-
-                        // Load profile image, use unknown.jpg if image not found
-                        string imagePath = Server.MapPath("~/Uploads/Profile/") + accountId + ".jpg";
-                        if (System.IO.File.Exists(imagePath))
-                        {
-                            imgProfile.ImageUrl = "~/Uploads/Profile/" + accountId + ".jpg";
-                        }
-                        else
-                        {
-                            imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
-                        }
-                    }
-                    con.Close();
-                }
-            }
-        }
     }
 }

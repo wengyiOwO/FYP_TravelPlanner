@@ -56,6 +56,7 @@ namespace FYP_TravelPlanner.Traveller
             if (e.CommandName == "SelectFriend")
             {
                 selectedFriendId = e.CommandArgument.ToString();
+                chatPanel.Visible = true;
                 LoadChatMessages();
                 LoadSelectedFriendDetails();
             }

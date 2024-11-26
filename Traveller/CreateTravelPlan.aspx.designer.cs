@@ -105,6 +105,15 @@ namespace FYP_TravelPlanner.Traveller
         protected global::System.Web.UI.WebControls.Button btnPlan;
 
         /// <summary>
+        /// hfSelectedLocations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSelectedLocations;
+
+        /// <summary>
         /// txtSearchLocation control.
         /// </summary>
         /// <remarks>

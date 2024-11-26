@@ -26,13 +26,13 @@ namespace FYP_TravelPlanner.Traveller
         }
         protected void Page_PreInit(object sender, EventArgs e)
         {
-            if (Session["account_id"] != null) 
+            if (Session["account_id"] != null)
             {
-                MasterPageFile = "~/TakeMyTrip.Master"; 
+                MasterPageFile = "~/TakeMyTrip.Master";
             }
             else
             {
-                MasterPageFile = "~/TakeMyTrip_Anonymous.Master"; 
+                MasterPageFile = "~/TakeMyTrip_Anonymous.Master";
             }
         }
         private void PopulateAreaDropdown()
@@ -89,6 +89,20 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (Page.IsValid)
             {
+
+                string locationJson = Request.Form[hfSelectedLocations.UniqueID];
+                //if (string.IsNullOrEmpty(locationJson))
+                //{
+                //    testError.Text = "No locations provided.";
+                //    return;
+                //}
+
+                // Deserialize the JSON to a list of Location objects
+                var frontendLocations = JsonConvert.DeserializeObject<List<Location>>(locationJson);
+
+                // Get must-have locations (fetch or insert as needed)
+                List<Location> mustLocations = GetMustLocations(frontendLocations);
+
                 string selectedAreaId = ddlState.SelectedValue;
                 if (string.IsNullOrEmpty(selectedAreaId))
                 {
@@ -110,32 +124,14 @@ namespace FYP_TravelPlanner.Traveller
         .Select(item => item.Value)
         .ToList();
 
-                string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                List<Location> locations = new List<Location>();
+
+
+                //string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                //List<Location> locations = new List<Location>();
+                List<Location> locations = GetAllLocations(mustLocations, selectedAreaId);
 
                 try
                 {
-                    using (SqlConnection conn = new SqlConnection(ConnectionString))
-                    {
-                        conn.Open();
-                        string query = "SELECT location_id, place_name, latitude, longitude FROM Location WHERE area_id = @areaId";
-                        using (SqlCommand cmd = new SqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@areaId", selectedAreaId);
-                            SqlDataReader reader = cmd.ExecuteReader();
-                            while (reader.Read())
-                            {
-                                locations.Add(new Location
-                                {
-                                    id = reader["location_id"].ToString(),
-                                    name = reader["place_name"].ToString(),
-                                    address = string.Empty,
-                                    lat = Convert.ToDouble(reader["latitude"]),
-                                    lng = Convert.ToDouble(reader["longitude"])
-                                });
-                            }
-                        }
-                    }
                     List<Location> filteredLocations = FilterLocationsByInterest(locations, selectedInterests);
                     // Determine the number of locations based on the budget
                     int locationCount;
@@ -158,34 +154,36 @@ namespace FYP_TravelPlanner.Traveller
                             break;
                     }
 
+                    List<Location> allSelectedLocations = mustLocations.Concat(filteredLocations).ToList();
+
 
                     // If filtered locations are less than needed, add random locations to meet the required count
                     var random = new Random();
-                    if (filteredLocations.Count < locationCount)
+                    if (allSelectedLocations.Count < locationCount)
                     {
                         // Add random locations from the unfiltered list, excluding duplicates
-                        var additionalLocations = locations.Except(filteredLocations)
+                        var additionalLocations = locations.Except(allSelectedLocations)
                                                            .OrderBy(x => random.Next())
-                                                           .Take(locationCount - filteredLocations.Count)
+                                                           .Take(locationCount - allSelectedLocations.Count)
                                                            .ToList();
-                        filteredLocations.AddRange(additionalLocations);
+                        allSelectedLocations.AddRange(additionalLocations);
                     }
 
                     // Limit to the number of locations based on the budget
-                    var selectedLocations = filteredLocations.Take(locationCount).ToList();
+                    var finalSelectedLocations = allSelectedLocations.Take(locationCount).ToList();
 
                     // Sort locations by latitude for easier routing
-                    selectedLocations = selectedLocations.OrderBy(l => l.lat).ToList();
+                    finalSelectedLocations = finalSelectedLocations.OrderBy(l => l.lat).ToList();
 
                     // Divide the locations by duration (days)
                     int locationsPerDay = locationCount / duration;
-                    for (int i = 0; i < selectedLocations.Count; i++)
+                    for (int i = 0; i < finalSelectedLocations.Count; i++)
                     {
-                        selectedLocations[i].day = (i / locationsPerDay) + 1;
+                        finalSelectedLocations[i].day = (i / locationsPerDay) + 1;
                     }
 
                     // Store the travel plan with day-wise locations in the session
-                    Session["SelectedLocations"] = JsonConvert.SerializeObject(selectedLocations);
+                    Session["SelectedLocations"] = JsonConvert.SerializeObject(finalSelectedLocations);
                     Session["AreaID"] = selectedAreaId;
                     Session["StartDate"] = startDate;
                     Session["Duration"] = duration;
@@ -202,6 +200,123 @@ namespace FYP_TravelPlanner.Traveller
                 testError.Text = "Please correct the highlighted errors.";
             }
         }
+
+        //Get location that user must
+        private List<Location> GetMustLocations(List<Location> frontendLocations)
+        {
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            List<Location> mustLocations = new List<Location>();
+
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                foreach (var loc in frontendLocations)
+                {
+                    // Check if the location already exists
+                    string selectQuery = "SELECT location_id, latitude, longitude FROM Location WHERE place_name LIKE @placeName";
+                    using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn))
+                    {
+                        selectCmd.Parameters.AddWithValue("@placeName", loc.name);
+                        SqlDataReader reader = selectCmd.ExecuteReader();
+
+                        if (reader.Read())
+                        {
+                            // Add existing location to mustLocations
+                            mustLocations.Add(new Location
+                            {
+                                id = reader["location_id"].ToString(),
+                                name = loc.name,
+                                address = loc.address,
+                                lat = Convert.ToDouble(reader["latitude"]),
+                                lng = Convert.ToDouble(reader["longitude"])
+                            });
+                            reader.Close();
+                        }
+                        else
+                        {
+                            reader.Close();
+
+                            // Generate a new location_id
+                            string maxIdQuery = "SELECT ISNULL(MAX(location_id), 'P0000000') FROM Location";
+                            using (SqlCommand maxIdCmd = new SqlCommand(maxIdQuery, conn))
+                            {
+                                string maxId = maxIdCmd.ExecuteScalar().ToString();
+                                string newId = "P" + (int.Parse(maxId.Substring(1)) + 1).ToString("D7");
+
+                                // Insert the new location into the table
+                                string insertQuery = "INSERT INTO Location (location_id, place_name, area_id, latitude, longitude) VALUES (@id, @name, @areaId, @lat, @lng)";
+                                using (SqlCommand insertCmd = new SqlCommand(insertQuery, conn))
+                                {
+                                    insertCmd.Parameters.AddWithValue("@id", newId);
+                                    insertCmd.Parameters.AddWithValue("@name", loc.name);
+                                    insertCmd.Parameters.AddWithValue("@areaId", loc.area_id); // Ensure area_id matches correctly
+                                    insertCmd.Parameters.AddWithValue("@lat", loc.lat);
+                                    insertCmd.Parameters.AddWithValue("@lng", loc.lng);
+
+                                    insertCmd.ExecuteNonQuery();
+                                }
+
+                                // Add newly inserted location to mustLocations
+                                mustLocations.Add(new Location
+                                {
+                                    id = newId,
+                                    name = loc.name,
+                                    address = loc.address,
+                                    lat = loc.lat,
+                                    lng = loc.lng
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return mustLocations;
+        }
+
+        private List<Location> GetAllLocations(List<Location> mustLocations, string selectedAreaId)
+        {
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            List<Location> locations = new List<Location>();
+
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                // Prepare a list of location IDs in mustLocations to exclude
+                var mustLocationIds = mustLocations.Select(loc => loc.id).ToList();
+
+                string query = "SELECT location_id, place_name, area_id, latitude, longitude FROM Location WHERE area_id = @areaId";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@areaId", selectedAreaId);
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        string locationId = reader["location_id"].ToString();
+
+                        // Exclude locations already in mustLocations
+                        if (!mustLocationIds.Contains(locationId))
+                        {
+                            locations.Add(new Location
+                            {
+                                id = locationId,
+                                name = reader["place_name"].ToString(),
+                                lat = Convert.ToDouble(reader["latitude"]),
+                                lng = Convert.ToDouble(reader["longitude"])
+                            });
+                        }
+                    }
+                }
+            }
+
+            return locations;
+        }
+
+
 
         // Method to filter locations by activity interest keywords
         private List<Location> FilterLocationsByInterest(List<Location> locations, List<string> selectedInterests)
@@ -249,6 +364,9 @@ namespace FYP_TravelPlanner.Traveller
             public string id { get; set; }
             public string name { get; set; }
             public string address { get; set; }
+
+            public string area { get; set; }
+            public string area_id { get; set; }
             public double lat { get; set; }
             public double lng { get; set; }
             public int day { get; set; }

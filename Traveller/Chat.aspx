@@ -9,6 +9,8 @@
             min-height: 500px;
         }
 
+       
+
         .chat-online {
             color: #34ce57;
         }
@@ -18,10 +20,24 @@
         }
 
         .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto; /* Scroll if content overflows */
-            padding: 20px;
+            height: calc(100vh - 200px); /* Adjust based on header/footer size */
+            overflow-y: auto;
         }
+
+            /* Always scroll to bottom for chat messages */
+            .chat-messages::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .chat-messages::-webkit-scrollbar-thumb {
+                background-color: #888;
+                border-radius: 4px;
+            }
+
+                .chat-messages::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+
 
         .chat-message-left,
         .chat-message-right {
@@ -101,7 +117,7 @@
             <div class="row g-0">
                 <!-- Friend List Section -->
                 <div class="col-12 col-lg-5 col-xl-3 border-right">
-                    <div class="px-4 d-none d-md-block">
+                    <div class="px-4 d-none d-md-block friend-list">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control my-3" placeholder="Search..."></asp:TextBox>
@@ -129,54 +145,58 @@
                 </div>
                 <!-- Chat Section -->
                 <div class="col-12 col-lg-7 col-xl-9 chat-section<%= ViewState["SelectedFriendId"] != null ? " visible" : "" %>">
-                    <div class="py-2 px-4 border-bottom d-none d-lg-block">
-                        <div class="d-flex align-items-center py-1">
-                            <!-- Selected Friend Image -->
-                            <div class="position-relative">
-                                <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# Eval("profile_image", "{0}") %>' AlternateText="Profile Image" />
-                            </div>
-                            <div class="flex-grow-1 pl-3">
-                                <strong>
-                                    <asp:Literal ID="litSelectedFriendName" runat="server"></asp:Literal></strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="position-relative chat-messages p-4">
-                        <asp:Repeater ID="rptChatMessages" runat="server" OnItemDataBound="rptChatMessages_ItemDataBound">
-                            <ItemTemplate>
-                                <div class='<%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "chat-message-right" : "chat-message-left" %> pb-4'>
-                                    <div>
-                                        <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" />
-                                        <div class="text-muted small text-nowrap mt-2">
-                                            <asp:Literal ID="litTime" runat="server"></asp:Literal>
-                                        </div>
-                                    </div>
-                                    <div class="flex-shrink-1 bg-light rounded py-2 px-3">
-                                        <div class="font-weight-bold mb-1">
-                                            <asp:Literal ID="litSender" runat="server"></asp:Literal>
-                                        </div>
-                                        <asp:PlaceHolder ID="phMessageContent" runat="server"></asp:PlaceHolder>
-                                    </div>
+                    <asp:Panel ID="chatPanel" runat="server" CssClass="" Visible="false">
+
+                        <div class="py-2 px-4 border-bottom d-none d-lg-block">
+                            <div class="d-flex align-items-center py-1">
+                                <!-- Selected Friend Image -->
+                                <div class="position-relative">
+                                    <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# Eval("profile_image", "{0}") %>' AlternateText="Profile Image" />
                                 </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </div>
-                    <div class="flex-grow-0 py-3 px-4 border-top">
-                        <div class="input-group">
-                            <!-- Text Input for Message -->
-                            <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
-
-                            <!-- File Upload Button -->
-                            <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="cursor: pointer;" onchange="previewFiles(event)" />
-
-                            <!-- Send Button -->
-                            <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
+                                <div class="flex-grow-1 pl-3">
+                                    <strong>
+                                        <asp:Literal ID="litSelectedFriendName" runat="server"></asp:Literal></strong>
+                                </div>
+                            </div>
                         </div>
+                        <div class="position-relative chat-messages p-4">
+                            <asp:Repeater ID="rptChatMessages" runat="server" OnItemDataBound="rptChatMessages_ItemDataBound">
+                                <ItemTemplate>
+                                    <div class='<%# Eval("sender_id").ToString() == Session["account_id"].ToString() ? "chat-message-right" : "chat-message-left" %> pb-4'>
+                                        <div>
+                                            <asp:Image ID="imgMessageProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" />
+                                            <div class="text-muted small text-nowrap mt-2">
+                                                <asp:Literal ID="litTime" runat="server"></asp:Literal>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-1 bg-light rounded py-2 px-3">
+                                            <div class="font-weight-bold mb-1">
+                                                <asp:Literal ID="litSender" runat="server"></asp:Literal>
+                                            </div>
+                                            <asp:PlaceHolder ID="phMessageContent" runat="server"></asp:PlaceHolder>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </div>
+                        <div class="flex-grow-0 py-3 px-4 border-top">
+                            <div class="input-group">
+                                <!-- Text Input for Message -->
+                                <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
 
-                        <!-- Preview Container for Images and Videos -->
-                        <div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
-                    </div>
+                                <!-- File Upload Button -->
+                                <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="cursor: pointer;" onchange="previewFiles(event)" />
+
+                                <!-- Send Button -->
+                                <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
+                            </div>
+
+                            <!-- Preview Container for Images and Videos -->
+                            <div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
+                        </div>
+                    </asp:Panel>
                 </div>
+
             </div>
         </div>
     </main>
@@ -212,28 +232,25 @@
                         let messageContent = "";
 
                         if (msg.message_type === "text") {
-                            // Text message
                             messageContent = "<div>" + msg.chat_message + "</div>";
                         } else if (msg.message_type === "image") {
-                            // Image message
                             const imageUrl = "../Uploads/Chat/" + msg.chat_message;
                             messageContent = '<img src="' + imageUrl + '" class="img-fluid" alt="Image Message" />';
                         } else if (msg.message_type === "video") {
-                            // Video message
                             const videoUrl = "../Uploads/Chat/" + msg.chat_message;
                             messageContent = '<video src="' + videoUrl + '" class="w-100" controls></video>';
                         }
 
-                        const messageHtml = '<div class="' + align + ' pb-4">' +
-                            '<div>' +
-                            '<img src="' + profileImg + '" class="rounded-circle mr-1" style="width: 40px; height: 40px;" alt="' + senderName + '" />' +
-                            '<div class="text-muted small text-nowrap mt-2">' + messageTime + '</div>' +
-                            '</div>' +
-                            '<div class="flex-shrink-1 bg-light rounded py-2 px-3">' +
-                            '<div class="font-weight-bold mb-1">' + senderName + '</div>' +
-                            messageContent +
-                            '</div>' +
-                            '</div>';
+                        const messageHtml = `<div class="${align} pb-4">
+                    <div>
+                        <img src="${profileImg}" class="rounded-circle mr-1" style="width: 40px; height: 40px;" alt="${senderName}" />
+                        <div class="text-muted small text-nowrap mt-2">${messageTime}</div>
+                    </div>
+                    <div class="flex-shrink-1 bg-light rounded py-2 px-3">
+                        <div class="font-weight-bold mb-1">${senderName}</div>
+                        ${messageContent}
+                    </div>
+                </div>`;
 
                         chatContainer.append(messageHtml);
                     });

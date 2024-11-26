@@ -31,7 +31,7 @@ namespace FYP_TravelPlanner
                 }
                 string currentUserId = Convert.ToString(Session["account_id"]);
                 LoadProfile(profileId);
-                LoadPosts(profileId);
+                LoadPosts(profileId, currentUserId);
                 ConfigureFriendButton(profileId, currentUserId);
             }
         }
@@ -91,7 +91,6 @@ namespace FYP_TravelPlanner
             }
         }
 
-        // Helper method to configure the button
         private void ConfigureButton(Button button, string text, bool disable, bool visible)
         {
             button.Text = text;
@@ -125,7 +124,6 @@ namespace FYP_TravelPlanner
             ConfigureButton(btnSent, "Friend Request Sent", true, true);
         }
 
-        // Event handler for Accept Friend button
         protected void btnAccept_Click(object sender, EventArgs e)
         {
             string friendId = Request.QueryString["u"];
@@ -148,9 +146,7 @@ namespace FYP_TravelPlanner
 
         protected void btnReject_Click(object sender, EventArgs e)
         {
-            // Assume the current user's account ID is stored in the session
             string accountId = Convert.ToString(Session["account_id"]);
-            // The profile user's ID from the query string
             string friendId = Request.QueryString["u"];
 
             if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(friendId))
@@ -159,13 +155,12 @@ namespace FYP_TravelPlanner
                 return;
             }
 
-            // Connection string to your database
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                // SQL query to delete the friend request
+
                 string query = @"
             DELETE FROM Friends 
             WHERE 
@@ -173,10 +168,9 @@ namespace FYP_TravelPlanner
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Add parameters to the SQL command
                     cmd.Parameters.AddWithValue("@FriendId", friendId);
                     cmd.Parameters.AddWithValue("@AccountId", accountId);
-                    // Execute the command
+
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -185,7 +179,6 @@ namespace FYP_TravelPlanner
             ConfigureButton(btnAdd, "Add", false, true);
         }
 
-        // Event handler for Unfriend button
         protected void btnUnfriend_Click(object sender, EventArgs e)
         { 
             string friendId = Request.QueryString["u"];
@@ -205,7 +198,6 @@ namespace FYP_TravelPlanner
             ConfigureButton(btnAdd, "Add Friend", false, true);
         }
 
-        // Method to load profile data
         private void LoadProfile(string accountId)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -239,23 +231,44 @@ namespace FYP_TravelPlanner
             }
         }
 
-        // Method to load posts of the user
-        private void LoadPosts(string accountId)
+        private void LoadPosts(string profileId, string currentUserId)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "SELECT post_id, post_title FROM Posts WHERE account_id = @AccountId AND post_status = 'Posted'";
+                string query = @"
+                    SELECT 
+                        post_id, 
+                        post_title, 
+                        file_type 
+                    FROM 
+                        Posts 
+                    WHERE 
+                        post_status = 'Posted'
+                        AND
+                        account_id = @profileId
+                        AND (
+                            post_permission = 'Public' 
+                            OR (post_permission = 'Friend' AND EXISTS (
+                                SELECT 1 
+                                FROM Friends 
+                                WHERE 
+                                    (account1_id = Posts.account_id AND account2_id = @currentAccountId AND friend_status = 'Accepted') 
+                                    OR 
+                                    (account2_id = Posts.account_id AND account1_id = @currentAccountId AND friend_status = 'Accepted')
+                            ))
+                            OR (post_permission = 'Owner' AND account_id = @currentAccountId)
+                        )";
+
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    cmd.Parameters.AddWithValue("@AccountId", accountId);
+                    cmd.Parameters.AddWithValue("@profileId", profileId);
+                    cmd.Parameters.AddWithValue("@currentAccountId", currentUserId);
                     con.Open();
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
-                    // Bind the data to the Repeater
                     PostsRepeater.DataSource = dt;
                     PostsRepeater.DataBind();
 
