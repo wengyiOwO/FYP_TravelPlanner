@@ -16,7 +16,11 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (Session["account_id"] == null)
             {
+
                 Response.Redirect("~/Login.aspx");
+            }
+            else
+            {
             }
 
             if (Session["SavePlan"] != null)

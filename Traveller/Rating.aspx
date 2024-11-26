@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Rating.aspx.cs" MasterPageFile="~/TakeMyTrip.Master" Inherits="FYP_TravelPlanner.Traveller.Rating" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/TakeMyTrip.Master" CodeBehind="Rating.aspx.cs"  Inherits="FYP_TravelPlanner.Traveller.Rating" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <!-- Include FontAwesome -->
@@ -117,9 +117,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         function validateForm() {
@@ -161,6 +158,8 @@
             return isValid;
         }
     </script>
+    
 
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 </asp:Content>
