@@ -87,6 +87,12 @@
                         </div>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <asp:HyperLink runat="server" CssClass="nav-link" NavigateUrl="~/Traveller/CreateTravelPlan.aspx">
+         <i class="fas fa-map-marker-alt"></i>
+         <span>Traveller Homepage</span>
+                    </asp:HyperLink>
+                </li>
             </ul>
             <!-- End of Sidebar -->
 
@@ -128,7 +134,7 @@
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <span class="mr-2 d-none d-lg-inline text-gray-600 small"></span>
                                     <asp:Label runat="server" ID="userDropdownName" Visible="true" Style="margin-right: 5px;" />
-                            <asp:Image ID="imgProfile" runat="server" CssClass="img-profile rounded-circle" />
+                                    <asp:Image ID="imgProfile" runat="server" CssClass="img-profile rounded-circle" />
                                 </a>
                                 <!-- Dropdown - User Information -->
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">

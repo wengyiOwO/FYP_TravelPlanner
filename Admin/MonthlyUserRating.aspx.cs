@@ -124,7 +124,7 @@ namespace FYP_TravelPlanner
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    g.Clear(Color.White); // Clear the background to white
+                    g.Clear(Color.White);
 
                     Brush[] brushes = {
                 new SolidBrush(Color.FromArgb(244, 67, 54)),  // Red
@@ -134,8 +134,8 @@ namespace FYP_TravelPlanner
                 new SolidBrush(Color.FromArgb(33, 150, 243))  // Blue
             };
 
-                    System.Drawing.Font titleFont = new System.Drawing.Font("Arial", 16, FontStyle.Bold);
-                    System.Drawing.Font labelFont = new System.Drawing.Font("Arial", 12, FontStyle.Regular);
+                    System.Drawing.Font titleFont = new System.Drawing.Font("Arial", 18, FontStyle.Bold);
+                    System.Drawing.Font labelFont = new System.Drawing.Font("Arial", 14, FontStyle.Regular);
 
                     g.DrawString("User Ratings Distribution", titleFont, Brushes.Black, new PointF(width / 2 - 150, 20));
 
@@ -162,18 +162,18 @@ namespace FYP_TravelPlanner
                         float labelY = (height / 2) + (float)Math.Sin(labelAngle * Math.PI / 180) * labelDistance;
 
                         string label = $"{labels[i]}: {ratingData[i]} ({(float)ratingData[i] / totalRatings * 100:0.0}%)";
-                        g.DrawString(label, labelFont, Brushes.Black, labelX - 50, labelY);
+                        g.DrawString(label, labelFont, Brushes.Black, labelX - 70, labelY);
 
                         startAngle += sweepAngle;
                     }
 
                     // Add legend
-                    float legendX = 516, legendY = 130;
+                    float legendX = 510, legendY = 130;
                     for (int i = 0; i < brushes.Length; i++)
                     {
                         g.FillRectangle(brushes[i], legendX, legendY, 20, 20);
                         g.DrawRectangle(Pens.Black, legendX, legendY, 20, 20);
-                        g.DrawString(labels[i], labelFont, Brushes.Black, legendX + 30, legendY);
+                        g.DrawString(labels[i], labelFont, Brushes.Black, legendX + 25, legendY);
                         legendY += 30;
                     }
                 }
@@ -185,6 +185,8 @@ namespace FYP_TravelPlanner
                 }
             }
         }
+
+
 
         public void GenerateUserRatingsPDFWithChart(int[] ratingData, int month, int year)
         {
@@ -254,7 +256,7 @@ namespace FYP_TravelPlanner
             }
 
             AddTableCell(dataTable, " ", false, true, false);
-            AddTableCell(dataTable, "Total Count", true, true, false);
+            AddTableCell(dataTable, "Total", true, true, false);
             AddTableCell(dataTable, totalRating.ToString(), true, true, false); // Total value with borders
 
             AddTableCell(dataTable, " ", false, false, true);

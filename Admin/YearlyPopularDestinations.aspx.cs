@@ -106,26 +106,37 @@ ORDER BY
 
                     // Determine max visit count for scaling
                     int maxVisits = destinationData.AsEnumerable()
-                        .Max(row => Convert.ToInt32(row["visit_count"]));
-                    int numberOfGridlines = 5; // Number of gridlines
+     .Select(row => Convert.ToInt32(row["visit_count"]))
+     .DefaultIfEmpty(1) // Avoid divide by zero if dataset is empty
+     .Max();
+
+                    int numberOfGridlines = 5; 
                     int gridlineSpacing = (height - 220) / numberOfGridlines;
 
-                    System.Drawing.Font font = new System.Drawing.Font("Arial", 12);
-                    System.Drawing.Font axisFont = new System.Drawing.Font("Arial", 16, FontStyle.Bold);
+                    System.Drawing.Font font = new System.Drawing.Font("Arial", 13);
+                    System.Drawing.Font axisFont = new System.Drawing.Font("Arial", 18, FontStyle.Bold);
                     Brush brush = new SolidBrush(Color.Black);
                     Brush barBrush = new SolidBrush(Color.Blue);
                     Pen gridlinePen = new Pen(Color.LightGray, 1);
 
-                    // Draw horizontal gridlines
+                    // Avoid duplicate labels 
+                    HashSet<int> drawnLabels = new HashSet<int>();
+
                     for (int i = 0; i <= numberOfGridlines; i++)
                     {
-                        int y = height - 145 - (i * gridlineSpacing); // Y-coordinate for gridline
-                        g.DrawLine(gridlinePen, labelOffset, y, width - 50, y); // Draw gridline across the chart
 
-                        // Add value labels next to gridlines
                         int value = maxVisits * i / numberOfGridlines;
-                        g.DrawString(value.ToString(), font, brush, labelOffset - 40, y - 8);
+
+                        // Skip duplicate labels
+                        if (!drawnLabels.Contains(value))
+                        {
+                            drawnLabels.Add(value);
+                            int y = height - 145 - (i * gridlineSpacing);
+                            g.DrawLine(gridlinePen, labelOffset, y, width - 50, y); // Draw gridline across the chart
+                            g.DrawString(value.ToString(), font, brush, labelOffset - 40, y - 8);
+                        }
                     }
+
                     // Draw Y-axis label (vertical, top-left corner)
                     g.RotateTransform(-90); // Rotate to draw vertically
                     g.DrawString("Number of Visits", axisFont, brush, -height / 2 - 50, 12);
@@ -173,7 +184,7 @@ ORDER BY
                     string xAxisLabel = "Top 8 Popular Destinations";
                     SizeF labelSize = g.MeasureString(xAxisLabel, axisFont);
                     float labelX = (width - labelSize.Width) / 2; // Center horizontally
-                    float labelY = height - 35;
+                    float labelY = height - 30;
                     g.DrawString(xAxisLabel, axisFont, brush, labelX, labelY);
 
                 }

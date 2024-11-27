@@ -105,6 +105,8 @@
                         <span>Feedback</span>
                     </asp:HyperLink>
                 </li>
+                    <asp:HyperLink runat="server" CssClass="nav-link" NavigateUrl="~/Admin/Dashboard.aspx">
+                    </asp:HyperLink>
             </ul>
             <!-- End of Sidebar -->
 
@@ -123,6 +125,7 @@
 
                         <!-- Topbar Navbar -->
                         <ul class="navbar-nav ml-auto">
+
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
