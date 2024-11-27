@@ -80,10 +80,10 @@
                                         <asp:TextBox ID="TextBox3" runat="server" Text='<%# Bind("post_date", "{0:dd/MM/yyyy}") %>'></asp:TextBox>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="TextBox3"
                                             Display="Dynamic" ErrorMessage="Please Fill In Date!" ForeColor="Red"></asp:RequiredFieldValidator>
-                                        <asp:RegularExpressionValidator ID="RegExValidator3" runat="server" ControlToValidate="TextBox3"
+                                        <asp:RegularExpressionValidator ID="RegExValidator3" runat="server" ControlToValidate="TextBox3" Display="Dynamic"
                                             ValidationExpression="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$"
                                             ErrorMessage="Date must be in dd/MM/yyyy format." ForeColor="Red"></asp:RegularExpressionValidator>
-                                        <asp:CustomValidator ID="CustomValidator3" runat="server" ControlToValidate="TextBox3"
+                                        <asp:CustomValidator ID="CustomValidator3" runat="server" ControlToValidate="TextBox3" Display="Dynamic"
                                             ErrorMessage="Date cannot exceeds today's date" ForeColor="Red" OnServerValidate="ValidateDate"></asp:CustomValidator>
                                     </EditItemTemplate>
                                 </asp:TemplateField>

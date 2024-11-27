@@ -83,7 +83,7 @@ namespace FYP_TravelPlanner
                 string fromEmail = "puajq-wm21@student.tarc.edu.my";
                 string subject = "Password Reset Request";
                 string body = $"<p>To reset your password, please click the following link:</p><p><a href='{resetLink}'>Reset Password</a></p>" +
-                    $"<p>The Reset Password Link will be expired in 5 minutes</p>";
+                    $"<p>The Reset Password Link above will be expired in 5 minutes.</p>";
 
                 // Set up and send the email
                 MailMessage mail = new MailMessage();

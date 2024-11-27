@@ -78,10 +78,11 @@
                 <div class="col-lg-11">
                     <div class="position-relative">
                         <div class="text-center mb-4">
-                        <h4><asp:Label ID="lblOverallRating" runat="server" CssClass="font-weight-bold"></asp:Label></h4>
-                        <div id="overallRatingStars" runat="server" class="rating-stars">
+                            <h4>
+                                <asp:Label ID="lblOverallRating" runat="server" CssClass="font-weight-bold"></asp:Label></h4>
+                            <div id="overallRatingStars" runat="server" class="rating-stars">
+                            </div>
                         </div>
-                    </div>
                         <div class="filter-section">
                             <label for="ratingFilter" class="mr-3">Filter by Rating:</label>
                             <asp:DropDownList ID="ratingFilter" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ratingFilter_SelectedIndexChanged" CssClass="form-control w-auto">
@@ -99,7 +100,11 @@
                             <asp:Repeater ID="rptFeedback" runat="server">
                                 <ItemTemplate>
                                     <div class="feedback-message-left">
-                                        <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt='<%# Eval("account_name") %>' width="40" height="40">
+                                        <asp:Image
+                                            ID="imgFeedback"
+                                            runat="server"
+                                            CssClass="img-profile rounded-circle" width="40" height="30" ImageUrl='<%# string.IsNullOrEmpty(Eval("profile_image") as string) ? "~/Uploads/Profile/unknown.jpg" : "~/Uploads/Profile/" + Eval("profile_image") %>' />
+
                                         <div>
                                             <div class="font-weight-bold mb-1"><%# Eval("account_name") %></div>
                                             <div class="rating-stars">

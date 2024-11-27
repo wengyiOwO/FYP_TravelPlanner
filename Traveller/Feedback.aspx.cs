@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -18,9 +19,10 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (!IsPostBack)
             {
+                rptFeedback.ItemDataBound += rptFeedback_ItemDataBound;
                 BindFeedbackData();
-                DisplayOverallRating();
             }
+
         }
         protected void Page_PreInit(object sender, EventArgs e)
         {
@@ -39,6 +41,42 @@ namespace FYP_TravelPlanner.Traveller
             DisplayOverallRating();
 
         }
+        protected void rptFeedback_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                var imgFeedback = (Image)e.Item.FindControl("imgFeedback");
+
+                string accountId = DataBinder.Eval(e.Item.DataItem, "account_id") as string;
+                string profileImage = GetProfileImage(accountId);
+                    imgFeedback.ImageUrl = string.IsNullOrEmpty(profileImage)
+                        ? "~/Uploads/Profile/unknown.jpg"
+                        : "~/Uploads/Profile/" + profileImage;
+                }
+            }
+        
+
+        private string GetProfileImage(string accountId)
+        {
+            string profileImage = null;
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT profile_image FROM Account WHERE account_id = @AccountId";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@AccountId", accountId);
+                    con.Open();
+                    object result = cmd.ExecuteScalar();
+                    profileImage = result != DBNull.Value ? result.ToString() : null;
+                }
+            }
+
+            return profileImage;
+        }
+
+
         private void BindFeedbackData()
         {
             string accountRole = Session["account_role"] as string;
@@ -49,7 +87,7 @@ namespace FYP_TravelPlanner.Traveller
             if (selectedRating == "all")
             {
                 query = @"
-            SELECT R.rating, R.review, R.rating_date, A.account_name 
+            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id 
             FROM Rating R 
             INNER JOIN Account A ON R.account_id = A.account_id 
             ORDER BY R.rating_date DESC";
@@ -57,7 +95,7 @@ namespace FYP_TravelPlanner.Traveller
             else
             {
                 query = @"
-            SELECT R.rating, R.review, R.rating_date, A.account_name 
+            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id   
             FROM Rating R 
             INNER JOIN Account A ON R.account_id = A.account_id 
             WHERE R.rating = @rating 
@@ -102,6 +140,7 @@ namespace FYP_TravelPlanner.Traveller
             }
 
         }
+
 
 
         private void DisplayOverallRating()

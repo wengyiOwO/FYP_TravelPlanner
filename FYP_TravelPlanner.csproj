@@ -318,7 +318,6 @@
     <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
     <Content Include="Scripts\jquery.signalR-2.4.3.js" />
     <Content Include="Scripts\jquery.signalR-2.4.3.min.js" />
-    <Content Include="SessionTimeout.aspx" />
     <Content Include="Traveller\AddFriend.aspx" />
     <Content Include="Traveller\Chat.aspx" />
     <Content Include="Traveller\CreatePost.aspx" />
@@ -2060,13 +2059,6 @@
     </Compile>
     <Compile Include="Account\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="SessionTimeout.aspx.cs">
-      <DependentUpon>SessionTimeout.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="SessionTimeout.aspx.designer.cs">
-      <DependentUpon>SessionTimeout.aspx</DependentUpon>
     </Compile>
     <Compile Include="TakeMyTrip.Master.cs">
       <DependentUpon>TakeMyTrip.Master</DependentUpon>

@@ -105,8 +105,12 @@
                         <span>Feedback</span>
                     </asp:HyperLink>
                 </li>
-                    <asp:HyperLink runat="server" CssClass="nav-link" NavigateUrl="~/Admin/Dashboard.aspx">
-                    </asp:HyperLink>
+                <li class="nav-item" id="adminDashboardLink" runat="server">
+                    <asp:HyperLink ID="lnkAdminDashboard" runat="server" CssClass="nav-link" NavigateUrl="~/Admin/Dashboard.aspx">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Admin Dashboard</span>
+    </asp:HyperLink>
+                </li>
             </ul>
             <!-- End of Sidebar -->
 

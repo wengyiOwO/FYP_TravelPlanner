@@ -29,7 +29,11 @@
                                             </div>
                                             <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password" placeholder="Enter new password" CssClass="form-control form-control-user"></asp:TextBox>
                                         </div>
-                                        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New Password is required." CssClass="text-danger" />
+                                        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New Password is required." CssClass="text-danger" Display="Dynamic"/>
+                                                                        <asp:RegularExpressionValidator runat="server" ControlToValidate="txtNewPassword"
+ErrorMessage="Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+CssClass="text-danger"
+ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#+])[A-Za-z\d@$!%*?&#+]{8,}$" Display="Dynamic" />
                                     </div>
                                     <div class="form-group">
                                         <label for="txtConfirmNewPassword" class="text-dark font-weight-bold">Confirm New Password</label>
@@ -39,8 +43,8 @@
                                             </div>
                                             <asp:TextBox ID="txtConfirmNewPassword" runat="server" TextMode="Password" placeholder="Confirm new password" CssClass="form-control form-control-user"></asp:TextBox>
                                         </div>
-                                        <asp:RequiredFieldValidator ID="rfvConfirmNewPassword" runat="server" ControlToValidate="txtConfirmNewPassword" ErrorMessage="Confirm New Password is required." CssClass="text-danger" />
-                                        <asp:CompareValidator ID="cvNewPasswords" runat="server" ControlToValidate="txtConfirmNewPassword" ControlToCompare="txtNewPassword" ErrorMessage="Passwords do not match." CssClass="text-danger" />
+                                        <asp:RequiredFieldValidator ID="rfvConfirmNewPassword" runat="server" ControlToValidate="txtConfirmNewPassword" ErrorMessage="Confirm New Password is required." CssClass="text-danger" Display="Dynamic" />
+                                        <asp:CompareValidator ID="cvNewPasswords" runat="server" ControlToValidate="txtConfirmNewPassword" ControlToCompare="txtNewPassword" ErrorMessage="Passwords do not match." CssClass="text-danger" Display="Dynamic" />
                                     </div>
                                     <asp:Button ID="btnResetPassword" runat="server" Text="Reset Password" CssClass="btn btn-primary btn-user btn-block" OnClick="btnResetPassword_Click" />
                                     <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>

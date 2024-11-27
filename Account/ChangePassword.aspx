@@ -24,7 +24,7 @@
                                             </div>
                                             <asp:TextBox ID="txtCurrentPassword" runat="server" TextMode="Password" placeholder="Enter current password" CssClass="form-control form-control-user"></asp:TextBox>
                                         </div>
-                                        <asp:RequiredFieldValidator ID="rfvCurrentPassword" runat="server" ControlToValidate="txtCurrentPassword" ErrorMessage="Current Password is required." CssClass="text-danger" />
+                                        <asp:RequiredFieldValidator ID="rfvCurrentPassword" runat="server" ControlToValidate="txtCurrentPassword" ErrorMessage="Current Password is required." CssClass="text-danger" Display="Dynamic" />
                                     </div>
                                     <div class="form-group">
                                         <label for="txtNewPassword" class="text-dark font-weight-bold">New Password</label>
@@ -34,7 +34,11 @@
                                             </div>
                                             <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password" placeholder="Enter new password" CssClass="form-control form-control-user"></asp:TextBox>
                                         </div>
-                                        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New Password is required." CssClass="text-danger" />
+                                        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New Password is required." CssClass="text-danger"  Display="Dynamic"/>
+                                         <asp:RegularExpressionValidator runat="server" ControlToValidate="txtNewPassword"
+     ErrorMessage="Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+     CssClass="text-danger"
+     ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#+])[A-Za-z\d@$!%*?&#+]{8,}$" Display="Dynamic" />
                                     </div>
                                     <div class="form-group">
                                         <label for="txtConfirmNewPassword" class="text-dark font-weight-bold">Confirm New Password</label>
