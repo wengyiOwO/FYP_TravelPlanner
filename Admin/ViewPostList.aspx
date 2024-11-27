@@ -108,8 +108,11 @@
                                 </asp:TemplateField>
                                 <asp:TemplateField HeaderText="Status" SortExpression="post_status">
                                     <EditItemTemplate>
-                                        <asp:TextBox ID="TextBox4" runat="server" Text='<%# Bind("post_status") %>'></asp:TextBox>
-                                        <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ControlToValidate="TextBox4" Display="Dynamic" ErrorMessage="Please Fill In Status!" ForeColor="Red"></asp:RequiredFieldValidator>
+                                        <asp:DropDownList ID="ddlStatus" runat="server" SelectedValue='<%# Bind("post_status") %>'>
+                                            <asp:ListItem Text="Posted" Value="Posted"></asp:ListItem>
+                                            <asp:ListItem Text="Deleted" Value="Deleted"></asp:ListItem>
+                                        </asp:DropDownList>
+                                        <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ControlToValidate="ddlStatus" Display="Dynamic" ErrorMessage="Please Select Status!" ForeColor="Red"></asp:RequiredFieldValidator>
                                     </EditItemTemplate>
                                     <ItemTemplate>
                                         <asp:Label ID="Label4" runat="server" Text='<%# Bind("post_status") %>'></asp:Label>
