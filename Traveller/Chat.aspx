@@ -9,8 +9,6 @@
             min-height: 500px;
         }
 
-       
-
         .chat-online {
             color: #34ce57;
         }
@@ -108,6 +106,66 @@
         .border-top {
             border-top: 1px solid #dee2e6 !important;
         }
+
+      #uploadWrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background-color: #f0f0f0;
+    border: 2px dashed #cccccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+    #uploadWrapper::before {
+        content: '+';
+        font-size: 20px;
+        color: #999999;
+        position: absolute;
+    }
+
+#imageUpload {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+        .image-preview-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-left: 0;
+            display: inline-block;
+        }
+
+        #imagePreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 1px solid #cccccc;
+        }
+
+        .delete-button {
+            position: absolute;
+            top: 5px; /* Adjusted to bring the button closer */
+            right: 5px; /* Adjusted to bring the button closer */
+            background-color: #ff6666;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </asp:Content>
 
@@ -185,8 +243,9 @@
                                 <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
 
                                 <!-- File Upload Button -->
-                                <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="cursor: pointer;" onchange="previewFiles(event)" />
-
+                                <div id="uploadWrapper">
+                                    <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer;" onchange="previewFiles(event)" />
+                                </div>
                                 <!-- Send Button -->
                                 <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
                             </div>
