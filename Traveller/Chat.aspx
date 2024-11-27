@@ -18,7 +18,7 @@
         }
 
         .chat-messages {
-            height: calc(100vh - 200px); /* Adjust based on header/footer size */
+            max-height: calc(100vh - 250px); /* Use max-height instead of height */
             overflow-y: auto;
         }
 
@@ -107,32 +107,32 @@
             border-top: 1px solid #dee2e6 !important;
         }
 
-      #uploadWrapper {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    background-color: #f0f0f0;
-    border: 2px dashed #cccccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
+        #uploadWrapper {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background-color: #f0f0f0;
+            border: 2px dashed #cccccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
 
-    #uploadWrapper::before {
-        content: '+';
-        font-size: 20px;
-        color: #999999;
-        position: absolute;
-    }
+            #uploadWrapper::before {
+                content: '+';
+                font-size: 20px;
+                color: #999999;
+                position: absolute;
+            }
 
-#imageUpload {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
+        #imageUpload {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
 
 
         .image-preview-container {
@@ -201,13 +201,11 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
-                <!-- Chat Section -->
                 <div class="col-12 col-lg-7 col-xl-9 chat-section<%= ViewState["SelectedFriendId"] != null ? " visible" : "" %>">
                     <asp:Panel ID="chatPanel" runat="server" CssClass="" Visible="false">
 
                         <div class="py-2 px-4 border-bottom d-none d-lg-block">
                             <div class="d-flex align-items-center py-1">
-                                <!-- Selected Friend Image -->
                                 <div class="position-relative">
                                     <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle mr-1" Width="40" Height="40" ImageUrl='<%# Eval("profile_image", "{0}") %>' AlternateText="Profile Image" />
                                 </div>
@@ -239,18 +237,15 @@
                         </div>
                         <div class="flex-grow-0 py-3 px-4 border-top">
                             <div class="input-group">
-                                <!-- Text Input for Message -->
                                 <asp:TextBox ID="txtMessage" runat="server" CssClass="form-control" placeholder="Type your message"></asp:TextBox>
 
-                                <!-- File Upload Button -->
                                 <div id="uploadWrapper">
                                     <asp:FileUpload ID="fileUpload" runat="server" accept="image/*,video/*" AllowMultiple="true" CssClass="btn btn-light" Style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer;" onchange="previewFiles(event)" />
                                 </div>
-                                <!-- Send Button -->
+
                                 <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary" Text="Send" OnClick="btnSend_Click" />
                             </div>
 
-                            <!-- Preview Container for Images and Videos -->
                             <div id="previewContainer" class="d-flex flex-wrap mt-3"></div>
                         </div>
                     </asp:Panel>
@@ -268,6 +263,10 @@
         let accountId = '<%= Session["account_id"] %>';
         let selectedFriendId = '<%= ViewState["SelectedFriendId"] ?? "" %>';
 
+        var messageBody = document.querySelector('.chat-messages');
+        messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+
+
         function loadMessages() {
             if (!selectedFriendId) return;
 
@@ -280,7 +279,7 @@
                 success: function (response) {
                     const messages = JSON.parse(response.d);
                     const chatContainer = $(".chat-messages");
-                    chatContainer.empty();
+                    chatContainer.empty(); // Clear existing messages before appending new ones
 
                     messages.forEach((msg) => {
                         const align = msg.sender_id === accountId ? "chat-message-right" : "chat-message-left";
@@ -313,9 +312,10 @@
 
                         chatContainer.append(messageHtml);
                     });
+                    setTimeout(function () {
+                        chatContainer.scrollTop(chatContainer[0].scrollHeight); 
+                    }, 100); 
 
-                    // Scroll to bottom
-                    chatContainer.scrollTop(chatContainer[0].scrollHeight);
                 },
                 error: function () {
                     console.error("Error loading messages");
@@ -324,9 +324,38 @@
         }
 
 
-        // Poll for new messages every 1 seconds
+        let pollingInterval;
+        let isUserScrolling = false;
+        let scrollTimeout;
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        function startPolling() {
+            if (!pollingInterval) {
+                pollingInterval = setInterval(loadMessages, 1000); 
+            }
+        }
+
+        // Function to handle the scroll event
+        $(".chat-messages").on("scroll", function () {
+            isUserScrolling = true;
+
+            stopPolling();
+
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(function () {
+                isUserScrolling = false;
+                startPolling();
+            }, 1000); 
+        });
+
         if (selectedFriendId) {
-            setInterval(loadMessages, 1000);
+            startPolling();
         }
 
         document.getElementById('<%= fileUpload.ClientID %>').onchange = function (event) {
