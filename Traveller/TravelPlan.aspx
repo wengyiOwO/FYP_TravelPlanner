@@ -77,7 +77,6 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Define the routing control
             control = L.Routing.control({
                 waypoints: locations.map(loc => L.latLng(loc.lat, loc.lng)),
                 createMarker: function () { return null; }, 
@@ -234,43 +233,68 @@
             updateTable(day);
         }
 
-        function updateTable(day) {
+        async function updateTable(day) {
             const tableBody = document.getElementById('locationTable');
-            tableBody.innerHTML = ''; 
+            tableBody.innerHTML = '';
 
             const dayLocations = locations.filter(loc => loc.day === day);
-            let totalDistance = 0;
 
-            dayLocations.forEach((location, index) => {
-                const distance = index > 0 ? calculateDistance(dayLocations[index - 1].lat, dayLocations[index - 1].lng, location.lat, location.lng) : 0;
-                totalDistance += distance;
+            for (let index = 0; index < dayLocations.length; index++) {
+                const location = dayLocations[index];
+                let distance = 0;
+                let duration = 0;
 
-                // Convert distance to time in minutes
-                const timeInMinutes = totalDistance * 60; 
+                // Calculate distance and duration using OpenStreet routing API if not the first location
+                if (index > 0) {
+                    const prevLocation = dayLocations[index - 1];
+                    const route = await getRoute(prevLocation.lat, prevLocation.lng, location.lat, location.lng);
 
-                let timeDisplay = '';
-                if (timeInMinutes >= 60) {
-                    // Convert to hours and minutes
-                    const hours = Math.floor(timeInMinutes / 60);
-                    const minutes = Math.round(timeInMinutes % 60);
-                    timeDisplay = `${hours} h${hours > 1 ? 's' : ''} ${minutes} min`;
-                } else {
-                    // If time is less than 60 minutes, display only minutes
-                    timeDisplay = `${Math.round(timeInMinutes)} min`;
+                    if (route) {
+                        distance = route.distance / 1000; // Convert meters to kilometers
+                        duration = route.duration; // In seconds
+                    }
                 }
 
+                // Convert duration to hours and minutes
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.round((duration % 3600) / 60);
+                const timeDisplay = duration > 0
+                    ? (hours > 0
+                        ? `${hours} h ${minutes} min`
+                        : `${minutes} min`)
+                    : '-';
+
+                // Create table row
                 let row = document.createElement('tr');
                 row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${location.name}</td>
-            <td>${distance.toFixed(2)} km</td>
-            <td>${timeDisplay}</td> <!-- Display time in formatted hours and minutes -->
-            <td style="text-align: center;">
-                <button class="btn btn-delete" onclick="deleteLocation(${location.lat}, ${location.lng}, ${day}, this)">&times;</button>
-            </td>
-        `;
+        <td>${index + 1}</td>
+        <td>${location.name}</td>
+        <td>${distance.toFixed(2)} km</td>
+        <td>${timeDisplay}</td>
+        <td style="text-align: center;">
+            <button class="btn btn-delete" onclick="deleteLocation(${location.lat}, ${location.lng}, ${day}, this)">&times;</button>
+        </td>`;
                 tableBody.appendChild(row);
-            });
+            }
+        }
+
+        // Function to get the route using OpenStreet API
+        async function getRoute(lat1, lng1, lat2, lng2) {
+            try {
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`);
+                const data = await response.json();
+
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    return {
+                        distance: route.distance, // in meters
+                        duration: route.duration // in seconds
+                    };
+                }
+            } catch (error) {
+                console.error('Error fetching route:', error);
+            }
+            return null;
         }
 
 
