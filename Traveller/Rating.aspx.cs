@@ -19,15 +19,34 @@ namespace FYP_TravelPlanner.Traveller
 
                 Response.Redirect("~/Login.aspx");
             }
+        
+            string planId = Request.QueryString["plan_id"];
+            string accountId = Session["account_id"]?.ToString();
+
+            if (!string.IsNullOrEmpty(planId))
+            {
+                ViewState["PlanId"] = planId;
+            }
             else
             {
+                lblMessage.Text = "No associated plan ID found.";
+                lblMessage.Visible = true;
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+                return;
             }
 
             if (Session["SavePlan"] != null)
             {
                 Session["SavePlan"] = null;
             }
-
+            if (!IsPostBack)
+            {
+                if (IsRatingExists(planId, accountId))
+                {
+                    Response.Write("<script>alert('You have already submitted a rating for this travel plan.'); window.location='Feedback.aspx';</script>");
+                    return;
+                }
+            }
 
         }
 
@@ -97,19 +116,31 @@ namespace FYP_TravelPlanner.Traveller
             }
 
         }
+        private bool IsRatingExists(string planId, string accountId)
+        {
+            string query = "SELECT COUNT(*) FROM Rating WHERE plan_id = @PlanID AND account_id = @AccountID";
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@PlanID", planId);
+                    cmd.Parameters.AddWithValue("@AccountID", accountId);
+
+                    int count = (int)cmd.ExecuteScalar();
+                    return count > 0; // Returns true if a rating already exists
+                }
+            }
+        }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             string ratingID = GenerateNextID();
-            //string accountId = Session["account_id"]?.ToString();
+            string accountId = Session["account_id"]?.ToString();
 
-            //if (accountId == null)
-            //{
-            //    lblMessage.Text = "Invalid account. Please log in again.";
-            //    lblMessage.Visible = true;
-            //    lblMessage.ForeColor = System.Drawing.Color.Red;
-            //    return;
-            //}
+       
 
             // Get satisfaction rating and review values
             int satisfactionRating = GetSelectedRating("satisfaction_rating");
@@ -135,15 +166,17 @@ namespace FYP_TravelPlanner.Traveller
             {
                 conn.Open();
 
-                string strInsert = "INSERT INTO Rating (rating_id, account_id, rating, rating_date, review) VALUES (@RatingID, @AccID, @Rating, @Date, @Review)";
+                string strInsert = "INSERT INTO Rating (rating_id, account_id, rating, rating_date, review, plan_id) VALUES (@RatingID, @AccID, @Rating, @Date, @Review, @PlanID)";
 
                 using (SqlCommand cmdInsert = new SqlCommand(strInsert, conn))
                 {
                     cmdInsert.Parameters.AddWithValue("@RatingID", ratingID);
-                    cmdInsert.Parameters.AddWithValue("@AccID", "AC000524");
+                    cmdInsert.Parameters.AddWithValue("@AccID", accountId);
                     cmdInsert.Parameters.AddWithValue("@Rating", satisfactionRating);
                     cmdInsert.Parameters.AddWithValue("@Date", DateTime.Now);
                     cmdInsert.Parameters.AddWithValue("@Review", review);
+                    cmdInsert.Parameters.AddWithValue("@PlanID", ViewState["PlanId"].ToString());
+
 
                     cmdInsert.ExecuteNonQuery();
                     conn.Close();

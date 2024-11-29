@@ -68,7 +68,6 @@
                                 <asp:Repeater ID="rptTravelPlans" runat="server">
                                     <ItemTemplate>
                                         <tr>
-                                            <asp:HiddenField ID="hfPlanId" runat="server" Value='<%# Eval("plan_id") %>' />
 
                                             <td class="auto-style6">
                                                 <a href='<%# Eval("plan_id", "TravelPlan.aspx?tp={0}") %>' class="btn-view">View</a>

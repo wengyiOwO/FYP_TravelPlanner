@@ -45,32 +45,32 @@
 
         <!-- Question 1 -->
         <ol class="mb-4">
-            <li>
-                <h5>User Interface (UI) of this system is user-friendly</h5>
-                <div class="rating">
-                    <input type="radio" name="ui_rating" id="ui_rating_5" value="5"><label for="ui_rating_5"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="ui_rating" id="ui_rating_4" value="4"><label for="ui_rating_4"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="ui_rating" id="ui_rating_3" value="3"><label for="ui_rating_3"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="ui_rating" id="ui_rating_2" value="2"><label for="ui_rating_2"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="ui_rating" id="ui_rating_1" value="1"><label for="ui_rating_1"><i class="fas fa-star"></i></label>
-                </div>
-                <span id="ui_rating_error" class="text-danger" style="display: none;">Please select a rating.</span>
+              <li>
+        <h5>The travel plan generated meets my travel budget and preferences</h5>
+        <div class="rating">
+            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_5" value="5"><label for="plan_usefulness_5"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_4" value="4"><label for="plan_usefulness_4"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_3" value="3"><label for="plan_usefulness_3"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_2" value="2"><label for="plan_usefulness_2"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_1" value="1"><label for="plan_usefulness_1"><i class="fas fa-star"></i></label>
+        </div>
+        <span id="plan_usefulness_error" class="text-danger" style="display: none;">Please select a rating.</span>
 
-            </li>
+    </li>
 
             <!-- Question 2 -->
             <li>
-                <h5>The travel plan generated meets my travel needs and preferences</h5>
-                <div class="rating">
-                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_5" value="5"><label for="plan_usefulness_5"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_4" value="4"><label for="plan_usefulness_4"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_3" value="3"><label for="plan_usefulness_3"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_2" value="2"><label for="plan_usefulness_2"><i class="fas fa-star"></i></label>
-                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_1" value="1"><label for="plan_usefulness_1"><i class="fas fa-star"></i></label>
-                </div>
-                <span id="plan_usefulness_error" class="text-danger" style="display: none;">Please select a rating.</span>
+        <h5>The travel plan's locations generated is useful</h5>
+        <div class="rating">
+            <input type="radio" name="plan_usefulness_rating" id="plan_location_5" value="5"><label for="plan_location_5"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_location_4" value="4"><label for="plan_location_4"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_location_3" value="3"><label for="plan_location_3"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_location_2" value="2"><label for="plan_location_2"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_usefulness_rating" id="plan_location_1" value="1"><label for="plan_location_1"><i class="fas fa-star"></i></label>
+        </div>
+        <span id="plan_location_error" class="text-danger" style="display: none;">Please select a rating.</span>
 
-            </li>
+    </li>
 
             <!-- Question 3 -->
             <li>
@@ -97,6 +97,7 @@
                     <input type="radio" name="satisfaction_rating" id="satisfaction_1" value="1"><label for="satisfaction_1"><i class="fas fa-star"></i></label>
                 </div>
                 <span id="satisfaction_error" class="text-danger" style="display: none;">Please select a rating.</span>
+                            <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
             </li>
             <!-- Question 5 -->
@@ -113,7 +114,6 @@
         <div class="text-center" style="margin-bottom: 20px;">
             <asp:Button runat="server" ID="btnSubmit" Text="Submit" class="btn btn-primary" OnClick="btnSubmit_Click" OnClientClick="return validateForm();" />
             <br />
-            <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
         </div>
     </div>
 

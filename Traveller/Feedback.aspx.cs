@@ -21,6 +21,8 @@ namespace FYP_TravelPlanner.Traveller
             {
                 rptFeedback.ItemDataBound += rptFeedback_ItemDataBound;
                 BindFeedbackData();
+                DisplayOverallRating();
+
             }
 
         }
@@ -87,7 +89,7 @@ namespace FYP_TravelPlanner.Traveller
             if (selectedRating == "all")
             {
                 query = @"
-            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id 
+            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id, R.plan_id 
             FROM Rating R 
             INNER JOIN Account A ON R.account_id = A.account_id 
             ORDER BY R.rating_date DESC";
@@ -95,7 +97,7 @@ namespace FYP_TravelPlanner.Traveller
             else
             {
                 query = @"
-            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id   
+            SELECT R.rating, R.review, R.rating_date, A.account_name, A.profile_image, R.account_id, R.plan_id    
             FROM Rating R 
             INNER JOIN Account A ON R.account_id = A.account_id 
             WHERE R.rating = @rating 
@@ -116,15 +118,7 @@ namespace FYP_TravelPlanner.Traveller
                 DataTable dt = new DataTable();
                 dt.Load(reader);
 
-                // Modify account_name based on role
-                if (accountRole != "Admin")
-                {
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        row["account_name"] = "***";
-                    }
-                }
-
+         
                 if (dt.Rows.Count == 0)
                 {
                     lblMessage.Visible = true;

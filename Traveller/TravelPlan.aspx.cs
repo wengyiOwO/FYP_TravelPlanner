@@ -63,7 +63,17 @@ namespace FYP_TravelPlanner.Traveller
             //List<Location> allLocations = Session["AllLocations"] as List<Location>;
             AllLocationsJson = serializer.Serialize((List<Location>)Session["AllLocations"]);
         }
-
+        protected void Page_PreInit(object sender, EventArgs e)
+        {
+            if (Session["account_id"] != null)
+            {
+                MasterPageFile = "~/TakeMyTrip.Master";
+            }
+            else
+            {
+                MasterPageFile = "~/TakeMyTrip_Anonymous.Master";
+            }
+        }
         private void LoadAllLocations()
         {
             List<Location> allLocations = new List<Location>();
@@ -144,19 +154,21 @@ namespace FYP_TravelPlanner.Traveller
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize(locations);
         }
-        private bool TravelPlanExists(string areaId, DateTime planDate)
+        private bool IsRatingExists(string planId, string accountId)
         {
-            string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            string query = "SELECT COUNT(*) FROM Rating WHERE plan_id = @PlanID AND account_id = @AccountID";
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = @"SELECT COUNT(*) FROM Travel_Plan WHERE area_id = @area_id AND plan_date = @plan_date";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@area_id", areaId);
-                    cmd.Parameters.AddWithValue("@plan_date", planDate);
-                    int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    return count > 0;
+                    cmd.Parameters.AddWithValue("@PlanID", planId);
+                    cmd.Parameters.AddWithValue("@AccountID", accountId);
+
+                    int count = (int)cmd.ExecuteScalar();
+                    return count > 0; // Returns true if a rating already exists
                 }
             }
         }
@@ -303,16 +315,21 @@ namespace FYP_TravelPlanner.Traveller
                 ? Session["account_email"] as string
                 : "takemytrip2024@gmail.com";
 
-            if (Session["NotifyEmailSent"] == null)
-            {
                   SendNotifyEmail(email, planId);
                 Session["NotifyEmailSent"] = true;
-            }
+            
 
             ScheduleItineraryEmails(planId, startDate);
             if (Session["SavePlan"] != null && Session["SavePlan"].ToString() == "saved")
             {
-                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+                if (IsRatingExists(planId, accountId))
+                {
+                    Response.Write("<script>alert('You have already submitted a rating for this plan.'); window.location='Feedback.aspx';</script>");
+                    return;
+                }
+
+                // Redirect to Rating page
+                Response.Write($"<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx?plan_id={planId}';</script>");
                 return;
             }
         }

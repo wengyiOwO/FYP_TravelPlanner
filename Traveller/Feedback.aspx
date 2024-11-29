@@ -103,15 +103,25 @@
                                         <asp:Image
                                             ID="imgFeedback"
                                             runat="server"
-                                            CssClass="img-profile rounded-circle" width="40" height="30" ImageUrl='<%# string.IsNullOrEmpty(Eval("profile_image") as string) ? "~/Uploads/Profile/unknown.jpg" : "~/Uploads/Profile/" + Eval("profile_image") %>' />
+                                            CssClass="img-profile rounded-circle" Width="40" Height="30" ImageUrl='<%# string.IsNullOrEmpty(Eval("profile_image") as string) ? "~/Uploads/Profile/unknown.jpg" : "~/Uploads/Profile/" + Eval("profile_image") %>' />
 
                                         <div>
+
                                             <div class="font-weight-bold mb-1"><%# Eval("account_name") %></div>
+                                            <div class="text-muted small text-nowrap mt-2"><%# Eval("rating_date", "{0:MM/dd/yyyy}") %></div>
+
                                             <div class="rating-stars">
                                                 <%# GenerateStars((int)Eval("rating")) %>
                                             </div>
                                             <div><%# Eval("review") %></div>
-                                            <div class="text-muted small text-nowrap mt-2"><%# Eval("rating_date", "{0:MM/dd/yyyy}") %></div>
+                                            <div>
+                                                <asp:HyperLink
+                                                    ID="linkViewPlan"
+                                                    runat="server"
+                                                    CssClass="btn btn-link mt-2"
+                                                    NavigateUrl='<%# "~/Traveller/TravelPlan.aspx?tp=" + Eval("plan_id") %>'
+                                                    Text="View Travel Plan" />
+                                            </div>
                                         </div>
                                     </div>
                                 </ItemTemplate>
