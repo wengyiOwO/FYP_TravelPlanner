@@ -62,11 +62,11 @@
             <li>
         <h5>The travel plan's locations generated is useful</h5>
         <div class="rating">
-            <input type="radio" name="plan_usefulness_rating" id="plan_location_5" value="5"><label for="plan_location_5"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_location_4" value="4"><label for="plan_location_4"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_location_3" value="3"><label for="plan_location_3"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_location_2" value="2"><label for="plan_location_2"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_location_1" value="1"><label for="plan_location_1"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_location_rating" id="plan_location_5" value="5"><label for="plan_location_5"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_location_rating" id="plan_location_4" value="4"><label for="plan_location_4"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_location_rating" id="plan_location_3" value="3"><label for="plan_location_3"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_location_rating" id="plan_location_2" value="2"><label for="plan_location_2"><i class="fas fa-star"></i></label>
+            <input type="radio" name="plan_location_rating" id="plan_location_1" value="1"><label for="plan_location_1"><i class="fas fa-star"></i></label>
         </div>
         <span id="plan_location_error" class="text-danger" style="display: none;">Please select a rating.</span>
 
@@ -123,16 +123,16 @@
             let isValid = true;
 
             // Hide all error messages initially
-            document.getElementById("ui_rating_error").style.display = "none";
             document.getElementById("plan_usefulness_error").style.display = "none";
+            document.getElementById("plan_location_error").style.display = "none";
             document.getElementById("functionality_error").style.display = "none";
             document.getElementById("satisfaction_error").style.display = "none";
             document.getElementById("review_error").style.display = "none";
 
             // Array of rating groups with their corresponding error messages
             const ratingGroups = [
-                { name: 'ui_rating', errorId: 'ui_rating_error' },
                 { name: 'plan_usefulness_rating', errorId: 'plan_usefulness_error' },
+                { name: 'plan_location_error', errorId: 'plan_location_error' },
                 { name: 'functionality_rating', errorId: 'functionality_error' },
                 { name: 'satisfaction_rating', errorId: 'satisfaction_error' }
             ];

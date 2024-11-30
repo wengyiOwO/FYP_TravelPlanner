@@ -54,31 +54,40 @@ namespace FYP_TravelPlanner
 
         protected void GridView1_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
+            string accountId = GridView1.DataKeys[e.RowIndex].Value.ToString();
 
-            // Retrieve account_status from database
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
             {
                 conn.Open();
-                SqlCommand cmd = new SqlCommand("SELECT account_status FROM Account WHERE account_id = @accountId", conn);
-                cmd.Parameters.AddWithValue("@accountId", GridView1.DataKeys[e.RowIndex].Value);
+                // Check account status
+                SqlCommand checkStatusCmd = new SqlCommand("SELECT account_status FROM Account WHERE account_id = @accountId", conn);
+                checkStatusCmd.Parameters.AddWithValue("@accountId", accountId);
 
 
-                string accountStatus = cmd.ExecuteScalar() as string;
+                string accountStatus = checkStatusCmd.ExecuteScalar() as string;
 
 
 
                 // Check account_status value
                 if (accountStatus == "Active")
-            {
-                lblErrorMessage.Visible = true;
-                lblErrorMessage.Text = "Active accounts cannot be deleted!";
-                e.Cancel = true;  // Cancel the delete operation
+                {
+                    lblErrorMessage.Visible = true;
+                    lblErrorMessage.Text = "Active accounts cannot be deleted!";
+                    e.Cancel = true;  // Cancel the delete operation
+                }
+                else
+                {
+                    lblErrorMessage.Visible = false;
+                    // Update account status to "Deleted"
+                    SqlCommand deleteCmd = new SqlCommand("UPDATE Account SET account_status = 'Deleted' WHERE account_id = @accountId", conn);
+                    deleteCmd.Parameters.AddWithValue("@accountId", accountId);
+                    deleteCmd.ExecuteNonQuery();
+
+                    // Rebind GridView to reflect changes
+                    GridView1.DataBind();
+                }
             }
-            else
-            {
-                lblErrorMessage.Visible = false;
-            }
-            }
+
         }
 
 
