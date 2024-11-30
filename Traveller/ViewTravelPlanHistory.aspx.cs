@@ -27,12 +27,16 @@ namespace FYP_TravelPlanner.Traveller
 
         private void LoadAreaDropdown()
         {
+            string accountId = Session["account_id"] as string;
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT DISTINCT A.area_id, A.area_name FROM Area A JOIN Travel_Plan TP ON TP.area_id = A.area_id";
-                SqlCommand cmd = new SqlCommand(query, conn);
                 conn.Open();
+
+                string query = "SELECT DISTINCT A.area_id, A.area_name FROM Travel_Plan TP JOIN Area A ON TP.area_id = A.area_id AND TP.account_id = @accountId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@accountId", accountId);
+
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 ddlArea.Items.Clear();
@@ -94,21 +98,43 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnDelete_Click(object sender, EventArgs e)
         {
+            // Get the Button that triggered the event
             Button btnDelete = (Button)sender;
+
+            // Find the RepeaterItem container of the Button
             RepeaterItem item = (RepeaterItem)btnDelete.NamingContainer;
 
+            // Find the HiddenField containing the plan_id
             HiddenField hfPlanId = (HiddenField)item.FindControl("hfPlanId");
-            string planId = hfPlanId.Value;
 
+            // Set the selected plan_id to the hidden field
+            hfSelectedPlanId.Value = hfPlanId.Value;
+
+            // Show the confirmation modal
+            pnlConfirmDelete.Style["display"] = "block";
+        }
+
+        protected void btnConfirmDelete_Click(object sender, EventArgs e)
+        {
+            // Get the selected plan_id from the hidden field
+            string planId = hfSelectedPlanId.Value;
+
+            // Perform the deletion
             if (DeleteTravelPlan(planId))
             {
+                // Rebind the travel plans to reflect the deletion
                 BindTravelPlans();
+                successPanel.Visible = true;
             }
             else
             {
                 Response.Write("<script>alert('Failed to delete the travel plan.');</script>");
             }
+
+            // Hide the confirmation modal
+            pnlConfirmDelete.Style["display"] = "none";
         }
+
 
         private bool DeleteTravelPlan(string planId)
         {

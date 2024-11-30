@@ -113,12 +113,12 @@ namespace FYP_TravelPlanner.Traveller
         {
             List<Location> locations = new List<Location>();
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
+            string ownerId;
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 string query = @"
-            SELECT loc.location_id, loc.place_name, loc.place_address, loc.latitude, loc.longitude, di.day_number
+            SELECT tp.account_id, loc.location_id, loc.place_name, loc.place_address, loc.latitude, loc.longitude, di.day_number
             FROM Travel_Plan tp
             INNER JOIN Daily_Itinerary di ON tp.plan_id = di.plan_id
             INNER JOIN Travel_Activity ta ON di.itinerary_id = ta.itinerary_id
@@ -144,10 +144,18 @@ namespace FYP_TravelPlanner.Traveller
                                 day = Convert.ToInt32(reader["day_number"])
                             };
                             locations.Add(location);
+                            ownerId = reader["account_id"].ToString();
+
+                            if (ownerId != Session["account_id"] as string)
+                            {
+                                btnSave.Visible = false;
+                            }
                         }
                     }
                 }
             }
+
+            
 
             // Store locations in session and prepare JSON for JavaScript
             Session["SelectedLocations"] = locations;

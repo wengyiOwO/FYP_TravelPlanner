@@ -2,30 +2,119 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
-        .auto-style1 { width: 171px; }
-        .auto-style4 { width: 199px; height: 39px; }
-        .auto-style6 { width: 215px; height: 39px; text-align: center; }
-        .auto-style7 { width: 272px; }
-        .auto-style9 { width: 100%; margin: 0 auto; padding: 1.5rem; background-color: white; }
-        .auto-style12 { width: 199px; }
-        .auto-style13 { width: 321px; }
-        .auto-style14 { height: 39px; width: 321px; }
-        .auto-style15 { width: 336px; }
+        .auto-style1 {
+            width: 171px;
+        }
 
-        .container { display: flex; flex-direction: column; height: 600px; background-color: white; overflow: hidden; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
-        .header h1 { margin: 0; }
-        .card-body { width: 100%; max-width: 1200px; padding: 20px; height: calc(100% - 60px); overflow-y: auto; }
-        .table-container { height: 100%; overflow-y: auto; }
+        .auto-style4 {
+            width: 199px;
+            height: 39px;
+        }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        .auto-style6 {
+            width: 215px;
+            height: 39px;
+            text-align: center;
+        }
 
-        .btn-view, .btn-delete { margin: 0 5px; padding: 5px 10px; font-size: 14px; color: #fff; text-decoration: none; }
-        .btn-view { background-color: #007bff; border: none; cursor: pointer; }
-        .btn-view:hover { background-color: #0056b3; }
-        .btn-delete { background-color: #dc3545; border: none; cursor: pointer; }
-        .btn-delete:hover { background-color: #c82333; }
+        .auto-style7 {
+            width: 272px;
+        }
+
+        .auto-style9 {
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background-color: white;
+        }
+
+        .auto-style12 {
+            width: 199px;
+        }
+
+        .auto-style13 {
+            width: 321px;
+        }
+
+        .auto-style14 {
+            height: 39px;
+            width: 321px;
+        }
+
+        .auto-style15 {
+            width: 336px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background-color: white;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+            .header h1 {
+                margin: 0;
+            }
+
+        .card-body {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+
+        .table-container {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .btn-view, .btn-delete {
+            margin: 0 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-view {
+            background-color: #007bff;
+            border: none;
+            cursor: pointer;
+        }
+
+            .btn-view:hover {
+                background-color: #0056b3;
+            }
+
+        .btn-delete {
+            background-color: #dc3545;
+            border: none;
+            cursor: pointer;
+        }
+
+            .btn-delete:hover {
+                background-color: #c82333;
+            }
     </style>
 </asp:Content>
 
@@ -38,17 +127,15 @@
             </div>
 
             <div class="filter-section">
-    <asp:Label ID="lblArea" runat="server" Text="Area: " />
-    <asp:DropDownList ID="ddlArea" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_SelectedIndexChanged">
-        <asp:ListItem Value="">All Areas</asp:ListItem>
-    </asp:DropDownList>
-</div>
-
-            <asp:Panel ID="pnlNoData" runat="server" Visible="false">
-                <div style="text-align: center; padding: 20px;">
-                    No travel plans available.
-                </div>
+                <asp:Label ID="lblArea" runat="server" Text="Area: " />
+                <asp:DropDownList ID="ddlArea" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_SelectedIndexChanged">
+                    <asp:ListItem Value="">All Areas</asp:ListItem>
+                </asp:DropDownList>
+            </div>
+            <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-success mt-3" Visible="false">
+                <strong>Success!</strong> Your plan has been deleted.
             </asp:Panel>
+
 
             <div class="card-body">
                 <div class="table-container">
@@ -68,11 +155,10 @@
                                 <asp:Repeater ID="rptTravelPlans" runat="server">
                                     <ItemTemplate>
                                         <tr>
-
+                                            <asp:HiddenField ID="hfPlanId" runat="server" Value='<%# Eval("plan_id") %>' />
                                             <td class="auto-style6">
                                                 <a href='<%# Eval("plan_id", "TravelPlan.aspx?tp={0}") %>' class="btn-view">View</a>
-                                                <asp:Button ID="btnDelete" runat="server" Text="Delete" CssClass="btn-delete"
-                                                    OnClick="btnDelete_Click" OnClientClick="return confirm('Are you sure you want to delete this travel plan?');" />
+                                                <asp:Button ID="btnDelete" runat="server" Text="Delete" CssClass="btn-delete" OnClientClick="showDeleteConfirmation(); return false;"/>
                                             </td>
                                             <td><%# Eval("plan_date", "{0:dd-MM-yyyy}") %></td>
                                             <td><%# Eval("duration") %></td>
@@ -85,8 +171,42 @@
                             </tbody>
                         </table>
                     </div>
+                    <asp:HiddenField ID="hfSelectedPlanId" runat="server" />
+                    <asp:Panel ID="pnlNoData" runat="server" Visible="false">
+                        <div style="text-align: center; padding: 20px;">
+                            No travel plans available.
+                        </div>
+                    </asp:Panel>
+                    <asp:Panel ID="pnlConfirmDelete" runat="server" CssClass="modal" Style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Delete</h5>
+                                    <button type="button" class="close" onclick="hideDeleteConfirmation();">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this plan?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <asp:Button ID="btnConfirmDelete" runat="server" CssClass="btn btn-danger" Text="Delete" OnClick="btnConfirmDelete_Click" />
+                                    <button type="button" class="btn btn-secondary" onclick="hideDeleteConfirmation();">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function showDeleteConfirmation() {
+            document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'block';
+        }
+        function hideDeleteConfirmation() {
+            document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'none';
+        }
+    </script>
 </asp:Content>

@@ -27,7 +27,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-danger" Visible="false">
+                        <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-success" Visible="false">
                             <strong>Success!</strong> Your post has been deleted. Redirecting to the post page...
                         </asp:Panel>
                         <asp:Panel runat="server">
