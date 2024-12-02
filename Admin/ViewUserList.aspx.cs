@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -24,8 +21,14 @@ namespace FYP_TravelPlanner
         {
             string searchTerm = txtSearch.Text.Trim();
 
-            // Perform the search using your data source (SqlDataSource1)
-            SqlDataSource1.SelectCommand = "SELECT * FROM [Account] WHERE [account_id] LIKE @SearchTerm OR [account_name] LIKE @SearchTerm OR [account_email] LIKE @SearchTerm OR [account_phoneNo] LIKE @SearchTerm";
+            SqlDataSource1.SelectCommand = @"
+                SELECT * 
+                FROM [Account] 
+                WHERE ([account_id] LIKE @SearchTerm 
+                       OR [account_name] LIKE @SearchTerm 
+                       OR [account_email] LIKE @SearchTerm 
+                       OR [account_phoneNo] LIKE @SearchTerm)
+                  AND [account_status] <> 'Deleted'";
 
             SqlDataSource1.SelectParameters.Clear();
             SqlDataSource1.SelectParameters.Add("SearchTerm", DbType.String, "%" + searchTerm + "%");
@@ -34,10 +37,9 @@ namespace FYP_TravelPlanner
             {
                 GridView1.DataBind();
 
-                // Check if any rows are returned
                 if (GridView1.Rows.Count == 0)
                 {
-                    lblErrorMessage.Text = "Oops, No results found.";
+                    lblErrorMessage.Text = "Oops, no results found.";
                     lblErrorMessage.Visible = true;
                 }
                 else
@@ -54,43 +56,62 @@ namespace FYP_TravelPlanner
 
         protected void GridView1_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            string accountId = GridView1.DataKeys[e.RowIndex].Value.ToString();
+            string accountId = GridView1.DataKeys[e.RowIndex]?.Value.ToString();
 
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+            if (string.IsNullOrEmpty(accountId))
             {
-                conn.Open();
-                // Check account status
-                SqlCommand checkStatusCmd = new SqlCommand("SELECT account_status FROM Account WHERE account_id = @accountId", conn);
-                checkStatusCmd.Parameters.AddWithValue("@accountId", accountId);
-
-
-                string accountStatus = checkStatusCmd.ExecuteScalar() as string;
-
-
-
-                // Check account_status value
-                if (accountStatus == "Active")
-                {
-                    lblErrorMessage.Visible = true;
-                    lblErrorMessage.Text = "Active accounts cannot be deleted!";
-                    e.Cancel = true;  // Cancel the delete operation
-                }
-                else
-                {
-                    lblErrorMessage.Visible = false;
-                    // Update account status to "Deleted"
-                    SqlCommand deleteCmd = new SqlCommand("UPDATE Account SET account_status = 'Deleted' WHERE account_id = @accountId", conn);
-                    deleteCmd.Parameters.AddWithValue("@accountId", accountId);
-                    deleteCmd.ExecuteNonQuery();
-
-                    // Rebind GridView to reflect changes
-                    GridView1.DataBind();
-                }
+                lblErrorMessage.Text = "Account ID not found!";
+                lblErrorMessage.Visible = true;
+                e.Cancel = true;
+                return;
             }
 
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // Check current status
+                    using (SqlCommand checkCmd = new SqlCommand(
+                        "SELECT account_status FROM Account WHERE account_id = @accountId", conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@accountId", accountId);
+                        string accountStatus = checkCmd.ExecuteScalar()?.ToString();
+
+                        if (accountStatus == "Active")
+                        {
+                            lblErrorMessage.Text = "Active accounts cannot be deleted!";
+                            lblErrorMessage.Visible = true;
+                            e.Cancel = true;
+                            return;
+                        }
+                    }
+
+                    // Update status to 'Deleted'
+                    using (SqlCommand updateCmd = new SqlCommand(
+                        "UPDATE Account SET account_status = 'Deleted' WHERE account_id = @accountId", conn))
+                    {
+                        updateCmd.Parameters.AddWithValue("@accountId", accountId);
+                        updateCmd.ExecuteNonQuery();
+                    }
+                }
+
+                lblErrorMessage.Text = "Account successfully deleted.";
+                lblErrorMessage.ForeColor = System.Drawing.Color.Green;
+                lblErrorMessage.Visible = true;
+
+                // Rebind the GridView
+                GridView1.DataBind();
+            }
+            catch (Exception ex)
+            {
+                lblErrorMessage.Text = $"Error: {ex.Message}";
+                lblErrorMessage.ForeColor = System.Drawing.Color.Red;
+                lblErrorMessage.Visible = true;
+            }
         }
-
-
-
     }
 }

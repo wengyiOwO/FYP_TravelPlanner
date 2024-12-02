@@ -66,7 +66,7 @@
 
                         <asp:GridView ID="GridView1" runat="server" CssClass="gridview-style" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" DataKeyNames="account_id" DataSourceID="SqlDataSource1" OnRowDeleting="GridView1_RowDeleting">
                             <Columns>
-                                <asp:CommandField HeaderText="Action" ShowEditButton="True" />
+                                <asp:CommandField HeaderText="Action" ShowDeleteButton="true" ShowEditButton="True" />
 
                                 <asp:BoundField DataField="account_id" HeaderText="ID" ReadOnly="True" SortExpression="account_id" />
                                 <asp:TemplateField HeaderText="Name" SortExpression="account_name">
@@ -103,7 +103,6 @@
                                         <asp:DropDownList ID="ddlStatus" runat="server" SelectedValue='<%# Bind("account_status") %>'>
                                             <asp:ListItem Text="Active" Value="Active"></asp:ListItem>
                                             <asp:ListItem Text="Inactive" Value="Inactive"></asp:ListItem>                                            
-                                            <asp:ListItem Text="Deleted" Value="Deleted"></asp:ListItem>
 
                                         </asp:DropDownList>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ControlToValidate="ddlStatus" Display="Dynamic" ErrorMessage="Please Select Permission!" ForeColor="Red"></asp:RequiredFieldValidator>
@@ -117,7 +116,8 @@
                         <asp:SqlDataSource ID="SqlDataSource1" runat="server"
                             ConnectionString="<%$ ConnectionStrings:ConnectionString %>"
                             SelectCommand="SELECT [account_id], [account_name], [account_phoneNo], [account_email], [account_status] FROM [Account] WHERE [account_role] <> 'Admin' AND [account_status] <> 'Deleted' ORDER BY [account_id]"
-                            UpdateCommand="UPDATE [Account] SET [account_name] = @account_name, [account_phoneNo] = @account_phoneNo, [account_email] = @account_email , [account_status] = @account_status WHERE [account_id] = @account_id">
+                            UpdateCommand="UPDATE [Account] SET [account_name] = @account_name, [account_phoneNo] = @account_phoneNo, [account_email] = @account_email , [account_status] = @account_status WHERE [account_id] = @account_id"
+                            DeleteCommand="UPDATE Account SET account_status = 'Deleted' WHERE account_id = @account_id">
                             <UpdateParameters>
                                 <asp:Parameter Name="account_name" />
                                 <asp:Parameter Name="account_phoneNo" />
