@@ -2,46 +2,32 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
-        .auto-style1 {
-            width: 171px;
-        }
-
-        .auto-style4 {
-            width: 199px;
-            height: 39px;
-        }
-
-        .auto-style6 {
-            width: 215px;
-            height: 39px;
-            text-align: center;
-        }
-
-        .auto-style7 {
-            width: 272px;
-        }
-
-        .auto-style9 {
+        .section {
             width: 100%;
             margin: 0 auto;
             padding: 1.5rem;
             background-color: white;
         }
 
-        .auto-style12 {
+        .col_action {
+            width: 215px;
+            height: 39px;
+            text-align: center;
+        }
+
+        .col_dateduration {
             width: 199px;
         }
 
-        .auto-style13 {
-            width: 321px;
+        .col_budget {
+            width: 272px;
         }
 
-        .auto-style14 {
-            height: 39px;
-            width: 321px;
+        .col_status {
+            width: 171px;
         }
 
-        .auto-style15 {
+        .col_area {
             width: 336px;
         }
 
@@ -119,7 +105,7 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="auto-style9">
+    <div class="section">
         <div class="container">
             <div class="header">
                 <h1 class="h3 mb-2 text-gray-800">Travel Plan History</h1>
@@ -143,12 +129,12 @@
                         <table class="table table-bordered" id="dataTable" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th class="auto-style6">Action</th>
-                                    <th class="auto-style12">Date</th>
-                                    <th class="auto-style12">Duration</th>
-                                    <th class="auto-style15">Area</th>
-                                    <th class="auto-style7">Budget(RM)</th>
-                                    <th class="auto-style1">Status</th>
+                                    <th class="col_action">Action</th>
+                                    <th class="col_dateduration">Date</th>
+                                    <th class="col_dateduration">Duration</th>
+                                    <th class="col_area">Area</th>
+                                    <th class="col_budget">Budget(RM)</th>
+                                    <th class="col_status">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,9 +142,9 @@
                                     <ItemTemplate>
                                         <tr>
                                             <asp:HiddenField ID="hfPlanId" runat="server" Value='<%# Eval("plan_id") %>' />
-                                            <td class="auto-style6">
+                                            <td class="col_dateduration">
                                                 <a href='<%# Eval("plan_id", "TravelPlan.aspx?tp={0}") %>' class="btn-view">View</a>
-                                                <asp:Button ID="btnDelete" runat="server" Text="Delete" CssClass="btn-delete" OnClientClick="showDeleteConfirmation(); return false;"/>
+                                                <asp:Button ID="btnDelete" runat="server" Text="Delete" CssClass="btn-delete" OnClick="btnDelete_Click" />
                                             </td>
                                             <td><%# Eval("plan_date", "{0:dd-MM-yyyy}") %></td>
                                             <td><%# Eval("duration") %></td>
