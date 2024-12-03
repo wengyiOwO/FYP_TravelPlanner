@@ -61,6 +61,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
     <script type="text/javascript">
         var map;
@@ -244,18 +245,18 @@
                 let distance = 0;
                 let duration = 0;
 
-                // Calculate distance and duration using OpenStreet routing API if not the first location
+                // Calculate distance and duration using OpenStreet routing API
                 if (index > 0) {
                     const prevLocation = dayLocations[index - 1];
                     const route = await getRoute(prevLocation.lat, prevLocation.lng, location.lat, location.lng);
 
                     if (route) {
-                        distance = route.distance / 1000; // Convert meters to kilometers
-                        duration = route.duration; // In seconds
+                        distance = route.distance / 1000;
+                        duration = route.duration;
                     }
                 }
 
-                // Convert duration to hours and minutes
+                // convert duration to hours and minutes
                 const hours = Math.floor(duration / 3600);
                 const minutes = Math.round((duration % 3600) / 60);
                 const timeDisplay = duration > 0
@@ -264,7 +265,7 @@
                         : `${minutes} min`)
                     : '-';
 
-                // Create table row
+                //table row
                 let row = document.createElement('tr');
                 row.innerHTML = `
         <td>${index + 1}</td>
@@ -278,36 +279,48 @@
             }
         }
 
-        // Function to get the route using OpenStreet API
+        //get the route using OpenStreet API
         async function getRoute(lat1, lng1, lat2, lng2) {
+            const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`;
             try {
-                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`);
-                const data = await response.json();
-
+                const data = await fetchWithRetry(url);
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0];
                     return {
-                        distance: route.distance, // in meters
-                        duration: route.duration // in seconds
+                        distance: route.distance,
+                        duration: route.duration 
                     };
                 }
             } catch (error) {
-                console.error('Error fetching route:', error);
+                console.error('Failed to fetch route:', error);
             }
             return null;
         }
 
-
+        async function fetchWithRetry(url, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed:`, error);
+                }
+                await new Promise(resolve => setTimeout(resolve, delay)); 
+            }
+            throw new Error('Failed to fetch after retries');
+        }
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
-            var R = 6371; // Earth's radius in km
+            var R = 6371;
             var dLat = degreesToRadians(lat2 - lat1);
             var dLng = degreesToRadians(lng2 - lng1);
             var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distance in km
+            return R * c; 
         }
 
         function degreesToRadians(degrees) {
@@ -382,85 +395,97 @@
             });
         }
 
-        function generatePDF() {
-            const { jsPDF } = window.jspdf; // Get the jsPDF constructor
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
             const headerImage = '../img/logo.png';
-            const imageWidth = 80; 
-            const imageHeight = 40; 
+            const imageWidth = 80;
+            const imageHeight = 40;
             const imageX = (doc.internal.pageSize.width - imageWidth) / 2;
             const imageY = 10;
 
             doc.addImage(headerImage, 'PNG', imageX, imageY, imageWidth, imageHeight);
 
-            // Footer text
             const footer = 'Thank you for using the Take My Trip\'s trip planning system';
-            const footerY = 280; 
+            const footerY = 280;
 
-            // Title
             doc.setFontSize(16);
-            doc.text('Travel Plan', 20, imageY + imageHeight + 10);  
+            doc.text('Travel Plan', 20, imageY + imageHeight + 10);
 
-            let y = imageY + imageHeight + 20; 
+            let y = imageY + imageHeight + 20;
 
-            // Iterate through each day of the itinerary
             const uniqueDays = Array.from(new Set(locations.map(loc => loc.day)));
 
-            uniqueDays.forEach(day => {
-                // Add a header for the day
+            for (const day of uniqueDays) {
                 doc.setFontSize(14);
                 doc.text(`Day ${day} Itinerary`, 20, y);
                 y += 10;
 
-                // Create table headers
                 doc.setFontSize(12);
                 doc.text('No.', 20, y);
-                doc.text('Location', 40, y);
-                doc.text('Distance', 100, y); 
-                doc.text('Time', 140, y);    
+                doc.text('Location', 30, y);
+                doc.text('Distance', 100, y);
+                doc.text('Time', 140, y);
                 y += 10;
 
-                // Add the locations for the specific day
                 const dayLocations = locations.filter(loc => loc.day === day);
 
-                dayLocations.forEach((location, index) => {
-                    const distance = index > 0 ? calculateDistance(dayLocations[index - 1].lat, dayLocations[index - 1].lng, location.lat, location.lng) : 0;
-                    const timeInMinutes = distance * 60;
+                const routePromises = [];
 
-                    let timeDisplay = '';
-                    if (timeInMinutes >= 60) {
-                        const hours = Math.floor(timeInMinutes / 60);
-                        const minutes = Math.round(timeInMinutes % 60);
-                        timeDisplay = `${hours} h${hours > 1 ? 's' : ''} ${minutes} min`;
-                    } else {
-                        timeDisplay = `${Math.round(timeInMinutes)} min`;
+                for (let index = 0; index < dayLocations.length; index++) {
+                    const location = dayLocations[index];
+                    if (index > 0) {
+                        const prevLocation = dayLocations[index - 1];
+                        routePromises.push(getRoute(prevLocation.lat, prevLocation.lng, location.lat, location.lng));
+                    }
+                }
+
+                const routes = await Promise.all(routePromises);
+
+                for (let index = 0; index < dayLocations.length; index++) {
+                    const location = dayLocations[index];
+                    let distance = 0;
+                    let duration = 0;
+
+                    if (index > 0) {
+                        const route = routes[index - 1]; 
+                        if (route) {
+                            distance = route.distance / 1000; 
+                            duration = route.duration; 
+                        }
                     }
 
+                    const hours = Math.floor(duration / 3600);
+                    const minutes = Math.round((duration % 3600) / 60);
+                    const timeDisplay = duration > 0
+                        ? (hours > 0
+                            ? `${hours} h ${minutes} min`
+                            : `${minutes} min`)
+                        : '-';
+
                     doc.text(`${index + 1}`, 20, y);
-                    doc.text(location.name, 40, y);
-                    doc.text(distance.toFixed(2) + ' km', 100, y);  
-                    doc.text(timeDisplay, 140, y);                  
+                    doc.text(location.name, 30, y);
+                    doc.text(distance.toFixed(2) + ' km', 100, y);
+                    doc.text(timeDisplay, 140, y);
                     y += 10;
 
-                    if (y > 270) { 
+                    if (y > 270) {
                         doc.addPage();
                         doc.setFontSize(16);
                         doc.text('Travel Plan', 20, 20);
                         doc.addImage(headerImage, 'PNG', imageX, imageY, imageWidth, imageHeight);
-                        y = imageY + imageHeight + 10; 
+                        y = imageY + imageHeight + 10;
                     }
-                });
+                }
 
-                doc.line(20, y, 190, y); 
+                doc.line(20, y, 190, y);
                 y += 10;
-            });
+            }
 
-            // Add footer
             doc.setFontSize(10);
-            doc.text(footer, 20, footerY); 
+            doc.text(footer, 20, footerY);
 
-            // Open the PDF in a new tab
             doc.output('dataurlnewwindow');
         }
 
@@ -477,7 +502,6 @@
                 <div class="card bg-white shadow-sm border-0">
                     <div class="card-body table-container">
                         <h5 class="card-title">Travel Plan</h5>
-                        <!-- Day Tabs -->
                         <ul class="nav nav-tabs" id="dayTabs" role="tablist">
                             <% 
                                 var locations = (List<Location>)Session["SelectedLocations"];
