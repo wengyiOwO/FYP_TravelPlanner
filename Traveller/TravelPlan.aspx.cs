@@ -193,7 +193,15 @@ namespace FYP_TravelPlanner.Traveller
 
             if (Session["SavePlan"] != null && Session["SavePlan"].ToString() == "saved")
             {
-                Response.Write("<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx';</script>");
+                string pId = Session["PlanID"]?.ToString(); 
+                if (!string.IsNullOrEmpty(pId))
+                {
+                    Response.Write($"<script>alert('Travel Plan Saved Successfully!'); window.location='Rating.aspx?PlanID={pId}';</script>");
+                }
+                else
+                {
+                    Response.Write("<script>alert('Plan ID is missing. Please try again.');</script>");
+                }
                 return;
             }
             string accountId = Session["account_id"].ToString();

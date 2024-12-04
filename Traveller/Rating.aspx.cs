@@ -19,7 +19,7 @@ namespace FYP_TravelPlanner.Traveller
 
                 Response.Redirect("~/Login.aspx");
             }
-        
+
             string planId = Request.QueryString["plan_id"];
             string accountId = Session["account_id"]?.ToString();
 
@@ -142,7 +142,6 @@ namespace FYP_TravelPlanner.Traveller
 
        
 
-            // Get satisfaction rating and review values
             int satisfactionRating = GetSelectedRating("satisfaction_rating");
             string review = txtReview.Text;
 

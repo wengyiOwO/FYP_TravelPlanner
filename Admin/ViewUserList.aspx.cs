@@ -28,7 +28,7 @@ namespace FYP_TravelPlanner
                        OR [account_name] LIKE @SearchTerm 
                        OR [account_email] LIKE @SearchTerm 
                        OR [account_phoneNo] LIKE @SearchTerm)
-                  AND [account_status] <> 'Deleted'";
+            AND [account_role] <> 'Admin'      ";
 
             SqlDataSource1.SelectParameters.Clear();
             SqlDataSource1.SelectParameters.Add("SearchTerm", DbType.String, "%" + searchTerm + "%");
@@ -39,18 +39,19 @@ namespace FYP_TravelPlanner
 
                 if (GridView1.Rows.Count == 0)
                 {
-                    lblErrorMessage.Text = "Oops, no results found.";
-                    lblErrorMessage.Visible = true;
+                    lblMessage.Text = "Oops, no results found.";
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
+                    lblMessage.Visible = true;
                 }
                 else
                 {
-                    lblErrorMessage.Visible = false;
+                    lblMessage.Visible = false;
                 }
             }
             catch (Exception ex)
             {
-                lblErrorMessage.Text = $"Oops, an error occurred: {ex.Message}";
-                lblErrorMessage.Visible = true;
+                lblMessage.Text = $"Oops, an error occurred: {ex.Message}";
+                lblMessage.Visible = true;
             }
         }
 
@@ -60,8 +61,9 @@ namespace FYP_TravelPlanner
 
             if (string.IsNullOrEmpty(accountId))
             {
-                lblErrorMessage.Text = "Account ID not found!";
-                lblErrorMessage.Visible = true;
+                lblMessage.Text = "Account ID not found!";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+                lblMessage.Visible = true;
                 e.Cancel = true;
                 return;
             }
@@ -83,35 +85,72 @@ namespace FYP_TravelPlanner
 
                         if (accountStatus == "Active")
                         {
-                            lblErrorMessage.Text = "Active accounts cannot be deleted!";
-                            lblErrorMessage.Visible = true;
+                            lblMessage.Text = "Active accounts cannot be deleted!";
+                            lblMessage.ForeColor = System.Drawing.Color.Red;
+                            lblMessage.Visible = true;
                             e.Cancel = true;
                             return;
                         }
                     }
-
-                    // Update status to 'Deleted'
-                    using (SqlCommand updateCmd = new SqlCommand(
-                        "UPDATE Account SET account_status = 'Deleted' WHERE account_id = @accountId", conn))
+                    // Attempt to delete the account
+                    using (SqlCommand deleteCmd = new SqlCommand("DELETE FROM Account WHERE account_id = @accountId", conn))
                     {
-                        updateCmd.Parameters.AddWithValue("@accountId", accountId);
-                        updateCmd.ExecuteNonQuery();
+                        deleteCmd.Parameters.AddWithValue("@accountId", accountId);
+
+                        try
+                        {
+                            int rowsAffected = deleteCmd.ExecuteNonQuery();
+
+                            if (rowsAffected == 0)
+                            {
+                                lblMessage.Text = "Account does not exist or cannot be deleted.";
+                                lblMessage.ForeColor = System.Drawing.Color.Red;
+                                lblMessage.Visible = true;
+                                e.Cancel = true;
+                                return;
+                            }
+                        }
+                        catch (SqlException ex) when (ex.Number == 547) // Foreign key violation
+                        {
+                            lblMessage.Text = "Cannot delete account as it is linked to other records.";
+                            lblMessage.ForeColor = System.Drawing.Color.Red;
+                            lblMessage.Visible = true;
+                            e.Cancel = true;
+                            return;
+                        }
                     }
                 }
 
-                lblErrorMessage.Text = "Account successfully deleted.";
-                lblErrorMessage.ForeColor = System.Drawing.Color.Green;
-                lblErrorMessage.Visible = true;
+                lblMessage.Text = "Account successfully deleted.";
+                lblMessage.ForeColor = System.Drawing.Color.Green;
+                lblMessage.Visible = true;
 
                 // Rebind the GridView
                 GridView1.DataBind();
             }
             catch (Exception ex)
             {
-                lblErrorMessage.Text = $"Error: {ex.Message}";
-                lblErrorMessage.ForeColor = System.Drawing.Color.Red;
-                lblErrorMessage.Visible = true;
+                lblMessage.Text = $"Error: {ex.Message}";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+                lblMessage.Visible = true;
             }
+
+        }
+
+        protected void SqlDataSource1_Updated(object sender, SqlDataSourceStatusEventArgs e)
+        {
+            // Check if the update was successful
+            if (e.AffectedRows > 0)
+            {
+                lblMessage.Text = "Details updated successfully.";
+                lblMessage.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                lblMessage.Text = "Failed to update details. Please try again.";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+            }
+            lblMessage.Visible = true;
         }
     }
 }

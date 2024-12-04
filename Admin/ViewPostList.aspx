@@ -55,7 +55,7 @@
                     <asp:TextBox ID="txtSearch" runat="server"></asp:TextBox>
                     &nbsp;
             <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn-success" OnClick="btnSearch_Click" />
-                    <asp:Label ID="lblErrorMessage" runat="server" ForeColor="Red" Visible="false"></asp:Label>
+                    <asp:Label ID="lblMessage" runat="server"  Visible="false"></asp:Label>
 
                 </p>
                 <div class="card-body">
@@ -134,7 +134,11 @@
                             </Columns>
                         </asp:GridView>
 
-                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [post_id], [account_id], [post_date], [post_title], [post_content], [post_status], [post_permission] FROM [Posts] ORDER BY [post_id]" DeleteCommand="DELETE FROM [Posts] WHERE [post_id] = @post_id" UpdateCommand="UPDATE [Posts] SET [post_title] = @post_title,  [post_date] = @post_date , [post_content] = @post_content , [post_status] = @post_status, [post_permission] = @post_permission WHERE [post_id] = @post_id">
+                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" 
+                            SelectCommand="SELECT [post_id], [account_id], [post_date], [post_title], [post_content], [post_status], [post_permission] FROM [Posts] ORDER BY [post_id]" 
+                            DeleteCommand="DELETE FROM [Posts] WHERE [post_id] = @post_id" 
+                            UpdateCommand="UPDATE [Posts] SET [post_title] = @post_title,  [post_date] = @post_date , [post_content] = @post_content , [post_status] = @post_status, [post_permission] = @post_permission WHERE [post_id] = @post_id"
+                             OnUpdated="SqlDataSource1_Updated">
                             <DeleteParameters>
                                 <asp:Parameter Name="post_id" />
                             </DeleteParameters>

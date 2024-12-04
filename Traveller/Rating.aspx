@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/TakeMyTrip.Master" CodeBehind="Rating.aspx.cs"  Inherits="FYP_TravelPlanner.Traveller.Rating" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/TakeMyTrip.Master" CodeBehind="Rating.aspx.cs" Inherits="FYP_TravelPlanner.Traveller.Rating" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <!-- Include FontAwesome -->
@@ -45,32 +45,32 @@
 
         <!-- Question 1 -->
         <ol class="mb-4">
-              <li>
-        <h5>The travel plan generated meets my travel budget and preferences</h5>
-        <div class="rating">
-            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_5" value="5"><label for="plan_usefulness_5"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_4" value="4"><label for="plan_usefulness_4"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_3" value="3"><label for="plan_usefulness_3"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_2" value="2"><label for="plan_usefulness_2"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_1" value="1"><label for="plan_usefulness_1"><i class="fas fa-star"></i></label>
-        </div>
-        <span id="plan_usefulness_error" class="text-danger" style="display: none;">Please select a rating.</span>
+            <li>
+                <h5>The travel plan generated meets my travel budget and preferences</h5>
+                <div class="rating">
+                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_5" value="5"><label for="plan_usefulness_5"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_4" value="4"><label for="plan_usefulness_4"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_3" value="3"><label for="plan_usefulness_3"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_2" value="2"><label for="plan_usefulness_2"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_usefulness_rating" id="plan_usefulness_1" value="1"><label for="plan_usefulness_1"><i class="fas fa-star"></i></label>
+                </div>
+                <span id="plan_usefulness_error" class="text-danger" style="display: none;">Please select a rating.</span>
 
-    </li>
+            </li>
 
             <!-- Question 2 -->
             <li>
-        <h5>The travel plan's locations generated is useful</h5>
-        <div class="rating">
-            <input type="radio" name="plan_location_rating" id="plan_location_5" value="5"><label for="plan_location_5"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_location_rating" id="plan_location_4" value="4"><label for="plan_location_4"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_location_rating" id="plan_location_3" value="3"><label for="plan_location_3"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_location_rating" id="plan_location_2" value="2"><label for="plan_location_2"><i class="fas fa-star"></i></label>
-            <input type="radio" name="plan_location_rating" id="plan_location_1" value="1"><label for="plan_location_1"><i class="fas fa-star"></i></label>
-        </div>
-        <span id="plan_location_error" class="text-danger" style="display: none;">Please select a rating.</span>
+                <h5>The travel plan's locations generated is useful</h5>
+                <div class="rating">
+                    <input type="radio" name="plan_location_rating" id="plan_location_5" value="5"><label for="plan_location_5"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_location_rating" id="plan_location_4" value="4"><label for="plan_location_4"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_location_rating" id="plan_location_3" value="3"><label for="plan_location_3"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_location_rating" id="plan_location_2" value="2"><label for="plan_location_2"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="plan_location_rating" id="plan_location_1" value="1"><label for="plan_location_1"><i class="fas fa-star"></i></label>
+                </div>
+                <span id="plan_location_error" class="text-danger" style="display: none;">Please select a rating.</span>
 
-    </li>
+            </li>
 
             <!-- Question 3 -->
             <li>
@@ -97,7 +97,6 @@
                     <input type="radio" name="satisfaction_rating" id="satisfaction_1" value="1"><label for="satisfaction_1"><i class="fas fa-star"></i></label>
                 </div>
                 <span id="satisfaction_error" class="text-danger" style="display: none;">Please select a rating.</span>
-                            <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
             </li>
             <!-- Question 5 -->
@@ -106,13 +105,15 @@
                 <h5>If you encountered any issues or have suggestions for improvement, please provide details below:</h5>
 
                 <asp:TextBox runat="server" ID="txtReview" class="form-control mt-3" Rows="4" placeholder="Please provide any suggestions or feedback here..." TextMode="MultiLine"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvReview" runat="server" ControlToValidate="txtReview" ErrorMessage="Please provide feedback." ForeColor="Red" Display="Dynamic" />
+                <asp:RequiredFieldValidator ID="rfvReview" runat="server" ControlToValidate="txtReview" ErrorMessage="Please provide review." ForeColor="Red" Display="Dynamic" />
 
             </li>
         </ol>
         <!-- Submit Button -->
         <div class="text-center" style="margin-bottom: 20px;">
             <asp:Button runat="server" ID="btnSubmit" Text="Submit" class="btn btn-primary" OnClick="btnSubmit_Click" OnClientClick="return validateForm();" />
+            <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+
             <br />
         </div>
     </div>
@@ -127,12 +128,11 @@
             document.getElementById("plan_location_error").style.display = "none";
             document.getElementById("functionality_error").style.display = "none";
             document.getElementById("satisfaction_error").style.display = "none";
-            document.getElementById("review_error").style.display = "none";
 
             // Array of rating groups with their corresponding error messages
             const ratingGroups = [
                 { name: 'plan_usefulness_rating', errorId: 'plan_usefulness_error' },
-                { name: 'plan_location_error', errorId: 'plan_location_error' },
+                { name: 'plan_location_rating', errorId: 'plan_location_error' },
                 { name: 'functionality_rating', errorId: 'functionality_error' },
                 { name: 'satisfaction_rating', errorId: 'satisfaction_error' }
             ];
@@ -147,18 +147,11 @@
                 }
             });
 
-            // Check if the review field is filled
-            const review = document.getElementById("<%= txtReview.ClientID %>").value;
-            if (review.trim() === '') {
-                document.getElementById("review_error").style.display = "block";
-                isValid = false;
-            }
-
             // Return false if any validation fails
             return isValid;
         }
     </script>
-    
+
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 

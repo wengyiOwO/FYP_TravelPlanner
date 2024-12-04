@@ -57,7 +57,7 @@
                     <asp:TextBox ID="txtSearch" runat="server"></asp:TextBox>
                     &nbsp;
                     <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn-success" OnClick="btnSearch_Click" />
-                    <asp:Label ID="lblErrorMessage" runat="server" ForeColor="Red" Visible="false"></asp:Label>
+                    <asp:Label ID="lblMessage" runat="server" Visible="false"></asp:Label>
 
                 </p>
 
@@ -82,7 +82,15 @@
                                     <EditItemTemplate>
                                         <asp:TextBox ID="TextBox3" runat="server" Text='<%# Bind("account_phoneNo") %>'></asp:TextBox>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="TextBox3" Display="Dynamic" ErrorMessage="Please Fill In Phone Number!" ForeColor="Red"></asp:RequiredFieldValidator>
-                                        <asp:RegularExpressionValidator ID="RegularExpressionValidator3" runat="server" ControlToValidate="TextBox3" Display="Dynamic" ErrorMessage="Invalid phone number format(Eg.0102049999)" ForeColor="Red" ValidationExpression="^\d{10,11}$"></asp:RegularExpressionValidator>
+                                        <asp:RegularExpressionValidator
+                                            ID="RegularExpressionValidator3"
+                                            runat="server"
+                                            ControlToValidate="TextBox3"
+                                            Display="Dynamic"
+                                            ErrorMessage="Invalid phone number format (Eg. 0123456789)"
+                                            ForeColor="Red"
+                                            ValidationExpression="^0[1-9]\d{8,9}$">
+                                        </asp:RegularExpressionValidator>
                                     </EditItemTemplate>
                                     <ItemTemplate>
                                         <asp:Label ID="Label3" runat="server" Text='<%# Bind("account_phoneNo") %>'></asp:Label>
@@ -92,7 +100,8 @@
                                     <EditItemTemplate>
                                         <asp:TextBox ID="TextBox2" runat="server" Text='<%# Bind("account_email") %>'></asp:TextBox>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="TextBox2" Display="Dynamic" ErrorMessage="Please Fill In Email!" ForeColor="Red"></asp:RequiredFieldValidator>
-                                        <asp:RegularExpressionValidator ID="RegularExpressionValidator2" runat="server" ControlToValidate="TextBox2" Display="Dynamic" ErrorMessage="Invalid Email Format!" ForeColor="Red" ValidationExpression="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"></asp:RegularExpressionValidator>
+                                        <asp:RegularExpressionValidator runat="server" ControlToValidate="TextBox2" ErrorMessage="Invalid email format (Eg. example@gmail.com)" CssClass="text-danger"
+                                            ValidationExpression="^[^@\s]+@[^@\s]+\.[^@\s]+$" Display="Dynamic" />
                                     </EditItemTemplate>
                                     <ItemTemplate>
                                         <asp:Label ID="Label2" runat="server" Text='<%# Bind("account_email") %>'></asp:Label>
@@ -102,7 +111,7 @@
                                     <EditItemTemplate>
                                         <asp:DropDownList ID="ddlStatus" runat="server" SelectedValue='<%# Bind("account_status") %>'>
                                             <asp:ListItem Text="Active" Value="Active"></asp:ListItem>
-                                            <asp:ListItem Text="Inactive" Value="Inactive"></asp:ListItem>                                            
+                                            <asp:ListItem Text="Inactive" Value="Inactive"></asp:ListItem>
 
                                         </asp:DropDownList>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ControlToValidate="ddlStatus" Display="Dynamic" ErrorMessage="Please Select Permission!" ForeColor="Red"></asp:RequiredFieldValidator>
@@ -115,9 +124,10 @@
                         </asp:GridView>
                         <asp:SqlDataSource ID="SqlDataSource1" runat="server"
                             ConnectionString="<%$ ConnectionStrings:ConnectionString %>"
-                            SelectCommand="SELECT [account_id], [account_name], [account_phoneNo], [account_email], [account_status] FROM [Account] WHERE [account_role] <> 'Admin' AND [account_status] <> 'Deleted' ORDER BY [account_id]"
+                            SelectCommand="SELECT [account_id], [account_name], [account_phoneNo], [account_email], [account_status] FROM [Account] WHERE [account_role] <> 'Admin'"
                             UpdateCommand="UPDATE [Account] SET [account_name] = @account_name, [account_phoneNo] = @account_phoneNo, [account_email] = @account_email , [account_status] = @account_status WHERE [account_id] = @account_id"
-                            DeleteCommand="UPDATE Account SET account_status = 'Deleted' WHERE account_id = @account_id">
+                            DeleteCommand="DELETE FROM [Account] WHERE [account_id] = @account_id"
+                            OnUpdated="SqlDataSource1_Updated">
                             <UpdateParameters>
                                 <asp:Parameter Name="account_name" />
                                 <asp:Parameter Name="account_phoneNo" />

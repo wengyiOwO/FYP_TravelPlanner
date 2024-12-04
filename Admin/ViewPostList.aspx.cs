@@ -71,20 +71,36 @@ namespace FYP_TravelPlanner
                 // Check if any rows are returned
                 if (GridView1.Rows.Count == 0)
                 {
-                    lblErrorMessage.Text = "Oops, No results found.";
-                    lblErrorMessage.Visible = true;
+                    lblMessage.Text = "Oops, No results found.";
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
+
+                    lblMessage.Visible = true;
                 }
                 else
                 {
-                    lblErrorMessage.Visible = false;
+                    lblMessage.Visible = false;
                 }
             }
             catch (Exception ex)
-            {
-                lblErrorMessage.Text = $"Oops, an error occurred: {ex.Message}";
-                lblErrorMessage.Visible = true;
+            {   
+                lblMessage.Text = $"Oops, an error occurred: {ex.Message}";
+                lblMessage.Visible = true;
             }
         }
-
+        protected void SqlDataSource1_Updated(object sender, SqlDataSourceStatusEventArgs e)
+        {
+            // Check if the update was successful
+            if (e.AffectedRows > 0)
+            {
+                lblMessage.Text = "Details updated successfully.";
+                lblMessage.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                lblMessage.Text = "Failed to update details. Please try again.";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+            }
+            lblMessage.Visible = true;
+        }
     }
 }
