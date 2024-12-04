@@ -13,10 +13,10 @@ namespace FYP_TravelPlanner
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            //if (Session["account_id"] == null)
-            //{
-            //    Response.Redirect("~/Login.aspx");
-            //}
+            if (Session["account_id"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
         }
         protected void ValidateDate(object source, ServerValidateEventArgs args)
         {
