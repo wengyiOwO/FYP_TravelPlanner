@@ -187,49 +187,44 @@ namespace FYP_TravelPlanner.Traveller
             {
                 string newChatId = GenerateChatId(accountId, DateTime.Now);
 
-                // Process text message
                 if (!string.IsNullOrEmpty(txtMessage.Text))
                 {
                     string messageType = "text";
                     string messageContent = txtMessage.Text.Trim();
-                    // Save text message
                     SaveMessage(messageContent, messageType);
                 }
 
-                // Process file uploads (images/videos)
                 if (fileUpload.HasFiles)
                 {
                     foreach (HttpPostedFile file in fileUpload.PostedFiles)
                     {
                         string fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
-                        string fileName = $"{newChatId}_{Guid.NewGuid()}"; // Unique file name based on chatId and GUID
+                        string fileName = $"{newChatId}_{Guid.NewGuid()}"; 
 
                         if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
                         {
                             string filePath = Server.MapPath($"~/Uploads/Chat/{fileName}.jpg");
                             file.SaveAs(filePath);
-                            string messageContent = fileName + ".jpg"; // File name for the message content
-                            string messageType = "image"; // Message type is image
-                                                          // Save image file
+                            string messageContent = fileName + ".jpg"; 
+                            string messageType = "image"; 
+                                                          
                             SaveMessage(messageContent, messageType);
                         }
                         else if (fileExtension == ".mp4" || fileExtension == ".mov" || fileExtension == ".avi")
                         {
                             string filePath = Server.MapPath($"~/Uploads/Chat/{fileName}.mp4");
                             file.SaveAs(filePath);
-                            string messageContent = fileName + ".mp4"; // File name for the message content
-                            string messageType = "video"; // Message type is video
-                                                          // Save video file
+                            string messageContent = fileName + ".mp4"; 
+                            string messageType = "video"; 
+                                                         
                             SaveMessage(messageContent, messageType);
                         }
                     }
                 }
 
-                // Clear the input fields
                 txtMessage.Text = "";
                 fileUpload.Attributes.Clear();
 
-                // Reload chat messages after sending
                 LoadChatMessages();
             }
         }
@@ -237,7 +232,6 @@ namespace FYP_TravelPlanner.Traveller
         private void SaveMessage(string messageContent, string messageType)
         {
             string newChatId = GenerateChatId(accountId, DateTime.Now);
-            // Save the message (text or file) in the database
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = "INSERT INTO Chat (chat_id, sender_id, receiver_id, chat_datetime, chat_message, message_type) " +

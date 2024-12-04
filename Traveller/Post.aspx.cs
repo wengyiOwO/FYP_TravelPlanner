@@ -55,11 +55,12 @@ namespace FYP_TravelPlanner.Traveller
                                     (account1_id = Posts.account_id AND account2_id = @currentAccountId AND friend_status = 'Accepted') 
                                     OR 
                                     (account2_id = Posts.account_id AND account1_id = @currentAccountId AND friend_status = 'Accepted')
+                                    OR
+                                    (Posts.account_id = @currentAccountId)
                             ))
                             OR (post_permission = 'Owner' AND account_id = @currentAccountId)
                         )";
 
-                // If a search query is provided, add a condition for the post title
                 if (!string.IsNullOrEmpty(searchQuery))
                 {
                     query += " AND post_title LIKE @searchQuery";
@@ -68,7 +69,6 @@ namespace FYP_TravelPlanner.Traveller
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@currentAccountId", Session["account_id"]);
 
-                // Add search query parameter if applicable
                 if (!string.IsNullOrEmpty(searchQuery))
                 {
                     cmd.Parameters.AddWithValue("@searchQuery", "%" + searchQuery + "%");

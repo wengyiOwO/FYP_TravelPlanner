@@ -99,7 +99,7 @@
                                 <div class="py-4 px-4">
                                     <asp:Repeater ID="rptResults" runat="server" OnItemCommand="rptResults_ItemCommand">
                                         <ItemTemplate>
-                                            <a href="#" class="list-group-item list-group-item-action border-0">
+                                            <a href="../Account/Profile.aspx?u=<%# Eval("account_id") %>" class="list-group-item list-group-item-action border-0">
                                                 <div class="d-flex align-items-start">
                                                     <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle" Width="40" Height="40"
                                                         OnDataBinding="imgProfile_DataBinding" />

@@ -255,6 +255,8 @@ namespace FYP_TravelPlanner
                                     (account1_id = Posts.account_id AND account2_id = @currentAccountId AND friend_status = 'Accepted') 
                                     OR 
                                     (account2_id = Posts.account_id AND account1_id = @currentAccountId AND friend_status = 'Accepted')
+                                    OR
+                                    (Posts.account_id = @currentAccountId)
                             ))
                             OR (post_permission = 'Owner' AND account_id = @currentAccountId)
                         )";

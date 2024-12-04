@@ -80,14 +80,14 @@
 
             control = L.Routing.control({
                 waypoints: locations.map(loc => L.latLng(loc.lat, loc.lng)),
-                createMarker: function () { return null; }, 
+                createMarker: function () { return null; },
                 routeWhileDragging: true,
                 addWaypoints: false,
                 draggableWaypoints: false
             }).addTo(map);
 
             control.on('routesfound', function (e) {
-                console.log('Routes found:', e.routes); 
+                console.log('Routes found:', e.routes);
                 e.routes.forEach(function (route) {
                     if (route._line) {
                         route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
@@ -96,7 +96,7 @@
             });
 
             control.getPlan().on('routefound', function (e) {
-                console.log('Route found on plan:', e.routes); 
+                console.log('Route found on plan:', e.routes);
                 e.routes.forEach(function (route) {
                     if (route._line) {
                         route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
@@ -104,11 +104,11 @@
                 });
             });
 
-            showDay(1); 
+            showDay(1);
         }
 
         function findNearbyLocation(lat, lng, event) {
-            event.preventDefault(); 
+            event.preventDefault();
 
             var allLocations = JSON.parse('<%= AllLocationsJson %>');
             var selectedLocations = locations;
@@ -116,18 +116,18 @@
             var nearbyLocations = allLocations.filter(function (location) {
                 var distance = calculateDistance(lat, lng, location.lat, location.lng);
 
-               
+
                 var isSelected = selectedLocations.some(
                     selected => selected.lat === location.lat && selected.lng === location.lng
                 );
 
-                return distance <= 4 && !isSelected; 
+                return distance <= 4 && !isSelected;
             });
 
             displayNearbyLocationsList(nearbyLocations);
         }
         function calculateDistance(lat1, lng1, lat2, lng2) {
-            var R = 6371; 
+            var R = 6371;
             var dLat = degreesToRadians(lat2 - lat1);
             var dLng = degreesToRadians(lng2 - lng1);
             var a =
@@ -135,7 +135,7 @@
                 Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            var distance = R * c; 
+            var distance = R * c;
             return distance;
         }
 
@@ -145,7 +145,7 @@
 
         function displayNearbyLocationsList(locations) {
             var list = document.getElementById('nearbyLocationList');
-            list.innerHTML = ''; 
+            list.innerHTML = '';
 
             if (locations.length === 0) {
                 list.innerHTML = '<li class="list-group-item">No nearby locations found</li>';
@@ -176,7 +176,7 @@
             updateTable(currentDay);
 
             markers.forEach(marker => map.removeLayer(marker));
-            markers = []; 
+            markers = [];
 
             locations.filter(loc => loc.day === currentDay).forEach((location, index) => {
                 var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
@@ -223,16 +223,26 @@
             markers = [];
             control.setWaypoints([]);
 
+            dayLocations.forEach((location, index) => {
+                var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
+                var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
+                markers.push(marker);
+                marker.bindPopup(`<b>${location.name}</b><br><button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
+            });
+
+
             control.setWaypoints(dayLocations.map(loc => L.latLng(loc.lat, loc.lng)));
             updateTable(day);
-        }
 
+        }
         async function updateTable(day) {
             const tableBody = document.getElementById('locationTable');
-            tableBody.innerHTML = '';
+            tableBody.innerHTML = '';  // Clear existing table content
 
             const dayLocations = locations.filter(loc => loc.day === day);
+            const rowsData = [];  // Array to hold rows data before rendering
 
+            // Loop through each location and calculate distance and duration
             for (let index = 0; index < dayLocations.length; index++) {
                 const location = dayLocations[index];
                 let distance = 0;
@@ -249,7 +259,7 @@
                     }
                 }
 
-                // convert duration to hours and minutes
+                // Convert duration to hours and minutes
                 const hours = Math.floor(duration / 3600);
                 const minutes = Math.round((duration % 3600) / 60);
                 const timeDisplay = duration > 0
@@ -258,19 +268,33 @@
                         : `${minutes} min`)
                     : '-';
 
-                //table row
-                let row = document.createElement('tr');
-                row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${location.name}</td>
-        <td>${distance.toFixed(2)} km</td>
-        <td>${timeDisplay}</td>
-        <td style="text-align: center;">
-            <button class="btn btn-delete" onclick="deleteLocation(${location.lat}, ${location.lng}, ${day}, this)">&times;</button>
-        </td>`;
-                tableBody.appendChild(row);
+                // Prepare row data
+                rowsData.push({
+                    index: index + 1,
+                    name: location.name,
+                    distance: distance.toFixed(2),  // Store the distance as a string
+                    timeDisplay: timeDisplay,
+                    lat: location.lat,
+                    lng: location.lng
+                });
             }
+
+            // Once all calculations are done, generate the table
+            rowsData.forEach(rowData => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${rowData.index}</td>
+            <td>${rowData.name}</td>
+            <td>${rowData.distance} km</td>
+            <td>${rowData.timeDisplay}</td>
+            <td style="text-align: center;">
+                <button class="btn btn-delete" onclick="deleteLocation(${rowData.lat}, ${rowData.lng}, ${day}, this)">&times;</button>
+            </td>
+        `;
+                tableBody.appendChild(row);
+            });
         }
+
 
         //get the route using OpenStreet API
         async function getRoute(lat1, lng1, lat2, lng2) {
@@ -281,7 +305,7 @@
                     const route = data.routes[0];
                     return {
                         distance: route.distance,
-                        duration: route.duration 
+                        duration: route.duration
                     };
                 }
             } catch (error) {
@@ -300,7 +324,7 @@
                 } catch (error) {
                     console.error(`Attempt ${i + 1} failed:`, error);
                 }
-                await new Promise(resolve => setTimeout(resolve, delay)); 
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
             throw new Error('Failed to fetch after retries');
         }
@@ -313,7 +337,7 @@
                 Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; 
+            return R * c;
         }
 
         function degreesToRadians(degrees) {
@@ -374,13 +398,13 @@
                 dataType: "json",
                 async: false, // Ensures this completes before returning
                 success: function (response) {
-                   //
+                    //
                 },
                 error: function (xhr, status, error) {
                     alert("Failed to save travel plan. Error: " + error);
                 }
             }).then(function () {
-                
+
                 return true;
             }).catch(function () {
                 // Block postback if there's an error
@@ -442,10 +466,10 @@
                     let duration = 0;
 
                     if (index > 0) {
-                        const route = routes[index - 1]; 
+                        const route = routes[index - 1];
                         if (route) {
-                            distance = route.distance / 1000; 
-                            duration = route.duration; 
+                            distance = route.distance / 1000;
+                            duration = route.duration;
                         }
                     }
 
@@ -498,10 +522,22 @@
                         <ul class="nav nav-tabs" id="dayTabs" role="tablist">
                             <% 
                                 var locations = (List<Location>)Session["SelectedLocations"];
-                                int maxDay = locations.Max(loc => loc.day);
-                                for (int i = 1; i <= maxDay; i++)
+
+                                // Check if locations is null or empty
+                                if (locations == null || locations.Count == 0)
                                 {
-                            %>
+    %>
+                            <li class="alert alert-danger" role="alert">Unable to display the plan, the location is empty.
+        </li>
+                            <% 
+                                }
+                                else
+                                {
+                                    // Proceed with generating the day tabs
+                                    int maxDay = locations.Max(loc => loc.day);
+                                    for (int i = 1; i <= maxDay; i++)
+                                    {
+    %>
                             <li class="nav-item">
                                 <a class="nav-link <% if (i == 1)
                                     { %>active<% } %>"
@@ -512,7 +548,10 @@
                                     { %>false<% } %>"
                                     onclick="showDay(<%= i %>)">Day <%= i %></a>
                             </li>
-                            <% } %>
+                            <% 
+                                }
+                            }
+    %>
                         </ul>
                         <!-- Table for Locations -->
                         <table class="table table-hover mt-3">
@@ -537,7 +576,7 @@
                             <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:Button ID="btnPDF" runat="server" Text="Generate PDF" CssClass="btn btn-sm btn-primary shadow-sm" OnClientClick="generatePDF(); return false;" />
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
-                                <asp:HiddenField ID="hiddenPlanId" runat="server" />
+                            <asp:HiddenField ID="hiddenPlanId" runat="server" />
                         </div>
                     </div>
                 </div>

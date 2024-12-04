@@ -32,19 +32,16 @@ namespace FYP_TravelPlanner.Traveller
 
             if (!IsPostBack)
             {
-                // Fetch and load all locations for nearby search functionality
                 LoadAllLocations();
 
                 if (!string.IsNullOrEmpty(planId))
                 {
-                    // Load the travel plan details from the database
                     LoadTravelPlanData(planId);
 
 
                 }
                 else if (Session["SelectedLocations"] != null)
                 {
-                    // Deserialize or keep data in session if it's already List<Location>
                     if (Session["SelectedLocations"] is string selectedLocationsJson)
                     {
                         Session["SelectedLocations"] = JsonConvert.DeserializeObject<List<Location>>(selectedLocationsJson);
@@ -53,14 +50,12 @@ namespace FYP_TravelPlanner.Traveller
                 else
                 {
                     Response.Redirect("~/Login.aspx");
-                    //LocationsJson = "[]"; // Initialize as empty if session is null
                 }
             }
 
             // Ensure data is serialized for JavaScript on every load
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             LocationsJson = serializer.Serialize((List<Location>)Session["SelectedLocations"]);
-            //List<Location> allLocations = Session["AllLocations"] as List<Location>;
             AllLocationsJson = serializer.Serialize((List<Location>)Session["AllLocations"]);
         }
         protected void Page_PreInit(object sender, EventArgs e)
@@ -191,6 +186,15 @@ namespace FYP_TravelPlanner.Traveller
                 return;
             }
 
+            var checkEmptyPlan = (List<Location>)Session["SelectedLocations"];
+
+            if (checkEmptyPlan == null || checkEmptyPlan.Count == 0)
+            {
+                lblMessage.Text = "Unable to save, the plan is empty location.";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+                return;
+            }
+
             if (Session["SavePlan"] != null && Session["SavePlan"].ToString() == "saved")
             {
                 string pId = Session["PlanID"]?.ToString(); 
@@ -219,7 +223,7 @@ namespace FYP_TravelPlanner.Traveller
                 if (!string.IsNullOrEmpty(existingPlanId))
                 {
 
-                    // Delete associated activities and itineraries for the provided plan_id
+                    // Delete activity and itinerary for plan_id
                     string deleteActivitiesQuery = @"DELETE FROM Travel_Activity 
                                              WHERE itinerary_id IN 
                                              (SELECT itinerary_id FROM Daily_Itinerary WHERE plan_id = @plan_id)";
@@ -266,7 +270,6 @@ namespace FYP_TravelPlanner.Traveller
                 }
                 else
                 {
-                    // Generate a new plan_id if none exists
                     planId = GeneratePlanId();
                     areaId = Session["AreaID"].ToString();
                     startDate = DateTime.Parse(Session["StartDate"].ToString());
@@ -287,7 +290,6 @@ namespace FYP_TravelPlanner.Traveller
                     }
                 }
 
-                // Get the list of locations from session
                 var selectedLocations = (List<Location>)Session["SelectedLocations"];
 
                 // Insert each day into Daily_Itinerary and locations into Travel_Activity
