@@ -135,6 +135,7 @@ namespace FYP_TravelPlanner.Traveller
             }
         }
 
+
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             string ratingID = GenerateNextID();

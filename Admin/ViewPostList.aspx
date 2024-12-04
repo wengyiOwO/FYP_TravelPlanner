@@ -14,9 +14,14 @@
             .gridview-style td {
                 border: 1px solid black;
                 padding: 10px;
-                text-align: center;
+                text-align: left; /* Align content to the left for readability */
+                word-wrap: break-word; /* Break long words */
+                overflow-wrap: break-word;
+                white-space: pre-line;
+                max-width: 400px;
+                line-height: 1.5;
+                vertical-align: top;
             }
-
             .gridview-style th {
                 color: black;
             }
@@ -55,7 +60,7 @@
                     <asp:TextBox ID="txtSearch" runat="server"></asp:TextBox>
                     &nbsp;
             <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn-success" OnClick="btnSearch_Click" />
-                    <asp:Label ID="lblMessage" runat="server"  Visible="false"></asp:Label>
+                    <asp:Label ID="lblMessage" runat="server" Visible="false"></asp:Label>
 
                 </p>
                 <div class="card-body">
@@ -66,10 +71,11 @@
 
                                 <asp:BoundField DataField="post_id" HeaderText="ID" ReadOnly="True" SortExpression="post_id" />
                                 <asp:TemplateField HeaderText="Image">
+                       
                                     <ItemTemplate>
                                         <asp:Image ID="imgPost" runat="server"
                                             ImageUrl='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>'
-                                            AlternateText="Post image" Width="100px" Height="100px" />
+                                            AlternateText="Post image" Width="185px" Height="180px" />
                                     </ItemTemplate>
                                 </asp:TemplateField>
                                 <asp:TemplateField HeaderText="Date" SortExpression="post_date">
@@ -90,7 +96,7 @@
 
                                 <asp:TemplateField HeaderText="Title" SortExpression="post_title">
                                     <EditItemTemplate>
-                                        <asp:TextBox ID="TextBox2" runat="server" Text='<%# Bind("post_title") %>'></asp:TextBox>
+                                        <asp:TextBox ID="TextBox2" runat="server" MaxLength="50" Text='<%# Bind("post_title") %>'></asp:TextBox>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="TextBox2" Display="Dynamic" ErrorMessage="Please Fill In Title!" ForeColor="Red"></asp:RequiredFieldValidator>
                                     </EditItemTemplate>
                                     <ItemTemplate>
@@ -98,8 +104,10 @@
                                     </ItemTemplate>
                                 </asp:TemplateField>
                                 <asp:TemplateField HeaderText="Content" SortExpression="post_content">
+                                    <HeaderStyle Width="400px" />
+                                    <ItemStyle Width="400px" Wrap="True" HorizontalAlign="Left" />
                                     <EditItemTemplate>
-                                        <asp:TextBox ID="TextBox6" runat="server" Text='<%# Bind("post_content") %>'></asp:TextBox>
+                                        <asp:TextBox ID="TextBox6" runat="server" TextMode="MultiLine" Rows="4" MaxLength="500" Text='<%# Bind("post_content") %>'></asp:TextBox>
                                         <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ControlToValidate="TextBox6" Display="Dynamic" ErrorMessage="Please Fill In Content!" ForeColor="Red"></asp:RequiredFieldValidator>
                                     </EditItemTemplate>
                                     <ItemTemplate>
@@ -134,11 +142,12 @@
                             </Columns>
                         </asp:GridView>
 
-                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" 
-                            SelectCommand="SELECT [post_id], [account_id], [post_date], [post_title], [post_content], [post_status], [post_permission] FROM [Posts] ORDER BY [post_id]" 
-                            DeleteCommand="DELETE FROM [Posts] WHERE [post_id] = @post_id" 
+                        <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>"
+                            SelectCommand="SELECT [post_id], [account_id], [post_date], [post_title], [post_content], [post_status], [post_permission] FROM [Posts] ORDER BY [post_id]"
+                            DeleteCommand="DELETE FROM [Posts] WHERE [post_id] = @post_id"
                             UpdateCommand="UPDATE [Posts] SET [post_title] = @post_title,  [post_date] = @post_date , [post_content] = @post_content , [post_status] = @post_status, [post_permission] = @post_permission WHERE [post_id] = @post_id"
-                             OnUpdated="SqlDataSource1_Updated">
+                            OnUpdated="SqlDataSource1_Updated"
+                            OnDeleted="SqlDataSource1_Deleted">
                             <DeleteParameters>
                                 <asp:Parameter Name="post_id" />
                             </DeleteParameters>

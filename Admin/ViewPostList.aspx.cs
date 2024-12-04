@@ -13,10 +13,10 @@ namespace FYP_TravelPlanner
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["account_id"] == null)
-            {
-                Response.Redirect("~/Login.aspx");
-            }
+            //if (Session["account_id"] == null)
+            //{
+            //    Response.Redirect("~/Login.aspx");
+            //}
         }
         protected void ValidateDate(object source, ServerValidateEventArgs args)
         {
@@ -98,6 +98,21 @@ namespace FYP_TravelPlanner
             else
             {
                 lblMessage.Text = "Failed to update details. Please try again.";
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+            }
+            lblMessage.Visible = true;
+        }
+        protected void SqlDataSource1_Deleted(object sender, SqlDataSourceStatusEventArgs e)
+        {
+            // Check if the update was successful
+            if (e.AffectedRows > 0)
+            {
+                lblMessage.Text = "Post deleted successfully.";
+                lblMessage.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                lblMessage.Text = "Failed to delete post. Please try again.";
                 lblMessage.ForeColor = System.Drawing.Color.Red;
             }
             lblMessage.Visible = true;

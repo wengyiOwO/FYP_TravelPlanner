@@ -112,6 +112,7 @@
         <!-- Submit Button -->
         <div class="text-center" style="margin-bottom: 20px;">
             <asp:Button runat="server" ID="btnSubmit" Text="Submit" class="btn btn-primary" OnClick="btnSubmit_Click" OnClientClick="return validateForm();" />
+            <br />
             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
             <br />
