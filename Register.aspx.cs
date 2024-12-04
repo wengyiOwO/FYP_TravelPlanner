@@ -91,7 +91,7 @@ namespace FYP_TravelPlanner
             conn = new SqlConnection(strCon);
             conn.Open();
 
-            string strInsert = "Insert Into Account(account_id,account_name,account_phoneNo,account_password,account_salt,account_email,account_status,account_role) VALUES(@AccountID,@Name,@Phone,@Password,@Salt,@Email,@Status,@Role) ";
+            string strInsert = "Insert Into Account(account_id,account_name,account_phoneNo,account_password,account_salt,account_email,account_status,account_role, profile_image) VALUES(@AccountID,@Name,@Phone,@Password,@Salt,@Email,@Status,@Role,@ProfileImage) ";
 
             SqlCommand cmdInsert;
             cmdInsert = new SqlCommand(strInsert, conn);
@@ -107,6 +107,7 @@ namespace FYP_TravelPlanner
             cmdInsert.Parameters.AddWithValue("@Email", txtEmail.Text.ToString());
             cmdInsert.Parameters.AddWithValue("@Status", "Active");
             cmdInsert.Parameters.AddWithValue("@Role", "Traveller");
+            cmdInsert.Parameters.AddWithValue("@ProfileImage", "unknown.jpg");
 
 
 

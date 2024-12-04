@@ -92,8 +92,7 @@ namespace FYP_TravelPlanner.Traveller
 
                 string fileType = "";
                 int numImages = 0;
-                long maxVideoSize = 25 * 1024 * 1024; //1GB
-                long maxImageSize = 10L * 1024 * 1024; //10MB
+                long maxVideoSize = 25 * 1024 * 1024; //25MB
 
                 int maxImageCount = 9;
 
@@ -181,7 +180,7 @@ namespace FYP_TravelPlanner.Traveller
 
                 if (Array.Exists(allowedImageExtensions, ext => ext == extension))
                 {
-                    string fileName = $"{postId}_{imageIndex}{extension}";
+                    string fileName = $"{postId}_{imageIndex}.jpg";
                     string filePath = Server.MapPath("~/Uploads/Images/" + fileName);
 
                     string directoryPath = Server.MapPath("~/Uploads/Images/");

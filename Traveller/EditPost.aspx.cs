@@ -30,7 +30,7 @@ namespace FYP_TravelPlanner.Traveller
             postId = Request.QueryString["p"];
             if (!IsPostBack)
             {
-                LoadPostData(postId); // Load post data and existing media on initial load
+                LoadPostData(postId);
             }
         }
 
@@ -58,13 +58,12 @@ namespace FYP_TravelPlanner.Traveller
                 }
             }
 
-            // Load existing media (images or video) into the UI container
             LoadExistingMedia(postId, fileType, numImages);
         }
 
         private void LoadExistingMedia(string postId, string fileType, int numImages)
         {
-            string previewHtml = string.Empty; // Use this to build the HTML for existing media
+            string previewHtml = string.Empty; 
 
             if (fileType == "image")
             {
@@ -81,14 +80,12 @@ namespace FYP_TravelPlanner.Traveller
             {
                 string videoPath = ResolveUrl($"~/Uploads/Videos/{postId}.mp4");
 
-                // Display only the video without any associated image
                 previewHtml += $"<div class='video-preview-container'>" +
                                $"<video src='{videoPath}' controls style='width: 100%; height: 100%; object-fit: cover;'></video>" +
                                $"<button class='delete-button' onclick=\"removeFile('{videoPath}')\">x</button>" +
                                $"</div>";
             }
 
-            // Assign the generated HTML to the previewLiteral control
             previewLiteral.Text = previewHtml;
         }
 
@@ -96,14 +93,11 @@ namespace FYP_TravelPlanner.Traveller
         {
             if (fileUpload.HasFile)
             {
-                // New files are uploaded, handle them
                 DeleteExistingFiles(postId);
 
                 string[] allowedImageExtensions = { ".jpg", ".jpeg", ".png" };
                 string[] allowedVideoExtensions = { ".mp4", ".mov", ".avi" };
 
-                string fileType = "";
-                int numImages = 0;
                 long maxVideoSize = 25 * 1024 * 1024; //1GB
 
                 int maxImageCount = 9;
@@ -122,7 +116,6 @@ namespace FYP_TravelPlanner.Traveller
                     //image
                     fileType = "image";
                     numImages = fileUpload.PostedFiles.Count;
-
                     if (numImages > maxImageCount)
                     {
                         lblMessage.Text = $"You can only upload {maxImageCount} images.";
@@ -164,7 +157,7 @@ namespace FYP_TravelPlanner.Traveller
             }
             else
             {
-                // No new files uploaded, retain existing media data
+                // No files uploaded, retain existing
                 string strCon = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (SqlConnection conn = new SqlConnection(strCon))
                 {
@@ -185,11 +178,9 @@ namespace FYP_TravelPlanner.Traveller
                 }
             }
 
-            // Update the post in the database
             UpdatePostInDatabase(postId, fileType, numImages);
             successPanel.Visible = true;
 
-            // Inject JavaScript to redirect after 2 seconds
             string redirectScript = $@"
             <script type='text/javascript'>
                 setTimeout(function() {{
@@ -228,7 +219,8 @@ namespace FYP_TravelPlanner.Traveller
 
         private int HandleMultipleImagesUpload(string postId, string[] allowedImageExtensions)
         {
-            int imageIndex = numImages + 1; // Start from the next available index after the existing images.
+            int imageCount = 0;
+            int imageIndex = 1;
 
             foreach (HttpPostedFile file in fileUpload.PostedFiles)
             {
@@ -238,12 +230,27 @@ namespace FYP_TravelPlanner.Traveller
                 {
                     string fileName = $"{postId}_{imageIndex}.jpg";
                     string filePath = Server.MapPath("~/Uploads/Images/" + fileName);
-                    file.SaveAs(filePath); // Save the uploaded file
-                    imageIndex++; // Increment image index after saving each image
+
+                    string directoryPath = Server.MapPath("~/Uploads/Images/");
+                    if (!Directory.Exists(directoryPath))
+                    {
+                        Directory.CreateDirectory(directoryPath);
+                    }
+
+                    try
+                    {
+                        file.SaveAs(filePath);
+                        imageCount++;
+                        imageIndex++;
+                    }
+                    catch (Exception ex)
+                    {
+                        lblMessage.Text = "Error saving image: " + ex.Message;
+                    }
                 }
             }
 
-            return imageIndex - 1; // Return the total number of images uploaded (not the next available index)
+            return imageCount;
         }
 
         private void HandleVideoUpload(string postId)
