@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -85,30 +86,47 @@ namespace FYP_TravelPlanner
         {
             if (ProfileImageUpload.HasFile)
             {
-                string accountId = Session["account_id"] as string;
-                string filePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
+                // Get the file extension
+                string fileExtension = Path.GetExtension(ProfileImageUpload.FileName).ToLower();
 
-                ProfileImageUpload.SaveAs(filePath);
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                string updateQuery = "UPDATE Account SET profile_image = @profileImage WHERE account_id = @Account_ID";
-                string profileImage = accountId + ".jpg";
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                // Define allowed file extensions for images
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png" };
+
+                // Validate if the file has a valid image extension
+                if (allowedExtensions.Contains(fileExtension))
                 {
-                    SqlCommand cmd = new SqlCommand(updateQuery, conn);
-                    cmd.Parameters.AddWithValue("@profileImage", profileImage);
-                    cmd.Parameters.AddWithValue("@Account_ID", accountId);
+                    string accountId = Session["account_id"] as string;
+                    string filePath = Server.MapPath($"~/Uploads/Profile/{accountId}.jpg");
 
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    ProfileImageUpload.SaveAs(filePath);
+
+                    string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                    string updateQuery = "UPDATE Account SET profile_image = @profileImage WHERE account_id = @Account_ID";
+                    string profileImage = accountId + ".jpg";
+
+                    using (SqlConnection conn = new SqlConnection(connectionString))
+                    {
+                        SqlCommand cmd = new SqlCommand(updateQuery, conn);
+                        cmd.Parameters.AddWithValue("@profileImage", profileImage);
+                        cmd.Parameters.AddWithValue("@Account_ID", accountId);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    StatusMessage.Text = "Profile image uploaded successfully!";
+                    StatusMessage.ForeColor = System.Drawing.Color.Green;
+                    StatusMessage.Visible = true;
+                    LoadAccountDetails(accountId);
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "refreshImage", "refreshProfileImage();", true);
                 }
-
-
-                StatusMessage.Text = "Profile image uploaded successfully!";
-                StatusMessage.ForeColor = System.Drawing.Color.Green;
-                StatusMessage.Visible = true;
-                LoadAccountDetails(accountId);
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "refreshImage", "refreshProfileImage();", true);
+                else
+                {
+                    StatusMessage.Text = "Invalid file format. Please upload an image file .jpg, .jpeg, .png";
+                    StatusMessage.ForeColor = System.Drawing.Color.Red;
+                    StatusMessage.Visible = true;
+                }
             }
             else
             {
@@ -116,7 +134,7 @@ namespace FYP_TravelPlanner
                 StatusMessage.ForeColor = System.Drawing.Color.Red;
                 StatusMessage.Visible = true;
             }
-
         }
+
     }
 }

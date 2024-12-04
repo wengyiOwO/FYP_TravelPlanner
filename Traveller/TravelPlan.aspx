@@ -223,13 +223,6 @@
             markers = [];
             control.setWaypoints([]);
 
-            dayLocations.forEach((location, index) => {
-                var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
-                var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
-                markers.push(marker);
-                marker.bindPopup(`<b>${location.name}</b><br><button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
-            });
-
             control.setWaypoints(dayLocations.map(loc => L.latLng(loc.lat, loc.lng)));
             updateTable(day);
         }

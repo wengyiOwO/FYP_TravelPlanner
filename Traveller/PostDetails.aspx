@@ -62,10 +62,10 @@
 
                         </div>
 
-                        <asp:Label ID="lblPostTitle" runat="server" CssClass="h6 mb-3" Text="Post Title"></asp:Label><br />
+                        <asp:Label ID="lblPostTitle" runat="server" CssClass="h4 mb-5" Text="Post Title"></asp:Label><br />
                         <asp:Literal ID="ltPostContent" runat="server"></asp:Literal>
 
-                        <asp:Panel ID="postImagesPanel" runat="server">
+                        <asp:Panel ID="postImagesPanel" runat="server" CssClass="mt-5">
                             <div id="postImagesCarousel" class="carousel slide" data-ride="carousel">
                                 <div class="carousel-inner" runat="server" id="carouselInner">
                                     <!-- Literal control for video rendering -->
@@ -92,7 +92,6 @@
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>

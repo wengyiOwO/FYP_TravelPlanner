@@ -51,9 +51,13 @@ namespace FYP_TravelPlanner.Traveller
                     if (reader.Read())
                     {
                         lblPostTitle.Text = reader["post_title"].ToString();
-                        ltPostContent.Text = reader["post_content"].ToString();
+                        string postContent = reader["post_content"].ToString();
+
+                        postContent = postContent.Replace(Environment.NewLine, "<br />").Replace("\n", "<br />").Replace("\r", "<br />");
+
+                        ltPostContent.Text = postContent;
                         lblAuthorName.Text = reader["account_name"].ToString();
-                        lblPostDate.Text = Convert.ToDateTime(reader["post_date"]).ToString("dd/MM/yyyy HH:mm:ss");
+                        lblPostDate.Text = Convert.ToDateTime(reader["post_date"]).ToString("dd/MM/yyyy");
 
                         // Load the profile image
                         string authorId = reader["account_id"].ToString();

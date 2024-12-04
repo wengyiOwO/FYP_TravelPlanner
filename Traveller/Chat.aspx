@@ -361,7 +361,15 @@
         document.getElementById('<%= fileUpload.ClientID %>').onchange = function (event) {
             const previewContainer = document.getElementById('previewContainer');
             previewContainer.innerHTML = ''; // Clear existing previews
-
+            const MAX_FILE_SIZE = 25 * 1024 * 1024;
+            const files = event.target.files;
+            for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`File "${file.name}" exceeds the 25MB limit. Please upload a smaller file.`);
+                    event.target.value = '';
+                    return;
+                }
+            }
             Array.from(event.target.files).forEach((file, index) => {
                 const fileType = file.type.split('/')[0];
                 const previewDiv = document.createElement('div');

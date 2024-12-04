@@ -107,14 +107,14 @@
                 </div>
                 <div class="mb-3">
                     <label for="postTitle" class="form-label">Title</label>
-                    <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" placeholder="Enter title, you might get more likes~" />
+                    <asp:TextBox ID="txtPostTitle" runat="server" MaxLength="50" CssClass="form-control" placeholder="Enter title, you might get more likes~" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostTitle" ErrorMessage="Title is required" CssClass="text-danger" />
 
                 </div>
 
                 <div class="mb-3">
                     <label for="postDescription" class="form-label">Description</label>
-                    <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" placeholder="Provide a detailed description to help more people see your post!" />
+                    <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" MaxLength="500" CssClass="form-control" placeholder="Provide a detailed description to help more people see your post!" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostContent" ErrorMessage="Content is required" CssClass="text-danger" />
 
                 </div>
@@ -131,7 +131,7 @@
                 </div>
 
                 <asp:Button ID="btnCreatePost" runat="server" CssClass="btn btn-primary" Text="Create Post" OnClick="btnCreatePost_Click" />
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-success" Visible="false"></asp:Label>
+                <asp:Label ID="lblMessage" runat="server" CssClass="text-danger" Visible="false"></asp:Label>
             </div>
         </div>
     </div>
@@ -139,8 +139,16 @@
     <script type="text/javascript">
         document.getElementById('<%= fileUpload.ClientID %>').onchange = function (event) {
             const previewContainer = document.getElementById('previewContainer');
-            previewContainer.innerHTML = ''; // Clear existing previews
-
+            previewContainer.innerHTML = ''; 
+            const MAX_FILE_SIZE = 25 * 1024 * 1024; 
+            const files = event.target.files;
+            for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`File "${file.name}" exceeds the 25MB limit. Please upload a smaller file.`);
+                    event.target.value = ''; 
+                    return;
+                }
+            }
             Array.from(event.target.files).forEach((file, index) => {
                 const fileType = file.type.split('/')[0];
                 const previewDiv = document.createElement('div');
@@ -198,5 +206,6 @@
             preview.src = '';
             previewContainer.style.display = 'none';
         };
+
     </script>
 </asp:Content>

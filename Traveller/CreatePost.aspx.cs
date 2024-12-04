@@ -92,40 +92,73 @@ namespace FYP_TravelPlanner.Traveller
 
                 string fileType = "";
                 int numImages = 0;
+                long maxVideoSize = 25 * 1024 * 1024; //1GB
+                long maxImageSize = 10L * 1024 * 1024; //10MB
+
+                int maxImageCount = 9;
+
+                if (fileUpload.PostedFiles.Count > maxImageCount)
+                {
+                    lblMessage.Text = $"You can only upload {maxImageCount} images.";
+                    lblMessage.Visible = true;
+                    return;
+                }
+
                 string firstFileExtension = Path.GetExtension(fileUpload.PostedFiles[0].FileName).ToLower();
 
                 if (Array.Exists(allowedImageExtensions, ext => ext == firstFileExtension))
                 {
+                    //image
                     fileType = "image";
+                    numImages = fileUpload.PostedFiles.Count;
+
+                    if (numImages > maxImageCount)
+                    {
+                        lblMessage.Text = $"You can only upload {maxImageCount} images.";
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
                     numImages = HandleMultipleImagesUpload(postId, allowedImageExtensions);
                 }
                 else if (Array.Exists(allowedVideoExtensions, ext => ext == firstFileExtension))
                 {
+                    //video
                     fileType = "video";
-                    numImages = 1;
+
                     if (fileUpload.PostedFiles.Count > 1)
                     {
                         lblMessage.Text = "You can only upload one video.";
+                        lblMessage.Visible = true;
                         return;
                     }
 
+                    HttpPostedFile videoFile = fileUpload.PostedFiles[0];
+                    if (videoFile.ContentLength > maxVideoSize)
+                    {
+                        lblMessage.Text = "Video size must be less than 1GB.";
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
+                    numImages = 1;
                     HandleVideoUpload(postId);
                 }
                 else
                 {
-                    lblMessage.Text = "Invalid file type. Please upload images or a video.";
+                    lblMessage.Text = "Invalid file type. The system only allow for .jpg, .jpeg, .png, .gif, .mp4, .mov, .avi";
+                    lblMessage.Visible = true;
                     return;
                 }
 
                 AddPostToDatabase(postId, fileType, numImages);
                 successPanel.Visible = true;
 
-                // Inject JavaScript to redirect after 2 seconds
                 string redirectScript = $@"
             <script type='text/javascript'>
                 setTimeout(function() {{
                     window.location.href = 'PostDetails.aspx?post_id={postId}';
-                }}, 2000);
+                }}, 1000);
             </script>";
 
                 ClientScript.RegisterStartupScript(this.GetType(), "RedirectScript", redirectScript);
@@ -133,6 +166,7 @@ namespace FYP_TravelPlanner.Traveller
             else
             {
                 lblMessage.Text = "Please upload an image or video.";
+                lblMessage.Visible = true;
             }
         }
 
@@ -203,9 +237,9 @@ namespace FYP_TravelPlanner.Traveller
 
             using (var engine = new Engine())
             {
-                engine.GetMetadata(inputFile); // Retrieve metadata, e.g., duration
+                engine.GetMetadata(inputFile); // Retrieve duration
 
-                // Generate a thumbnail at the 1-second mark
+                // Generate a thumbnail at the 1 second
                 var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(1) };
                 engine.GetThumbnail(inputFile, outputFile, options);
             }

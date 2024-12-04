@@ -18,8 +18,7 @@ namespace FYP_TravelPlanner
             {
                 Response.Redirect("~/Login.aspx");
             }
-            if (!IsPostBack)
-            {
+            
                 string profileId;
                 if (!string.IsNullOrEmpty(Request.QueryString["u"]))
                 {
@@ -33,7 +32,7 @@ namespace FYP_TravelPlanner
                 LoadProfile(profileId);
                 LoadPosts(profileId, currentUserId);
                 ConfigureFriendButton(profileId, currentUserId);
-            }
+            
         }
 
         private void ConfigureFriendButton(string profileId, string currentUserId)

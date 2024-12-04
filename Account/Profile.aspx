@@ -79,7 +79,7 @@
         .post-card {
             position: relative;
             width: 100%;
-            padding-top: 75%; 
+            padding-top: 75%;
             border-radius: 0.5rem;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -91,8 +91,8 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                object-fit: cover; 
-                object-position: center; 
+                object-fit: cover;
+                object-position: center;
             }
 
             .post-card .card-body {
@@ -100,13 +100,20 @@
                 bottom: 0;
                 width: 100%;
                 height: 30%;
-                background-color: rgba(0, 0, 0, 0.6); 
+                background-color: rgba(0, 0, 0, 0.6);
                 color: #fff;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 text-align: center;
             }
+
+        .card-title {
+            max-width: 100%;
+            word-wrap: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
     </style>
 </asp:Content>
 
@@ -124,7 +131,7 @@
                                 <asp:Label ID="lblAccountName" runat="server" CssClass="h2 mb-0"></asp:Label>
                             </div>
                         </div>
-                       <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
+                        <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
 
                         <div id="friendButtonContainer" runat="server" class="d-flex justify-content-end">
                             <asp:Button ID="btnAdd" runat="server" CssClass="btn btn-primary me-2" Text="Add Friend" OnClick="btnAdd_Click" Visible="false" />

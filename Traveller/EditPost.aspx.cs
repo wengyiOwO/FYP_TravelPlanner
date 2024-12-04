@@ -100,23 +100,64 @@ namespace FYP_TravelPlanner.Traveller
                 DeleteExistingFiles(postId);
 
                 string[] allowedImageExtensions = { ".jpg", ".jpeg", ".png" };
-                string[] allowedVideoExtensions = { ".mp4" };
+                string[] allowedVideoExtensions = { ".mp4", ".mov", ".avi" };
+
+                string fileType = "";
+                int numImages = 0;
+                long maxVideoSize = 25 * 1024 * 1024; //1GB
+
+                int maxImageCount = 9;
+
+                if (fileUpload.PostedFiles.Count > maxImageCount)
+                {
+                    lblMessage.Text = $"You can only upload {maxImageCount} images.";
+                    lblMessage.Visible = true;
+                    return;
+                }
+
                 string firstFileExtension = Path.GetExtension(fileUpload.PostedFiles[0].FileName).ToLower();
 
                 if (Array.Exists(allowedImageExtensions, ext => ext == firstFileExtension))
                 {
+                    //image
                     fileType = "image";
+                    numImages = fileUpload.PostedFiles.Count;
+
+                    if (numImages > maxImageCount)
+                    {
+                        lblMessage.Text = $"You can only upload {maxImageCount} images.";
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
                     numImages = HandleMultipleImagesUpload(postId, allowedImageExtensions);
                 }
                 else if (Array.Exists(allowedVideoExtensions, ext => ext == firstFileExtension))
                 {
+                    //video
                     fileType = "video";
+
+                    if (fileUpload.PostedFiles.Count > 1)
+                    {
+                        lblMessage.Text = "You can only upload one video.";
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
+                    HttpPostedFile videoFile = fileUpload.PostedFiles[0];
+                    if (videoFile.ContentLength > maxVideoSize)
+                    {
+                        lblMessage.Text = "Video size must be less than 1GB.";
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
                     numImages = 1;
                     HandleVideoUpload(postId);
                 }
                 else
                 {
-                    lblMessage.Text = "Invalid file type. Please upload images or a video.";
+                    lblMessage.Text = "Invalid file type. The system only allow for .jpg, .jpeg, .png, .gif, .mp4, .mov, .avi";
                     lblMessage.Visible = true;
                     return;
                 }

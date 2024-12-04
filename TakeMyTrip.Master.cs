@@ -15,6 +15,7 @@ namespace FYP_TravelPlanner
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+
             if (!IsPostBack)
             {
                 var adminDashboardLink = FindControl("adminDashboardLink") as HtmlGenericControl;
@@ -23,43 +24,43 @@ namespace FYP_TravelPlanner
                 {
                     return;
                 }
-                if (Session["account_id"] != null)
-                {
-                    string role = Session["account_role"] as string;
-
-                    // Show or hide admin dashboard link based on role
-                    adminDashboardLink.Visible = (!string.IsNullOrEmpty(role) && role == "Admin");
-
-                    string accountId = Session["account_id"] as string;
-                    string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
-                    using (SqlConnection con = new SqlConnection(connectionString))
-                    {
-                        string query = "SELECT account_name, profile_image FROM Account WHERE account_id = @AccountId";
-                        using (SqlCommand cmd = new SqlCommand(query, con))
-                        {
-                            cmd.Parameters.AddWithValue("@AccountId", accountId);
-                            con.Open();
-                            SqlDataReader reader = cmd.ExecuteReader();
-                            if (reader.Read())
-                            {
-                                userDropdownName.Text = reader["account_name"].ToString();
-
-                                string profileImage = reader["profile_image"].ToString();
-                                imgProfile.ImageUrl = !string.IsNullOrEmpty(profileImage)
-                                    ? "~/Uploads/Profile/" + profileImage
-                                    : "~/Uploads/Profile/unknown.jpg";
-                            }
-                            con.Close();
-                        }
-                    }
-                }
+               
                 else
                 {
                     adminDashboardLink.Visible = false;
                 }
             }
-        
+            if (Session["account_id"] != null)
+            {
+                string role = Session["account_role"] as string;
+
+                // Show or hide admin dashboard link based on role
+                adminDashboardLink.Visible = (!string.IsNullOrEmpty(role) && role == "Admin");
+
+                string accountId = Session["account_id"] as string;
+                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT account_name, profile_image FROM Account WHERE account_id = @AccountId";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@AccountId", accountId);
+                        con.Open();
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            userDropdownName.Text = reader["account_name"].ToString();
+
+                            string profileImage = reader["profile_image"].ToString();
+                            imgProfile.ImageUrl = !string.IsNullOrEmpty(profileImage)
+                                ? "~/Uploads/Profile/" + profileImage
+                                : "~/Uploads/Profile/unknown.jpg";
+                        }
+                        con.Close();
+                    }
+                }
+            }
         }
 
 

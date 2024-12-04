@@ -272,8 +272,8 @@ namespace FYP_TravelPlanner.Traveller
                     startDate = DateTime.Parse(Session["StartDate"].ToString());
                     duration = Convert.ToInt32(Session["Duration"]);
                     budget = Convert.ToInt32(Session["Budget"]);
-                    string travelPlanQuery = @"INSERT INTO Travel_Plan (plan_id, account_id, area_id, plan_date, duration, budget) 
-                                   VALUES (@plan_id, @account_id, @area_id, @plan_date, @duration, @budget)";
+                    string travelPlanQuery = @"INSERT INTO Travel_Plan (plan_id, account_id, area_id, plan_date, duration, budget, plan_status) 
+                                   VALUES (@plan_id, @account_id, @area_id, @plan_date, @duration, @budget, @plan_status)";
                     using (SqlCommand cmd = new SqlCommand(travelPlanQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@plan_id", planId);
@@ -282,6 +282,7 @@ namespace FYP_TravelPlanner.Traveller
                         cmd.Parameters.AddWithValue("@plan_date", startDate);
                         cmd.Parameters.AddWithValue("@duration", duration);
                         cmd.Parameters.AddWithValue("@budget", budget);
+                        cmd.Parameters.AddWithValue("@plan_status", "Planned");
                         cmd.ExecuteNonQuery();
                     }
                 }

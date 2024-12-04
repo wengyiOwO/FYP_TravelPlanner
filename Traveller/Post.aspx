@@ -8,7 +8,7 @@
             border-radius: 10px;
         }
 
-     
+
         .post-card {
             position: relative;
             width: 100%;
@@ -30,12 +30,19 @@
             bottom: 0;
             width: 100%;
             height: 30%;
-            background-color: rgba(0, 0, 0, 0.6); 
+            background-color: rgba(0, 0, 0, 0.6);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+        }
+
+        .card-title {
+            max-width: 100%;
+            word-wrap: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
         }
 
         .post-row {
@@ -48,16 +55,16 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="container my-2 posts-container">
-       <div class="px-4 d-none d-md-block">
-        <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-                <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control my-3" Placeholder="Search..." />
-            </div>
-            <div class="input-group-append">
-                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+        <div class="px-4 d-none d-md-block">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control my-3" Placeholder="Search..." />
+                </div>
+                <div class="input-group-append">
+                    <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+                </div>
             </div>
         </div>
-    </div>
 
         <div class="row row-cols-1 row-cols-md-4 g-4">
             <asp:Repeater ID="PostsRepeater" runat="server">
@@ -67,7 +74,7 @@
                             <a href="PostDetails.aspx?post_id=<%# Eval("post_id") %>">
                                 <img src='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>' alt="Post image" />
                                 <div class="card-body">
-                                    <h5 class="card-title"><%# Eval("post_title") %></h5>
+                                    <h5 class="card-title text-wrap"><%# Eval("post_title") %></h5>
                                 </div>
                             </a>
                         </div>

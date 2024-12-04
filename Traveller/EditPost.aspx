@@ -80,6 +80,7 @@
                     <strong>Success!</strong> Your post has been edited. Redirecting to the post details page...
                 </asp:Panel>
                 <h5 class="card-title"><strong>Edit Post</strong></h5>
+                <asp:Label ID="remind" runat="server" Visible="true" Text="*To edit the image or video, you must re-upload the entire file."></asp:Label>
 
                 <div class="mb-3 upload-section">
                     <div id="uploadWrapper">
@@ -94,14 +95,14 @@
 
                 <div class="mb-3">
                     <label for="postTitle" class="form-label">Title</label>
-                    <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" placeholder="Enter title" />
+                    <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" MaxLength="50" placeholder="Enter title" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostTitle" ErrorMessage="Title is required" CssClass="text-danger" />
 
                 </div>
 
                 <div class="mb-3">
                     <label for="postDescription" class="form-label">Description</label>
-                    <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" placeholder="Enter description" />
+                    <asp:TextBox ID="txtPostContent" runat="server" TextMode="MultiLine" Rows="3" MaxLength="500" CssClass="form-control" placeholder="Enter description" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPostContent" ErrorMessage="Content is required" CssClass="text-danger" />
 
                 </div>
@@ -118,7 +119,7 @@
                 </div>
 
                 <asp:Button ID="btnUpdatePost" runat="server" CssClass="btn btn-primary" Text="Update Post" OnClick="btnUpdatePost_Click" />
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-success" Visible="false"></asp:Label>
+                <asp:Label ID="lblMessage" runat="server" CssClass="text-danger" Visible="false"></asp:Label>
             </div>
         </div>
     </div>
@@ -127,7 +128,15 @@
         document.getElementById('<%= fileUpload.ClientID %>').onchange = function (event) {
             const previewContainer = document.getElementById('previewContainer');
             previewContainer.innerHTML = ''; // Clear existing previews
-
+            const MAX_FILE_SIZE = 25 * 1024 * 1024;
+            const files = event.target.files;
+            for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`File "${file.name}" exceeds the 25MB limit. Please upload a smaller file.`);
+                    event.target.value = '';
+                    return;
+                }
+            }
             Array.from(event.target.files).forEach((file) => {
                 const fileType = file.type.split('/')[0];
                 const previewDiv = document.createElement('div');
@@ -154,7 +163,6 @@
                     previewDiv.appendChild(video);
                 }
 
-                // Delete button to remove files
                 const deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-button');
                 deleteButton.innerHTML = 'x';
@@ -168,7 +176,6 @@
         };
 
         function removeFile(fileUrl) {
-            // Use AJAX to notify server to delete the file or handle in backend after form submission
             const previewContainer = document.getElementById('previewContainer');
             const previewDiv = Array.from(previewContainer.children).find(div => {
                 return div.querySelector("img[src='" + fileUrl + "'], video[src='" + fileUrl + "']");
