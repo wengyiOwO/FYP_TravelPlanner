@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
-        .content {
-            min-height: 500px;
-        }
+        
+        
+        .card {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
 
         .chat-online {
             color: #34ce57;
@@ -18,11 +23,10 @@
         }
 
         .chat-messages {
-            max-height: calc(100vh - 250px); /* Use max-height instead of height */
+            max-height: calc(100vh - 250px); 
             overflow-y: auto;
         }
 
-            /* Always scroll to bottom for chat messages */
             .chat-messages::-webkit-scrollbar {
                 width: 8px;
             }
@@ -54,19 +58,18 @@
 
             .chat-message-left img,
             .chat-message-right img {
-                max-width: 100%; /* Allow the image to scale responsively */
-                max-height: 300px; /* Limit the maximum height of images */
-                width: auto; /* Keep the image's aspect ratio */
+                max-width: 100%; 
+                max-height: 300px;
+                width: auto; 
                 height: auto;
-                object-fit: contain; /* Ensure the image fits within the container */
+                object-fit: contain; 
             }
 
-            /* Video size */
             .chat-message-left video,
             .chat-message-right video {
-                max-width: 100%; /* Allow the video to scale responsively */
-                max-height: 300px; /* Limit the maximum height of videos */
-                width: auto; /* Keep the video's aspect ratio */
+                max-width: 100%; 
+                max-height: 300px; 
+                width: auto; 
                 height: auto;
             }
 

@@ -119,50 +119,59 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="container">
-        <div class="row align-items-center mt-4">
-            <div class="col-12">
-                <div class="pt-20 rounded-top" style="background: url(https://bootdey.com/image/480x480/00FFFF/000000) no-repeat; background-size: cover;">
-                </div>
-                <div class="card rounded-bottom smooth-shadow-sm">
-                    <div class="d-flex align-items-center justify-content-between pt-4 pb-6 px-4">
-                        <div class="d-flex align-items-center">
-                            <asp:Image ID="imgProfile" runat="server" CssClass="avatar-xxl rounded-circle border border-2" />
-                            <div class="lh-1 ms-3">
-                                <asp:Label ID="lblAccountName" runat="server" CssClass="h2 mb-0"></asp:Label>
+        <asp:Panel ID="pnlDeletedMessage" runat="server" Visible="false" CssClass="alert alert-danger text-center my-5">
+            <asp:Label ID="lblDeletedMessage" runat="server" Text="Invalid user"></asp:Label>
+            <div class="mt-3">
+                <a href="../Traveller/Friends.aspx" class="btn btn-primary">Return to Friend List</a>
+            </div>
+        </asp:Panel>
+        <asp:Panel ID="pnlProfileDetails" runat="server" Visible="true">
+            <div class="row align-items-center mt-4">
+                <div class="col-12">
+                    <div class="pt-20 rounded-top" style="background: url(https://bootdey.com/image/480x480/00FFFF/000000) no-repeat; background-size: cover;">
+                    </div>
+                    <div class="card rounded-bottom smooth-shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between pt-4 pb-6 px-4">
+                            <div class="d-flex align-items-center">
+                                <asp:Image ID="imgProfile" runat="server" CssClass="avatar-xxl rounded-circle border border-2" />
+                                <div class="lh-1 ms-3">
+                                    <asp:Label ID="lblAccountName" runat="server" CssClass="h2 mb-0"></asp:Label>
+                                </div>
                             </div>
-                        </div>
-                        <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
+                            <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
 
-                        <div id="friendButtonContainer" runat="server" class="d-flex justify-content-end">
-                            <asp:Button ID="btnAdd" runat="server" CssClass="btn btn-primary me-2" Text="Add Friend" OnClick="btnAdd_Click" Visible="false" />
-                            <asp:Button ID="btnSent" runat="server" CssClass="btn btn-secondary me-2" Text="Friend Request Sent" Enabled="false" Visible="false" />
-                            <asp:Button ID="btnAccept" runat="server" CssClass="btn btn-success me-2" Text="Accept" OnClick="btnAccept_Click" Visible="false" />
-                            <asp:Button ID="btnReject" runat="server" CssClass="btn btn-danger me-2" Text="Reject" OnClick="btnReject_Click" Visible="false" />
-                            <asp:Button ID="btnUnfriend" runat="server" CssClass="btn btn-danger" Text="Unfriend" OnClick="btnUnfriend_Click" Visible="false" />
+                            <div id="friendButtonContainer" runat="server" class="d-flex justify-content-end">
+                                <asp:Button ID="btnAdd" runat="server" CssClass="btn btn-primary me-2" Text="Add Friend" OnClick="btnAdd_Click" Visible="false" />
+                                <asp:Button ID="btnSent" runat="server" CssClass="btn btn-secondary me-2" Text="Friend Request Sent" Enabled="false" Visible="false" />
+                                <asp:Button ID="btnAccept" runat="server" CssClass="btn btn-success me-2" Text="Accept" OnClick="btnAccept_Click" Visible="false" />
+                                <asp:Button ID="btnReject" runat="server" CssClass="btn btn-danger me-2" Text="Reject" OnClick="btnReject_Click" Visible="false" />
+                                <asp:Button ID="btnUnfriend" runat="server" CssClass="btn btn-danger" Text="Unfriend" OnClick="btnUnfriend_Click" Visible="false" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="py-6">
-            <div class="row row-cols-1 row-cols-md-4 g-4">
-                <asp:Repeater ID="PostsRepeater" runat="server">
-                    <ItemTemplate>
-                        <div class="col post-row">
-                            <div class="post-card">
-                                <a href="/Traveller/PostDetails.aspx?post_id=<%# Eval("post_id") %>">
-                                    <img src='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>' alt="Post image" />
-                                    <div class="card-body">
-                                        <h5 class="card-title"><%# Eval("post_title") %></h5>
-                                    </div>
-                                </a>
+            <div class="py-6">
+                <div class="row row-cols-1 row-cols-md-4 g-4">
+                    <asp:Repeater ID="PostsRepeater" runat="server">
+                        <ItemTemplate>
+                            <div class="col post-row">
+                                <div class="post-card">
+                                    <a href="/Traveller/PostDetails.aspx?post_id=<%# Eval("post_id") %>">
+                                        <img src='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>' alt="Post image" />
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%# Eval("post_title") %></h5>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
             </div>
-        </div>
+        </asp:Panel>
     </div>
+
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
 </asp:Content>

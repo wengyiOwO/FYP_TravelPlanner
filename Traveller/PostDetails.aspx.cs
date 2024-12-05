@@ -27,7 +27,9 @@ namespace FYP_TravelPlanner.Traveller
                 }
                 else
                 {
-                    Response.Write("Invalid Post ID");
+                    lblDeletedMessage.Text = "Invalid Post";
+                    pnlDeletedMessage.Visible = true;
+                    pnlPostDetails.Visible = false;
                 }
             }
         }
@@ -38,7 +40,7 @@ namespace FYP_TravelPlanner.Traveller
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = @"SELECT P.post_title, P.post_content, P.post_date, P.file_type, P.num_image, A.account_id, A.account_name, A.profile_image 
+                string query = @"SELECT P.post_title, P.post_content, P.post_date, P.post_status, P.file_type, P.num_image, A.account_id, A.account_name, A.profile_image 
                          FROM Posts P
                          INNER JOIN Account A ON P.account_id = A.account_id
                          WHERE P.post_id = @PostID";
@@ -50,6 +52,16 @@ namespace FYP_TravelPlanner.Traveller
                     SqlDataReader reader = cmd.ExecuteReader();
                     if (reader.Read())
                     {
+                        string postStatus = reader["post_status"].ToString();
+
+                        if (postStatus == "Deleted")
+                        {
+                            lblDeletedMessage.Text = "This post has been deleted.";
+                            pnlDeletedMessage.Visible = true;
+                            pnlPostDetails.Visible = false;
+                            return;
+                        }
+
                         lblPostTitle.Text = reader["post_title"].ToString();
                         string postContent = reader["post_content"].ToString();
 
@@ -105,7 +117,9 @@ namespace FYP_TravelPlanner.Traveller
                     }
                     else
                     {
-                        Response.Write("Post not found.");
+                        lblDeletedMessage.Text = "The post does not exist.";
+                        pnlDeletedMessage.Visible = true;
+                        pnlPostDetails.Visible = false;
                     }
                     con.Close();
                 }

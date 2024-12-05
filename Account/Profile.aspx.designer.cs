@@ -15,6 +15,33 @@ namespace FYP_TravelPlanner
     {
 
         /// <summary>
+        /// pnlDeletedMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDeletedMessage;
+
+        /// <summary>
+        /// lblDeletedMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDeletedMessage;
+
+        /// <summary>
+        /// pnlProfileDetails control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlProfileDetails;
+
+        /// <summary>
         /// imgProfile control.
         /// </summary>
         /// <remarks>

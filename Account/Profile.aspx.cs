@@ -225,6 +225,8 @@ namespace FYP_TravelPlanner
                             imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
                         }
                     }
+                    pnlDeletedMessage.Visible = !reader.HasRows; 
+                    pnlProfileDetails.Visible = reader.HasRows;
                     con.Close();
                 }
             }
