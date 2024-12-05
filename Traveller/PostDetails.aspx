@@ -18,6 +18,36 @@
                 max-height: 100%;
                 object-fit: contain;
             }
+
+        .modal-dialog {
+            height: 30vh; 
+            max-height: 30vh;
+        }
+
+        .modal-content {
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body {
+            overflow-y: auto; 
+            flex-grow: 1; 
+        }
+
+        .notification {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 16px;
+        z-index: 1000; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
     </style>
 </asp:Content>
 
@@ -26,6 +56,9 @@
         <div class="row no-gutters">
             <div class="col-md-12">
                 <div class="card">
+                    <div id="notification" runat="server" class="notification" style="display: none;">
+                        <asp:Label ID="lblNotification" runat="server" Text=""></asp:Label>
+                    </div>
                     <asp:Panel ID="pnlDeletedMessage" runat="server" Visible="false" CssClass="alert alert-danger text-center my-5">
                         <asp:Label ID="lblDeletedMessage" runat="server" Text="Invalid Post"></asp:Label>
                         <div class="mt-3">
@@ -40,8 +73,9 @@
                             </asp:Panel>
                             <asp:Panel runat="server">
                                 <div class="d-flex justify-content-end mb-3">
+                                    <asp:Button ID="btnShare" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Share" OnClick="btnShare_Click" OnClientClick="showFriendList(); return false;" />
                                     <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Edit" OnClick="btnEdit_Click" />
-                                    <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm" Text="Delete" OnClientClick="showDeleteConfirmation(); return false;" />
+                                    <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm mr-2" Text="Delete" OnClientClick="showDeleteConfirmation(); return false;" />
                                 </div>
                             </asp:Panel>
                             <asp:Panel ID="pnlConfirmDelete" runat="server" CssClass="modal" Style="display: none;">
@@ -61,6 +95,64 @@
                                     </div>
                                 </div>
                             </asp:Panel>
+                            <asp:Panel ID="pnlFriend" runat="server" CssClass="modal" Style="display: none;">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Share to?</h5>
+                                            <button type="button" class="close" onclick="hideFriendList();">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <!-- Search Section -->
+                                                <div class="col-12 mb-3">
+                                                    <div class="input-group">
+                                                        <asp:TextBox
+                                                            ID="txtSearch"
+                                                            runat="server"
+                                                            CssClass="form-control"
+                                                            placeholder="Search friends..."></asp:TextBox>
+                                                        <div class="input-group-append">
+                                                            <asp:Button
+                                                                ID="btnSearch"
+                                                                runat="server"
+                                                                CssClass="btn btn-primary"
+                                                                Text="Search"
+                                                                OnClick="btnSearch_Click" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Friend List Section -->
+                                                <div class="col-12">
+                                                    <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
+                                                        <ItemTemplate>
+                                                            <div class="d-flex align-items-center border-bottom py-2">
+                                                                <asp:Image
+                                                                    ID="imgProfile"
+                                                                    runat="server"
+                                                                    CssClass="rounded-circle mr-3"
+                                                                    Width="40"
+                                                                    Height="40"
+                                                                    ImageUrl='<%# "~/Uploads/Profile/" + Eval("profile_image") %>'
+                                                                    AlternateText="Profile Image" />
+                                                                <div class="flex-grow-1">
+                                                                    <span><%# Eval("account_name") %></span>
+                                                                </div>
+                                                                <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary btn-lg mr-1 px-3" CommandName="Send" CommandArgument='<%# Eval("account_id") %>' Text="Send" />
+                                                            </div>
+                                                        </ItemTemplate>
+                                                    </asp:Repeater>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </asp:Panel>
+
+
                             <div class="d-flex align-items-center mb-3">
                                 <asp:Image ID="imgProfile" runat="server" CssClass="rounded-circle" Width="50" Height="50" alt="User Profile" />
                                 <div class="ml-3 ms-3">
@@ -102,13 +194,18 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function showDeleteConfirmation() {
             document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'block';
         }
         function hideDeleteConfirmation() {
             document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'none';
+        }
+        function showFriendList() {
+            document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'block';
+        }
+        function hideFriendList() {
+            document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'none';
         }
     </script>
 </asp:Content>

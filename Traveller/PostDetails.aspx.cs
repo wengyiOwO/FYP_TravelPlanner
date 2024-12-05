@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
+using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -24,6 +27,7 @@ namespace FYP_TravelPlanner.Traveller
                 if (!string.IsNullOrEmpty(postId))
                 {
                     LoadPostDetails(postId);
+                    BindFriends();
                 }
                 else
                 {
@@ -32,6 +36,16 @@ namespace FYP_TravelPlanner.Traveller
                     pnlPostDetails.Visible = false;
                 }
             }
+
+            if (Session["pnlFriend"] != null && Session["pnlFriend"].ToString() == "visible")
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "showFriendList", "showFriendList();", true);
+
+                Session["pnlFriend"] = null;
+            }
+
+
+
         }
 
         protected void LoadPostDetails(string postId)
@@ -206,5 +220,118 @@ namespace FYP_TravelPlanner.Traveller
 
             ClientScript.RegisterStartupScript(this.GetType(), "RedirectScript", redirectScript);
         }
+
+        protected void btnShare_Click(object sender, EventArgs e)
+        {
+            BindFriends();
+        }
+        private void BindFriends()
+        {
+            string accountId = Convert.ToString(Session["account_id"]);
+
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT a.account_id, a.account_name, a.profile_image
+            FROM Account a
+            INNER JOIN Friends f ON 
+                 (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
+                  f.account2_id = @account_id AND f.account1_id = a.account_id)
+            WHERE f.friend_status = 'Accepted'";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@account_id", accountId);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                rptFriendsList.DataSource = dt;
+                rptFriendsList.DataBind();
+            }
+        }
+
+        protected void rptFriendsList_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            string accountId = Convert.ToString(Session["account_id"]);
+            string friendId = Convert.ToString(e.CommandArgument);
+            string newChatId = GenerateChatId(accountId, DateTime.Now);
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            string messageContent = Request.Url.AbsoluteUri;
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                if (e.CommandName == "Send")
+                {
+                    string query = "INSERT INTO Chat (chat_id, sender_id, receiver_id, chat_datetime, chat_message, message_type) " +
+                               "VALUES (@ChatId, @SenderId, @ReceiverId, @DateTime, @Message, @MessageType)";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@ChatId", newChatId);
+                    cmd.Parameters.AddWithValue("@SenderId", accountId);
+                    cmd.Parameters.AddWithValue("@ReceiverId", friendId);
+                    cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@Message", messageContent);
+                    cmd.Parameters.AddWithValue("@MessageType", "link");
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            Button btnSend = (Button)e.CommandSource;
+            btnSend.Text = "Sent";
+            btnSend.Enabled = false;
+            pnlFriend.Visible = true;
+
+            BindFriends();
+
+            string postId = Request.QueryString["post_id"];
+            LoadPostDetails(postId);
+            lblNotification.Text = "Message sent successfully!";
+            notification.Style["display"] = "block";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "HideNotification",
+                "setTimeout(function() { document.getElementById('" + notification.ClientID + "').style.display='none'; }, 2000);", true);
+
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            string accountId = Convert.ToString(Session["account_id"]);
+            string searchTerm = txtSearch.Text.Trim();
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT a.account_id, a.account_name, a.profile_image
+            FROM Account a
+            INNER JOIN Friends f ON 
+                 (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
+                  f.account2_id = @account_id AND f.account1_id = a.account_id)
+            WHERE f.friend_status = 'Accepted' AND a.account_name LIKE @searchTerm";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@account_id", accountId);
+                cmd.Parameters.AddWithValue("@searchTerm", "%" + searchTerm + "%");
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                rptFriendsList.DataSource = dt;
+                rptFriendsList.DataBind();
+            }
+            Session["pnlFriend"] = "visible";
+            string postId = Request.QueryString["post_id"];
+            LoadPostDetails(postId);
+        }
+
+        private string GenerateChatId(string accountId, DateTime dateTime)
+        {
+            // Append a GUID to make it more unique
+            return $"C{accountId}{dateTime:yyyyMMddHHmmss}_{Guid.NewGuid()}";
+        }
+
     }
 }

@@ -57,6 +57,20 @@
         .leaflet-routing-alt {
             display: none;
         }
+
+        .notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
     </style>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
@@ -514,6 +528,10 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <main class="container-fluid p-0">
+        <div id="notification" runat="server" class="notification" style="display: none;">
+     <asp:Label ID="lblNotification" runat="server" Text=""></asp:Label>
+ </div>
+
         <div class="row no-gutters">
             <div class="col-md-4">
                 <div class="card bg-white shadow-sm border-0">
@@ -574,6 +592,7 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:Button ID="btnShare" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Share" OnClick="btnShare_Click"/>
                             <asp:Button ID="btnPDF" runat="server" Text="Generate PDF" CssClass="btn btn-sm btn-primary shadow-sm" OnClientClick="generatePDF(); return false;" />
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                             <asp:HiddenField ID="hiddenPlanId" runat="server" />
@@ -584,9 +603,75 @@
             <div class="col-md-8">
                 <div id="map" class="shadow-sm"></div>
             </div>
+            <asp:Panel ID="pnlFriend" runat="server" CssClass="modal" Style="display: none;">
+     <div class="modal-dialog modal-dialog-centered modal-lg">
+         <div class="modal-content">
+             <div class="modal-header">
+                 <h5 class="modal-title">Share to?</h5>
+
+                 <button type="button" class="close" onclick="hideFriendList();">
+                     <span aria-hidden="true">&times;</span>
+                 </button>
+             </div>
+             <div class="modal-body">
+                 <div class="row">
+                     <!-- Search Section -->
+                     <div class="col-12 mb-3">
+                         <div class="input-group">
+                             <asp:TextBox
+                                 ID="txtSearch"
+                                 runat="server"
+                                 CssClass="form-control"
+                                 placeholder="Search friends..."></asp:TextBox>
+                             <div class="input-group-append">
+                                 <asp:Button
+                                     ID="btnSearch"
+                                     runat="server"
+                                     CssClass="btn btn-primary"
+                                     Text="Search"
+                                     OnClick="btnSearch_Click" />
+                             </div>
+                         </div>
+                     </div>
+
+                     <!-- Friend List Section -->
+                     <div class="col-12">
+                         <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
+                             <ItemTemplate>
+                                 <div class="d-flex align-items-center border-bottom py-2">
+                                     <asp:Image
+                                         ID="imgProfile"
+                                         runat="server"
+                                         CssClass="rounded-circle mr-3"
+                                         Width="40"
+                                         Height="40"
+                                         ImageUrl='<%# "~/Uploads/Profile/" + Eval("profile_image") %>'
+                                         AlternateText="Profile Image" />
+                                     <div class="flex-grow-1">
+                                         <span><%# Eval("account_name") %></span>
+                                     </div>
+                                     <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary btn-lg mr-1 px-3" CommandName="Send" CommandArgument='<%# Eval("account_id") %>' Text="Send" />
+                                 </div>
+                             </ItemTemplate>
+                         </asp:Repeater>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </asp:Panel>
+
         </div>
         <div>
         </div>
 
     </main>
+    <script>
+    function showFriendList() {
+        document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'block';
+    }
+    function hideFriendList() {
+        document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'none';
+        }
+    </script>
 </asp:Content>

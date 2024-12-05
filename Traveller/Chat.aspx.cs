@@ -334,6 +334,13 @@ namespace FYP_TravelPlanner.Traveller
                         Text = $"<video src='{ResolveUrl("~/Uploads/Chat/" + message)}' class='w-100' controls></video>"
                     });
                 }
+                else if (messageType == "link")
+                {
+                    phMessageContent.Controls.Add(new Literal
+                    {
+                        Text = $"<a href='{message}'>{message}</a>"
+                    });
+                }
             }
         }
     }

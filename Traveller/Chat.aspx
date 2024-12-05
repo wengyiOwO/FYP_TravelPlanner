@@ -300,6 +300,8 @@
                         } else if (msg.message_type === "video") {
                             const videoUrl = "../Uploads/Chat/" + msg.chat_message;
                             messageContent = '<video src="' + videoUrl + '" class="w-100" controls></video>';
+                        } else if (msg.message_type === "link") {
+                            messageContent = "<a href='" + msg.chat_message + "'>" + msg.chat_message + "</a>";
                         }
 
                         const messageHtml = `<div class="${align} pb-4">
