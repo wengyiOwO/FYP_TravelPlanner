@@ -63,6 +63,14 @@ namespace FYP_TravelPlanner
             {
                 string email = inputEmail.Text.ToString();
                 string password = inputPassword.Text.ToString();
+                // Validate email 
+                if (string.IsNullOrEmpty(email) || !IsEmailRegistered(email))
+                {
+                    lblMessage.Text = "The email address is not registered.";
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
+                    lblMessage.Visible = true;
+                    return;
+                }
 
                 // Retrieve the stored salt and hashed password from the database
                 (string storedSalt, string storedHash, string userRole,string accID,string username,string status) = GetUserDetails(email);
@@ -148,6 +156,22 @@ namespace FYP_TravelPlanner
                 lblMessage.Text = $"An error occurred: {ex.Message}";
                 lblMessage.ForeColor = System.Drawing.Color.Red;
                 lblMessage.Visible = true;
+            }
+        }
+        private bool IsEmailRegistered(string email)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            string query = "SELECT COUNT(*) FROM Account WHERE account_email = @Email";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", email);
+                    connection.Open();
+                    int count = (int)command.ExecuteScalar();
+                    return count > 0;
+                }
             }
         }
 
