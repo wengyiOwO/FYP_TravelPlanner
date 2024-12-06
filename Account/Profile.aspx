@@ -4,6 +4,8 @@
     <title>Profile with Followers and Cover Photo - Bootdey.com</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
     <style type="text/css">
         body {
             background-color: #f1f5f9;
@@ -114,6 +116,22 @@
             white-space: normal;
             overflow-wrap: break-word;
         }
+
+             .modal-dialog {
+         height: 30vh; 
+         max-height: 30vh;
+     }
+
+     .modal-content {
+         height: 100%; 
+         display: flex;
+         flex-direction: column;
+     }
+
+     .modal-body {
+         overflow-y: auto; 
+         flex-grow: 1; 
+     }
     </style>
 </asp:Content>
 
@@ -127,6 +145,9 @@
         </asp:Panel>
         <asp:Panel ID="pnlProfileDetails" runat="server" Visible="true">
             <div class="row align-items-center mt-4">
+                <asp:Panel ID="successPanel" runat="server" CssClass="alert alert-success" Visible="false">
+                    <strong>Success!</strong> Your account has been deleted. Redirecting to the login page...
+                </asp:Panel>
                 <div class="col-12">
                     <div class="pt-20 rounded-top" style="background: url(https://bootdey.com/image/480x480/00FFFF/000000) no-repeat; background-size: cover;">
                     </div>
@@ -138,8 +159,29 @@
                                     <asp:Label ID="lblAccountName" runat="server" CssClass="h2 mb-0"></asp:Label>
                                 </div>
                             </div>
-                            <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
+                            <div class="d-flex justify-content-end mb-3">
 
+                                <asp:Button ID="btnDelete" runat="server" CssClass="btn btn-outline-danger btn-sm mr-2" Text="Delete Account" OnClientClick="showDeleteConfirmation(); return false;" />
+                                <asp:Button ID="btnEdit" runat="server" CssClass="btn btn-outline-primary d-flex justify-content-end" Text="Edit Profile" OnClick="btnEdit_Click" Visible="false" />
+                            </div>
+
+                            <asp:Panel ID="pnlConfirmDelete" runat="server" CssClass="modal" Style="display: none;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirm Delete</h5>
+                                            <button type="button" class="close" onclick="hideDeleteConfirmation();">&times;</button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to delete this account?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <asp:Button ID="btnConfirmDelete" runat="server" CssClass="btn btn-danger" Text="Delete" OnClick="btnConfirmDelete_Click" />
+                                            <button type="button" class="btn btn-secondary" onclick="hideDeleteConfirmation();">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </asp:Panel>
                             <div id="friendButtonContainer" runat="server" class="d-flex justify-content-end">
                                 <asp:Button ID="btnAdd" runat="server" CssClass="btn btn-primary me-2" Text="Add Friend" OnClick="btnAdd_Click" Visible="false" />
                                 <asp:Button ID="btnSent" runat="server" CssClass="btn btn-secondary me-2" Text="Friend Request Sent" Enabled="false" Visible="false" />
@@ -174,4 +216,13 @@
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+ <script>
+     function showDeleteConfirmation() {
+         document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'block';
+     }
+     function hideDeleteConfirmation() {
+         document.getElementById('<%= pnlConfirmDelete.ClientID %>').style.display = 'none';
+     }
+     </script>
 </asp:Content>

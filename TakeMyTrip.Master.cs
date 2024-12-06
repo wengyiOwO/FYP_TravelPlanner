@@ -35,7 +35,7 @@ namespace FYP_TravelPlanner
                 string role = Session["account_role"] as string;
 
                 // Show or hide admin dashboard link based on role
-                adminDashboardLink.Visible = (!string.IsNullOrEmpty(role) && role == "Admin");
+                adminDashboardLink.Visible = (!string.IsNullOrEmpty(role) && string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase));
 
                 string accountId = Session["account_id"] as string;
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

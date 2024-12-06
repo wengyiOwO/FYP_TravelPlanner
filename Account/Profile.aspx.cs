@@ -18,21 +18,21 @@ namespace FYP_TravelPlanner
             {
                 Response.Redirect("~/Login.aspx");
             }
-            
-                string profileId;
-                if (!string.IsNullOrEmpty(Request.QueryString["u"]))
-                {
-                    profileId = Request.QueryString["u"];
-                }
-                else
-                {
-                    profileId = Convert.ToString(Session["account_id"]);
-                }
-                string currentUserId = Convert.ToString(Session["account_id"]);
-                LoadProfile(profileId);
-                LoadPosts(profileId, currentUserId);
-                ConfigureFriendButton(profileId, currentUserId);
-            
+
+            string profileId;
+            if (!string.IsNullOrEmpty(Request.QueryString["u"]))
+            {
+                profileId = Request.QueryString["u"];
+            }
+            else
+            {
+                profileId = Convert.ToString(Session["account_id"]);
+            }
+            string currentUserId = Convert.ToString(Session["account_id"]);
+            LoadProfile(profileId);
+            LoadPosts(profileId, currentUserId);
+            ConfigureFriendButton(profileId, currentUserId);
+
         }
 
         private void ConfigureFriendButton(string profileId, string currentUserId)
@@ -73,7 +73,7 @@ namespace FYP_TravelPlanner
                             }
                             else if (friendStatus == "Request" && account2Id == currentUserId)
                             {
-                                ConfigureButton(btnAccept, "Accept", false,true);
+                                ConfigureButton(btnAccept, "Accept", false, true);
                                 btnReject.Visible = true;
                             }
                             else if (friendStatus == "Accepted")
@@ -102,6 +102,39 @@ namespace FYP_TravelPlanner
             Response.Redirect("~/Account/EditProfile.aspx");
         }
 
+        protected void btnConfirmDelete_Click(object sender, EventArgs e)
+        {
+            string accId = Session["account_id"].ToString();
+
+            if (!string.IsNullOrEmpty(accId))
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    string updateQuery = "UPDATE Account SET account_status = 'Inactive' WHERE account_id = @accID";
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, con))
+                    {
+                        cmd.Parameters.AddWithValue("@accID", accId);
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
+
+            successPanel.Visible = true;
+
+            // Inject JavaScript to redirect after 2 seconds
+            string redirectScript = $@"
+            <script type='text/javascript'>
+                setTimeout(function() {{
+        window.location.href = '{ResolveUrl("~/Login.aspx")}';
+                }}, 2000);
+            </script>";
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "RedirectScript", redirectScript);
+        }
 
         protected void btnAdd_Click(object sender, EventArgs e)
         {
@@ -179,7 +212,7 @@ namespace FYP_TravelPlanner
         }
 
         protected void btnUnfriend_Click(object sender, EventArgs e)
-        { 
+        {
             string friendId = Request.QueryString["u"];
             string accountId = Convert.ToString(Session["account_id"]);
 
@@ -225,7 +258,7 @@ namespace FYP_TravelPlanner
                             imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
                         }
                     }
-                    pnlDeletedMessage.Visible = !reader.HasRows; 
+                    pnlDeletedMessage.Visible = !reader.HasRows;
                     pnlProfileDetails.Visible = reader.HasRows;
                     con.Close();
                 }

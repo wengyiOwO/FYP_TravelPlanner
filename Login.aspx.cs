@@ -15,10 +15,10 @@ namespace FYP_TravelPlanner
             
         }
 
-        private (string salt, string hash, string role,string id,string username) GetUserDetails(string email)
+        private (string salt, string hash, string role,string id,string username, string status) GetUserDetails(string email)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            string query = "SELECT account_id, account_name, account_salt, account_password, account_role FROM Account WHERE account_email = @Email";
+            string query = "SELECT account_id, account_name, account_salt, account_password, account_role, account_status FROM Account WHERE account_email = @Email";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -37,12 +37,14 @@ namespace FYP_TravelPlanner
                             string salt = reader["account_salt"].ToString();
                             string hash = reader["account_password"].ToString();
                             string role = reader["account_role"].ToString();
-                            return (salt, hash, role, id,username);
+                            string status = reader["account_status"].ToString();
+
+                            return (salt, hash, role, id,username, status);
                         }
                     }
                 }
             }
-            return (null, null, null,null,null);
+            return (null, null, null,null,null,null);
         }
 
         private string HashPassword(string password, string salt)
@@ -63,15 +65,25 @@ namespace FYP_TravelPlanner
                 string password = inputPassword.Text.ToString();
 
                 // Retrieve the stored salt and hashed password from the database
-                (string storedSalt, string storedHash, string userRole,string accID,string username) = GetUserDetails(email);
+                (string storedSalt, string storedHash, string userRole,string accID,string username,string status) = GetUserDetails(email);
 
                 if (!string.IsNullOrEmpty(storedHash) && !string.IsNullOrEmpty(storedSalt))
                 {
-                    // Hash the input password using the stored salt
-                    string hashedInputPassword = HashPassword(password, storedSalt);
+                    if (string.Equals(status, "Inactive", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string activationLink = $"<a href='ActivateAccount.aspx' style='color:blue;'>Activate your account</a>";
+                        lblMessage.Text = $"Your account is inactive. Please {activationLink}."; 
+                        lblMessage.Visible = true;
+                        return;
+                    }
+
+
+                        // Hash the input password using the stored salt
+                        string hashedInputPassword = HashPassword(password, storedSalt);
 
                     if (hashedInputPassword == storedHash)
                     {
+
                         // Set the authentication cookie
                         FormsAuthentication.SetAuthCookie(email, customCheck.Checked);
                         Session["account_id"] = accID;
@@ -119,7 +131,7 @@ namespace FYP_TravelPlanner
                     lblMessage.ForeColor = System.Drawing.Color.Red;
                     lblMessage.Visible = true;
                 }
-
+                
                 // Handle Remember Me functionality
                 if (customCheck.Checked)
                 {

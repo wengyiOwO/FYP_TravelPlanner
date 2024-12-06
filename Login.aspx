@@ -43,7 +43,7 @@
                                         </div>
                                         <asp:Button ID="btnLogin" runat="server" CssClass="btn btn-primary btn-user btn-block" Text="Login" OnClick="btnLogin_Click" />
 
-                                        <asp:Label ID="lblMessage" runat="server" CssClass="text-danger" Visible="true"></asp:Label>
+                                        <asp:Label ID="lblMessage" runat="server" CssClass="text-danger" Visible="false"></asp:Label>
 
                                         <hr>
                                     </div>
