@@ -30,10 +30,18 @@
                                             <asp:TextBox runat="server" type="email" class="form-control form-control-user"
                                                 ID="inputEmail" aria-describedby="emailHelp"
                                                 placeholder="Enter Email Address..." />
+                                            <asp:RequiredFieldValidator runat="server" ControlToValidate="inputEmail" ErrorMessage="Email is required" CssClass="text-danger" Display="Dynamic" />
+                                            <asp:RegularExpressionValidator runat="server" ControlToValidate="inputEmail" ErrorMessage="Invalid email format (Eg. example@gmail.com)" CssClass="text-danger"
+                                                ValidationExpression="^[^@\s]+@[^@\s]+\.[^@\s]+$" Display="Dynamic" />
                                         </div>
                                         <div class="form-group">
                                             <asp:TextBox runat="server" type="password" class="form-control form-control-user"
                                                 ID="inputPassword" placeholder="Password" />
+                                            <asp:RequiredFieldValidator runat="server" ControlToValidate="inputPassword" ErrorMessage="Password is required" CssClass="text-danger" Display="Dynamic" />
+                                            <asp:RegularExpressionValidator runat="server" ControlToValidate="inputPassword"
+                                                ErrorMessage="Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+                                                CssClass="text-danger"
+                                                ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#+])[A-Za-z\d@$!%*?&#+]{8,16}$" Display="Dynamic" />
                                         </div>
                                         <div class="form-group">
                                             <div class="custom-control custom-checkbox small">
