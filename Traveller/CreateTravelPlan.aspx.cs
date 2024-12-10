@@ -115,16 +115,13 @@ namespace FYP_TravelPlanner.Traveller
         .ToList();
 
 
-
-                //string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                //List<Location> locations = new List<Location>();
                 List<Location> locations = GetAllLocations(mustLocations, selectedAreaId);
 
                 try
                 {
                     List<Location> filteredLocations = FilterLocationsByInterest(locations, selectedInterests);
-                    // Determine the number of locations based on the budget
                     int locationCount;
+
                     switch (budget)
                     {
                         case 500:
@@ -145,21 +142,37 @@ namespace FYP_TravelPlanner.Traveller
                     }
 
                     List<Location> allSelectedLocations = mustLocations.Concat(filteredLocations).ToList();
-
-
                     var random = new Random();
-                    if (allSelectedLocations.Count < locationCount)
+                    List<Location> finalSelectedLocations = new List<Location>();
+
+                    if (allSelectedLocations.Count >= locationCount)
                     {
-                        var additionalLocations = locations.Except(allSelectedLocations)
-                                                           .OrderBy(x => random.Next())
-                                                           .Take(locationCount - allSelectedLocations.Count)
-                                                           .ToList();
-                        allSelectedLocations.AddRange(additionalLocations);
+                        var finalFilteredLocations = filteredLocations
+                            .Except(mustLocations)
+                            .OrderBy(x => random.Next()) 
+                            .Take(locationCount - mustLocations.Count) 
+                            .ToList();
+
+                        finalSelectedLocations.AddRange(mustLocations);
+                        finalSelectedLocations.AddRange(finalFilteredLocations);
+                    }
+                    else
+                    {
+                        finalSelectedLocations.AddRange(allSelectedLocations);
+
+                        var additionalLocations = locations
+                            .Except(allSelectedLocations) 
+                            .OrderBy(x => random.Next())
+                            .Take(locationCount - allSelectedLocations.Count) 
+                            .ToList();
+
+                        finalSelectedLocations.AddRange(additionalLocations);
                     }
 
-                    var finalSelectedLocations = allSelectedLocations.Take(locationCount).ToList();
-
-                    finalSelectedLocations = finalSelectedLocations.OrderBy(l => l.lat).ToList();
+                    finalSelectedLocations = finalSelectedLocations
+                        .Take(locationCount)
+                        .OrderBy(l => l.lat) 
+                        .ToList();
 
                     int locationsPerDay = locationCount / duration;
                     for (int i = 0; i < finalSelectedLocations.Count; i++)
@@ -328,7 +341,6 @@ namespace FYP_TravelPlanner.Traveller
                     filteredLocations.Add(location);
             }
 
-            // If no interests are selected, return all locations
             return filteredLocations.Count > 0 ? filteredLocations : locations;
         }
 
