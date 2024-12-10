@@ -746,7 +746,8 @@ namespace FYP_TravelPlanner.Traveller
             INNER JOIN Friends f ON 
                  (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
                   f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.friend_status = 'Accepted'";
+            WHERE f.friend_status = 'Accepted'
+            ORDER BY a.account_name";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -795,36 +796,7 @@ namespace FYP_TravelPlanner.Traveller
 
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e)
-        {
-            string accountId = Convert.ToString(Session["account_id"]);
-            string searchTerm = txtSearch.Text.Trim();
-            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                conn.Open();
-                string query = @"
-            SELECT a.account_id, a.account_name, a.profile_image
-            FROM Account a
-            INNER JOIN Friends f ON 
-                 (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
-                  f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.friend_status = 'Accepted' AND a.account_name LIKE @searchTerm";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@account_id", accountId);
-                cmd.Parameters.AddWithValue("@searchTerm", "%" + searchTerm + "%");
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                rptFriendsList.DataSource = dt;
-                rptFriendsList.DataBind();
-            }
-        }
-
+        
         private string GenerateChatId(string accountId, DateTime dateTime)
         {
             // Append a GUID to make it more unique

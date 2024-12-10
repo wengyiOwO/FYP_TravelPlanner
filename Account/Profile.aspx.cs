@@ -23,6 +23,7 @@ namespace FYP_TravelPlanner
             if (!string.IsNullOrEmpty(Request.QueryString["u"]))
             {
                 profileId = Request.QueryString["u"];
+                btnDelete.Visible = false;
             }
             else
             {
@@ -154,6 +155,7 @@ namespace FYP_TravelPlanner
             }
             ConfigureButton(btnAdd, "Add", false, false);
             ConfigureButton(btnSent, "Friend Request Sent", true, true);
+            Response.Redirect("~/Account/Profile.aspx?u=" + account2_id);
         }
 
         protected void btnAccept_Click(object sender, EventArgs e)

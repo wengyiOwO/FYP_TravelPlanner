@@ -254,15 +254,14 @@
             tableBody.innerHTML = '';  // Clear existing table content
 
             const dayLocations = locations.filter(loc => loc.day === day);
-            const rowsData = [];  // Array to hold rows data before rendering
+            const rowsData = []; 
 
-            // Loop through each location and calculate distance and duration
             for (let index = 0; index < dayLocations.length; index++) {
                 const location = dayLocations[index];
                 let distance = 0;
                 let duration = 0;
 
-                // Calculate distance and duration using OpenStreet routing API
+                // Calculate using OpenStreet routing API
                 if (index > 0) {
                     const prevLocation = dayLocations[index - 1];
                     const route = await getRoute(prevLocation.lat, prevLocation.lng, location.lat, location.lng);
@@ -282,18 +281,16 @@
                         : `${minutes} min`)
                     : '-';
 
-                // Prepare row data
                 rowsData.push({
                     index: index + 1,
                     name: location.name,
-                    distance: distance.toFixed(2),  // Store the distance as a string
+                    distance: distance.toFixed(2),
                     timeDisplay: timeDisplay,
                     lat: location.lat,
                     lng: location.lng
                 });
             }
 
-            // Once all calculations are done, generate the table
             rowsData.forEach(rowData => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -310,7 +307,7 @@
         }
 
 
-        //get the route using OpenStreet API
+        //get route with OpenStreet API
         async function getRoute(lat1, lng1, lat2, lng2) {
             const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`;
             try {
@@ -371,10 +368,8 @@
             markers.find(marker => marker.getLatLng().equals(location)).openPopup();
         }
         function updateRoute() {
-            // Set the waypoints for the routing control
             control.setWaypoints(markers.map(marker => marker.getLatLng()));
 
-            // Update the route line color to blue
             control.getPlan().getRoute(0).setStyle({ color: 'blue' });
         }
 
@@ -400,17 +395,15 @@
         }
 
         function saveTravelPlan() {
-            // Serialize the current locations array to JSON
             const updatedLocationsJson = JSON.stringify(locations);
 
-            // Perform the AJAX call
             return $.ajax({
                 type: "POST",
                 url: "TravelPlan.aspx/UpdateSelectedLocations",
                 data: JSON.stringify({ updatedLocations: updatedLocationsJson }),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
-                async: false, // Ensures this completes before returning
+                async: false,
                 success: function (response) {
                     //
                 },
@@ -421,7 +414,6 @@
 
                 return true;
             }).catch(function () {
-                // Block postback if there's an error
                 return false;
             });
         }
@@ -529,8 +521,8 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <main class="container-fluid p-0">
         <div id="notification" runat="server" class="notification" style="display: none;">
-     <asp:Label ID="lblNotification" runat="server" Text=""></asp:Label>
- </div>
+            <asp:Label ID="lblNotification" runat="server" Text=""></asp:Label>
+        </div>
 
         <div class="row no-gutters">
             <div class="col-md-4">
@@ -541,21 +533,19 @@
                             <% 
                                 var locations = (List<Location>)Session["SelectedLocations"];
 
-                                // Check if locations is null or empty
                                 if (locations == null || locations.Count == 0)
                                 {
-    %>
+                            %>
                             <li class="alert alert-danger" role="alert">Unable to display the plan, the location is empty.
-        </li>
+                            </li>
                             <% 
                                 }
                                 else
                                 {
-                                    // Proceed with generating the day tabs
                                     int maxDay = locations.Max(loc => loc.day);
                                     for (int i = 1; i <= maxDay; i++)
                                     {
-    %>
+                            %>
                             <li class="nav-item">
                                 <a class="nav-link <% if (i == 1)
                                     { %>active<% } %>"
@@ -567,11 +557,10 @@
                                     onclick="showDay(<%= i %>)">Day <%= i %></a>
                             </li>
                             <% 
+                                    }
                                 }
-                            }
-    %>
+                            %>
                         </ul>
-                        <!-- Table for Locations -->
                         <table class="table table-hover mt-3">
                             <thead>
                                 <tr>
@@ -592,7 +581,7 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <asp:Button ID="btnSave" runat="server" Text="Save Plan" OnClientClick="return saveTravelPlan();" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:Button ID="btnShare" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Share" OnClick="btnShare_Click"/>
+                            <asp:Button ID="btnShare" runat="server" CssClass="btn btn-outline-primary btn-sm mr-2" Text="Share" OnClick="btnShare_Click" />
                             <asp:Button ID="btnPDF" runat="server" Text="Generate PDF" CssClass="btn btn-sm btn-primary shadow-sm" OnClientClick="generatePDF(); return false;" />
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                             <asp:HiddenField ID="hiddenPlanId" runat="server" />
@@ -604,62 +593,43 @@
                 <div id="map" class="shadow-sm"></div>
             </div>
             <asp:Panel ID="pnlFriend" runat="server" CssClass="modal" Style="display: none;">
-     <div class="modal-dialog modal-dialog-centered modal-lg">
-         <div class="modal-content">
-             <div class="modal-header">
-                 <h5 class="modal-title">Share to?</h5>
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Share to?</h5>
 
-                 <button type="button" class="close" onclick="hideFriendList();">
-                     <span aria-hidden="true">&times;</span>
-                 </button>
-             </div>
-             <div class="modal-body">
-                 <div class="row">
-                     <!-- Search Section -->
-                     <div class="col-12 mb-3">
-                         <div class="input-group">
-                             <asp:TextBox
-                                 ID="txtSearch"
-                                 runat="server"
-                                 CssClass="form-control"
-                                 placeholder="Search friends..."></asp:TextBox>
-                             <div class="input-group-append">
-                                 <asp:Button
-                                     ID="btnSearch"
-                                     runat="server"
-                                     CssClass="btn btn-primary"
-                                     Text="Search"
-                                     OnClick="btnSearch_Click" />
-                             </div>
-                         </div>
-                     </div>
-
-                     <!-- Friend List Section -->
-                     <div class="col-12">
-                         <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
-                             <ItemTemplate>
-                                 <div class="d-flex align-items-center border-bottom py-2">
-                                     <asp:Image
-                                         ID="imgProfile"
-                                         runat="server"
-                                         CssClass="rounded-circle mr-3"
-                                         Width="40"
-                                         Height="40"
-                                         ImageUrl='<%# "~/Uploads/Profile/" + Eval("profile_image") %>'
-                                         AlternateText="Profile Image" />
-                                     <div class="flex-grow-1">
-                                         <span><%# Eval("account_name") %></span>
-                                     </div>
-                                     <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary btn-lg mr-1 px-3" CommandName="Send" CommandArgument='<%# Eval("account_id") %>' Text="Send" />
-                                 </div>
-                             </ItemTemplate>
-                         </asp:Repeater>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
- </asp:Panel>
+                            <button type="button" class="close" onclick="hideFriendList();">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <!-- Friend List Section -->
+                                <div class="col-12">
+                                    <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
+                                        <ItemTemplate>
+                                            <div class="d-flex align-items-center border-bottom py-2">
+                                                <asp:Image
+                                                    ID="imgProfile"
+                                                    runat="server"
+                                                    CssClass="rounded-circle mr-3"
+                                                    Width="40"
+                                                    Height="40"
+                                                    ImageUrl='<%# "~/Uploads/Profile/" + Eval("profile_image") %>'
+                                                    AlternateText="Profile Image" />
+                                                <div class="flex-grow-1">
+                                                    <span><%# Eval("account_name") %></span>
+                                                </div>
+                                                <asp:Button ID="btnSend" runat="server" CssClass="btn btn-primary btn-lg mr-1 px-3" CommandName="Send" CommandArgument='<%# Eval("account_id") %>' Text="Send" />
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </asp:Panel>
 
         </div>
         <div>
@@ -667,11 +637,11 @@
 
     </main>
     <script>
-    function showFriendList() {
-        document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'block';
-    }
-    function hideFriendList() {
-        document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'none';
+        function showFriendList() {
+            document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'block';
+        }
+        function hideFriendList() {
+            document.getElementById('<%= pnlFriend.ClientID %>').style.display = 'none';
         }
     </script>
 </asp:Content>

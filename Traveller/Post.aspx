@@ -71,7 +71,7 @@
                 <ItemTemplate>
                     <div class="col post-row">
                         <div class="card post-card">
-                            <a href="PostDetails.aspx?post_id=<%# Eval("post_id") %>">
+                            <a href="PostDetails.aspx?p=<%# Eval("post_id") %>">
                                 <img src='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>' alt="Post image" />
                                 <div class="card-body">
                                     <h5 class="card-title text-wrap"><%# Eval("post_title") %></h5>

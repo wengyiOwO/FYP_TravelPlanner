@@ -110,7 +110,8 @@ namespace FYP_TravelPlanner.Traveller
                     INNER JOIN Friends f ON 
                         (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
                          f.account2_id = @account_id AND f.account1_id = a.account_id)
-                    WHERE f.friend_status = 'Accepted'";
+                    WHERE f.friend_status = 'Accepted'
+                    ORDER BY a.account_name";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);

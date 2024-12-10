@@ -11,7 +11,6 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     <style>
-        /* Ensure full height for all container elements */
         html, body, .container-fluid, .row, .col-md-8 {
             height: 100%;
         }
@@ -213,8 +212,8 @@
         var markers = [];
         var selectedLocations = [];
         var ddlStates = [];
-        // zoom on KL
         function initMap() {
+            // zoom on KL
             map = L.map('map').setView([3.1390, 101.6869], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -226,9 +225,8 @@
 
 
 
-        // search locations using Nominatim API
         function searchLocations(query) {
-            // english for preference language
+            //languag english
             var url = 'https://nominatim.openstreetmap.org/search?format=json&accept-language=en&q=' + query;
 
             fetch(url)
@@ -256,7 +254,6 @@
             });
         }
 
-        // mark selected location and set it in the TextBox
         function selectLocation(location) {
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
@@ -270,15 +267,12 @@
 
             markers.push(marker);
 
-            // Add the selected location to the array and table
             addSelectedLocation(location);
 
-            // Clear the search box and results
             document.getElementById('<%= txtSearchLocation.ClientID %>').value = "";
             document.getElementById('search-results').innerHTML = "";
         }
 
-        // Event handler for search input
         function handleSearchInput() {
             var query = document.getElementById('<%= txtSearchLocation.ClientID %>').value;
             if (query.length > 2) {
@@ -290,26 +284,23 @@
 
 
         $(document).ready(function () {
-            // Initialize datepicker on the txtStartDate TextBox
             $("#<%= txtStartDate.ClientID %>").datepicker({
-                dateFormat: "dd-mm-yy", // Set the format you prefer
-                showAnim: "slideDown",   // Animation for showing the calendar
+                dateFormat: "dd-mm-yy",
+                showAnim: "slideDown",  
                 beforeShow: function (input, inst) {
-                    // Add custom styles to the datepicker
                     $(inst.dpDiv).css({
-                        'height': 'auto',    // Auto height
-                        'max-height': '300px', // Set a maximum height for the calendar
-                        'overflow-y': 'auto'   // Allow scrolling if content exceeds max height
+                        'height': 'auto',    
+                        'max-height': '300px', 
+                        'overflow-y': 'auto'   
                     });
                 }
-            }).attr('readonly', true); // Set initially read-only
+            }).attr('readonly', true); 
 
-            // Allow user to open datepicker by clicking
             $("#<%= txtStartDate.ClientID %>").focus(function () {
-                $(this).removeAttr('readonly'); // Temporarily remove read-only on focus
-                $(this).datepicker("show"); // Show the datepicker
+                $(this).removeAttr('readonly'); 
+                $(this).datepicker("show");
             }).blur(function () {
-                $(this).attr('readonly', true); // Set back to read-only on blur
+                $(this).attr('readonly', true);
             });
         });
 
@@ -323,42 +314,64 @@
             });
         }
 
+        document.getElementById('<%= ddlState.ClientID %>').addEventListener("change", function () {
+            var ddlState = document.getElementById('<%= ddlState.ClientID %>');
+            var selectedState = ddlState.options[ddlState.selectedIndex].text;
+            var selectedStateId = ddlState.value;
+
+            selectedLocations = [];
+
+            selectedArea = selectedState;
+            selectedAreaId = selectedStateId;
+
+            updateLocationsTable();
+        });
+
         function addSelectedLocation(location) {
-            var locationName = location.display_name.split(",")[0]; // Extract name before the first comma
+            var locationName = location.display_name.split(",")[0]; 
             var lat = location.lat;
             var lon = location.lon;
-            var area_id;
+            var ddlState = document.getElementById('<%= ddlState.ClientID %>');
+            var selectedState = ddlState.options[ddlState.selectedIndex].text;
+            var selectedStateId = ddlState.value;
+
             var area = "Unsupported Area";
+            var area_id = null;
 
-            // Match area with ddlState
-            for (var i = 0; i < ddlStates.length; i++) {
-                if (location.display_name.includes(ddlStates[i].text)) {
-                    area = ddlStates[i].text;
-                    area_id = ddlStates[i].value;
-                    break;
-                }
+            if (location.display_name.includes(selectedState)) {
+                area = selectedState;
+                area_id = selectedStateId;
             }
 
-            var locationObj;
             if (area === "Unsupported Area") {
-                alert("This system does not support the selected area.");
+                alert("The location is not match with selected area");
                 return;
-            } else {
-                locationObj = { name: locationName, area: area, area_id:area_id,lat: lat, lng: lon };
-                 selectedLocations.push(locationObj);
             }
 
-            // Add to selectedLocations array
-           
+            var isDuplicate = selectedLocations.some(function (loc) {
+                return loc.name === locationName;
+            });
 
-            // Update the table
+            if (isDuplicate) {
+                alert("This location is already added.");
+                return;
+            }
+
+            var locationObj = {
+                name: locationName,
+                area: area,
+                area_id: area_id,
+                lat: lat,
+                lng: lon
+            };
+            selectedLocations.push(locationObj);
+
             updateLocationsTable();
         }
 
-        // Update the dynamic table
         function updateLocationsTable() {
             var tbody = document.querySelector("#interestLocationsTable tbody");
-            tbody.innerHTML = ""; // Clear the table
+            tbody.innerHTML = ""; 
 
             selectedLocations.forEach((location, index) => {
                 var row = document.createElement("tr");

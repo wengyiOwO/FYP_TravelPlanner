@@ -46,7 +46,8 @@ namespace FYP_TravelPlanner.Traveller
             INNER JOIN Friends f ON 
                  (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
                   f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.friend_status = 'Accepted'";
+            WHERE f.friend_status = 'Accepted'
+            ORDER BY a.account_name";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -83,7 +84,8 @@ namespace FYP_TravelPlanner.Traveller
             SELECT a.account_id, a.account_name
             FROM Account a
             INNER JOIN Friends f ON f.account1_id = a.account_id
-            WHERE f.account2_id = @account_id AND f.friend_status = 'Request'";
+            WHERE f.account2_id = @account_id AND f.friend_status = 'Request'
+            ORDER BY a.account_name";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -127,7 +129,6 @@ namespace FYP_TravelPlanner.Traveller
                 }
             }
 
-            // Rebind lists after action
             BindFriendRequests();
             BindFriends();
         }
@@ -147,7 +148,7 @@ namespace FYP_TravelPlanner.Traveller
             INNER JOIN Friends f ON 
                  (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
                   f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.status = 'Accepted' AND a.account_name LIKE @searchTerm";
+            WHERE f.friend_status = 'Accepted' AND a.account_name LIKE @searchTerm";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
@@ -180,7 +181,7 @@ namespace FYP_TravelPlanner.Traveller
             }
             else
             {
-                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; // Fallback image
+                img.ImageUrl = "~/Uploads/Profile/unknown.jpg"; 
             }
         }
     }

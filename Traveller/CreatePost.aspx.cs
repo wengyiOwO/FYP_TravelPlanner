@@ -87,7 +87,7 @@ namespace FYP_TravelPlanner.Traveller
 
             if (fileUpload.HasFile)
             {
-                string[] allowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+                string[] allowedImageExtensions = { ".jpg", ".jpeg", ".png" };
                 string[] allowedVideoExtensions = { ".mp4", ".mov", ".avi" };
 
                 string fileType = "";
@@ -135,7 +135,7 @@ namespace FYP_TravelPlanner.Traveller
                     HttpPostedFile videoFile = fileUpload.PostedFiles[0];
                     if (videoFile.ContentLength > maxVideoSize)
                     {
-                        lblMessage.Text = "Video size must be less than 1GB.";
+                        lblMessage.Text = "Video size must be less than 25GB.";
                         lblMessage.Visible = true;
                         return;
                     }
@@ -145,7 +145,7 @@ namespace FYP_TravelPlanner.Traveller
                 }
                 else
                 {
-                    lblMessage.Text = "Invalid file type. The system only allow for .jpg, .jpeg, .png, .gif, .mp4, .mov, .avi";
+                    lblMessage.Text = "Invalid file type. The system only allow for .jpg, .jpeg, .png, .mp4, .mov, .avi";
                     lblMessage.Visible = true;
                     return;
                 }
@@ -156,7 +156,7 @@ namespace FYP_TravelPlanner.Traveller
                 string redirectScript = $@"
             <script type='text/javascript'>
                 setTimeout(function() {{
-                    window.location.href = 'PostDetails.aspx?post_id={postId}';
+                    window.location.href = 'PostDetails.aspx?p={postId}';
                 }}, 1000);
             </script>";
 

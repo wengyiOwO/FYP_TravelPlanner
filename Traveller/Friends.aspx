@@ -11,12 +11,12 @@
         }
 
         .content {
-            padding-top: 0px; /* Ensuring no padding on top */
+            padding-top: 0px;
             min-height: 800px;
         }
 
         .card {
-            min-height: 800px; /* Ensuring the card height fills the space */
+            min-height: 800px; 
             display: flex;
             flex-direction: column;
         }
@@ -128,13 +128,13 @@
                     </div>
                     <asp:Repeater ID="rptFriendRequests" runat="server" OnItemCommand="rptFriendRequests_ItemCommand">
                         <ItemTemplate>
-                            <a href="#" class="list-group-item list-group-item-action border-0">
+                            <a href="../Account/Profile.aspx?u=<%# Eval("account_id") %>" class="list-group-item list-group-item-action border-0">
                                 <div class="d-flex align-items-start">
                                     <asp:Image ID="imgProfile" runat="server" Width="40" Height="40" CssClass="rounded-circle mr-1" OnDataBinding="imgProfile_DataBinding" />
                                     <div class="flex-grow-1 ml-3">
                                         <%# Eval("account_name") %>
                                     </div>
-                                    <asp:Button ID="btnAccept" runat="server" CssClass="btn btn-primary btn-lg mr-1 px-3" CommandName="Accept" CommandArgument='<%# Eval("account_id") %>' Text="Accept" />
+                                    <asp:Button ID="btnAccept" runat="server" CssClass="btn btn-success btn-lg mr-1 px-3" CommandName="Accept" CommandArgument='<%# Eval("account_id") %>' Text="Accept" />
                                     <asp:Button ID="btnReject" runat="server" CssClass="btn btn-danger btn-lg ml-2" CommandName="Reject" CommandArgument='<%# Eval("account_id") %>' Text="Reject" />
                                 </div>
                             </a>

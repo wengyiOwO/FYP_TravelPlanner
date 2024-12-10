@@ -30,7 +30,7 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void rptResults_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            string account1_id = Session["account_id"].ToString(); // Current user's ID
+            string account1_id = Session["account_id"].ToString(); // Logged in user's ID
             string account2_id = Convert.ToString(e.CommandArgument); // Selected user's ID
 
             if (e.CommandName == "AddFriend")
@@ -66,7 +66,8 @@ namespace FYP_TravelPlanner.Traveller
                              WHERE (account1_id = @currentAccount AND account2_id = Account.account_id) 
                                 OR (account2_id = @currentAccount AND account1_id = Account.account_id)) AS friend_status
                         FROM Account
-                        WHERE account_name LIKE @search";
+                        WHERE account_name LIKE @search AND account_id != @currentAccount
+                        ORDER BY account_name";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@search", "%" + searchQuery + "%");

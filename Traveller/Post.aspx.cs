@@ -20,14 +20,14 @@ namespace FYP_TravelPlanner.Traveller
             }
             if (!IsPostBack)
             {
-                BindPosts(null); // Load all posts initially
+                BindPosts(null); 
             }
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
             string searchQuery = txtSearch.Text.Trim();
-            BindPosts(searchQuery); // Bind posts with search query
+            BindPosts(searchQuery);
         }
 
         private void BindPosts(string searchQuery)

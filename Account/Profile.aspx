@@ -199,7 +199,7 @@
                         <ItemTemplate>
                             <div class="col post-row">
                                 <div class="post-card">
-                                    <a href="/Traveller/PostDetails.aspx?post_id=<%# Eval("post_id") %>">
+                                    <a href="/Traveller/PostDetails.aspx?p=<%# Eval("post_id") %>">
                                         <img src='<%# ResolveUrl("~/Uploads/Images/") + Eval("post_id") + "_1.jpg" %>' alt="Post image" />
                                         <div class="card-body">
                                             <h5 class="card-title"><%# Eval("post_title") %></h5>

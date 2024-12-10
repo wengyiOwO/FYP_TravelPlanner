@@ -23,7 +23,7 @@ namespace FYP_TravelPlanner.Traveller
 
             if (!IsPostBack)
             {
-                string postId = Request.QueryString["post_id"];
+                string postId = Request.QueryString["p"];
                 if (!string.IsNullOrEmpty(postId))
                 {
                     LoadPostDetails(postId);
@@ -36,31 +36,42 @@ namespace FYP_TravelPlanner.Traveller
                     pnlPostDetails.Visible = false;
                 }
             }
-
-            if (Session["pnlFriend"] != null && Session["pnlFriend"].ToString() == "visible")
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "showFriendList", "showFriendList();", true);
-
-                Session["pnlFriend"] = null;
-            }
-
-
-
+            
         }
+
 
         protected void LoadPostDetails(string postId)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            string currentAccountId = Session["account_id"]?.ToString(); // Get current user's account ID
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = @"SELECT P.post_title, P.post_content, P.post_date, P.post_status, P.file_type, P.num_image, A.account_id, A.account_name, A.profile_image 
-                         FROM Posts P
-                         INNER JOIN Account A ON P.account_id = A.account_id
-                         WHERE P.post_id = @PostID";
+                string query = @"
+            SELECT 
+                P.post_title, P.post_content, P.post_date, P.post_status, P.file_type, 
+                P.num_image, A.account_id, A.account_name, A.profile_image, P.post_permission
+            FROM 
+                Posts P
+            INNER JOIN Account A ON P.account_id = A.account_id
+            WHERE 
+                P.post_id = @PostID
+                AND (
+                    P.post_permission = 'Public' 
+                    OR (P.post_permission = 'Friend' AND EXISTS (
+                        SELECT 1 
+                        FROM Friends 
+                        WHERE 
+                            (account1_id = P.account_id AND account2_id = @currentAccountId AND friend_status = 'Accepted') 
+                            OR (account2_id = P.account_id AND account1_id = @currentAccountId AND friend_status = 'Accepted')
+                        ))
+                    OR (P.post_permission = 'Owner' AND P.account_id = @currentAccountId)
+                )";
+
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@PostID", postId);
+                    cmd.Parameters.AddWithValue("@currentAccountId", currentAccountId);
 
                     con.Open();
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -78,14 +89,11 @@ namespace FYP_TravelPlanner.Traveller
 
                         lblPostTitle.Text = reader["post_title"].ToString();
                         string postContent = reader["post_content"].ToString();
-
                         postContent = postContent.Replace(Environment.NewLine, "<br />").Replace("\n", "<br />").Replace("\r", "<br />");
-
                         ltPostContent.Text = postContent;
                         lblAuthorName.Text = reader["account_name"].ToString();
                         lblPostDate.Text = Convert.ToDateTime(reader["post_date"]).ToString("dd/MM/yyyy");
 
-                        // Load the profile image
                         string authorId = reader["account_id"].ToString();
                         string profileImage = reader["profile_image"].ToString();
 
@@ -98,7 +106,6 @@ namespace FYP_TravelPlanner.Traveller
                             imgProfile.ImageUrl = "~/Uploads/Profile/unknown.jpg";
                         }
 
-                        // Check the file type and load content accordingly
                         string fileType = reader["file_type"].ToString();
                         int numImages = Convert.ToInt32(reader["num_image"]);
                         if (fileType == "video")
@@ -116,9 +123,7 @@ namespace FYP_TravelPlanner.Traveller
                             carouselControls.Visible = false;
                         }
 
-                        // Show buttons only if logged-in user is the post author
-                        string sessionAccountId = Session["account_id"]?.ToString();
-                        if (sessionAccountId == authorId)
+                        if (currentAccountId == authorId)
                         {
                             btnEdit.Visible = true;
                             btnDelete.Visible = true;
@@ -131,10 +136,11 @@ namespace FYP_TravelPlanner.Traveller
                     }
                     else
                     {
-                        lblDeletedMessage.Text = "The post does not exist.";
+                        lblDeletedMessage.Text = "You do not have permission to view the post.";
                         pnlDeletedMessage.Visible = true;
                         pnlPostDetails.Visible = false;
                     }
+
                     con.Close();
                 }
             }
@@ -183,13 +189,13 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void btnEdit_Click(object sender, EventArgs e)
         {
-            string postId = Request.QueryString["post_id"];
+            string postId = Request.QueryString["p"];
             Response.Redirect("~/Traveller/EditPost.aspx?p=" + postId);
         }
 
         protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {
-            string postId = Request.QueryString["post_id"];
+            string postId = Request.QueryString["p"];
 
             if (!string.IsNullOrEmpty(postId))
             {
@@ -240,7 +246,8 @@ namespace FYP_TravelPlanner.Traveller
             INNER JOIN Friends f ON 
                  (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
                   f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.friend_status = 'Accepted'";
+            WHERE f.friend_status = 'Accepted'
+            ORDER BY a.account_name";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@account_id", accountId);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -284,7 +291,7 @@ namespace FYP_TravelPlanner.Traveller
 
             BindFriends();
 
-            string postId = Request.QueryString["post_id"];
+            string postId = Request.QueryString["p"];
             LoadPostDetails(postId);
             lblNotification.Text = "Message sent successfully!";
             notification.Style["display"] = "block";
@@ -294,39 +301,7 @@ namespace FYP_TravelPlanner.Traveller
 
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e)
-        {
-            string accountId = Convert.ToString(Session["account_id"]);
-            string searchTerm = txtSearch.Text.Trim();
-            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                conn.Open();
-                string query = @"
-            SELECT a.account_id, a.account_name, a.profile_image
-            FROM Account a
-            INNER JOIN Friends f ON 
-                 (f.account1_id = @account_id AND f.account2_id = a.account_id OR 
-                  f.account2_id = @account_id AND f.account1_id = a.account_id)
-            WHERE f.friend_status = 'Accepted' AND a.account_name LIKE @searchTerm";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@account_id", accountId);
-                cmd.Parameters.AddWithValue("@searchTerm", "%" + searchTerm + "%");
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                rptFriendsList.DataSource = dt;
-                rptFriendsList.DataBind();
-            }
-            Session["pnlFriend"] = "visible";
-            string postId = Request.QueryString["post_id"];
-            LoadPostDetails(postId);
-        }
-
+        
         private string GenerateChatId(string accountId, DateTime dateTime)
         {
             // Append a GUID to make it more unique

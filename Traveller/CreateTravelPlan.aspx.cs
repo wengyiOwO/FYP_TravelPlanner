@@ -59,10 +59,8 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void calendarStartDate_SelectionChanged(object sender, EventArgs e)
         {
-            // Get the selected date
             DateTime selectedDate = calendarStartDate.SelectedDate;
 
-            // Set the TextBox with the selected date
             txtStartDate.Text = selectedDate.ToString("dd-MM-yyyy");
         }
 
@@ -81,7 +79,6 @@ namespace FYP_TravelPlanner.Traveller
 
         protected void CheckBoxRequired_ServerValidate(object sender, ServerValidateEventArgs e)
         {
-            // Check if at least one item is selected in the CheckBoxList
             e.IsValid = cblActivities.SelectedIndex != -1;
         }
 
@@ -91,16 +88,9 @@ namespace FYP_TravelPlanner.Traveller
             {
 
                 string locationJson = Request.Form[hfSelectedLocations.UniqueID];
-                //if (string.IsNullOrEmpty(locationJson))
-                //{
-                //    testError.Text = "No locations provided.";
-                //    return;
-                //}
-
-                // Deserialize the JSON to a list of Location objects
+               
                 var frontendLocations = JsonConvert.DeserializeObject<List<Location>>(locationJson);
 
-                // Get must-have locations (fetch or insert as needed)
                 List<Location> mustLocations = GetMustLocations(frontendLocations);
 
                 string selectedAreaId = ddlState.SelectedValue;
@@ -157,11 +147,9 @@ namespace FYP_TravelPlanner.Traveller
                     List<Location> allSelectedLocations = mustLocations.Concat(filteredLocations).ToList();
 
 
-                    // If filtered locations are less than needed, add random locations to meet the required count
                     var random = new Random();
                     if (allSelectedLocations.Count < locationCount)
                     {
-                        // Add random locations from the unfiltered list, excluding duplicates
                         var additionalLocations = locations.Except(allSelectedLocations)
                                                            .OrderBy(x => random.Next())
                                                            .Take(locationCount - allSelectedLocations.Count)
@@ -169,20 +157,16 @@ namespace FYP_TravelPlanner.Traveller
                         allSelectedLocations.AddRange(additionalLocations);
                     }
 
-                    // Limit to the number of locations based on the budget
                     var finalSelectedLocations = allSelectedLocations.Take(locationCount).ToList();
 
-                    // Sort locations by latitude for easier routing
                     finalSelectedLocations = finalSelectedLocations.OrderBy(l => l.lat).ToList();
 
-                    // Divide the locations by duration (days)
                     int locationsPerDay = locationCount / duration;
                     for (int i = 0; i < finalSelectedLocations.Count; i++)
                     {
                         finalSelectedLocations[i].day = (i / locationsPerDay) + 1;
                     }
 
-                    // Store the travel plan with day-wise locations in the session
                     Session["SelectedLocations"] = JsonConvert.SerializeObject(finalSelectedLocations);
                     Session["AreaID"] = selectedAreaId;
                     Session["StartDate"] = startDate;
@@ -201,7 +185,6 @@ namespace FYP_TravelPlanner.Traveller
             }
         }
 
-        //Get location that user must
         private List<Location> GetMustLocations(List<Location> frontendLocations)
         {
             string ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -213,7 +196,6 @@ namespace FYP_TravelPlanner.Traveller
 
                 foreach (var loc in frontendLocations)
                 {
-                    // Check if the location already exists
                     string selectQuery = "SELECT location_id, latitude, longitude FROM Location WHERE place_name LIKE @placeName";
                     using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn))
                     {
@@ -222,7 +204,6 @@ namespace FYP_TravelPlanner.Traveller
 
                         if (reader.Read())
                         {
-                            // Add existing location to mustLocations
                             mustLocations.Add(new Location
                             {
                                 id = reader["location_id"].ToString(),
@@ -237,27 +218,24 @@ namespace FYP_TravelPlanner.Traveller
                         {
                             reader.Close();
 
-                            // Generate a new location_id
                             string maxIdQuery = "SELECT ISNULL(MAX(location_id), 'P0000000') FROM Location";
                             using (SqlCommand maxIdCmd = new SqlCommand(maxIdQuery, conn))
                             {
                                 string maxId = maxIdCmd.ExecuteScalar().ToString();
                                 string newId = "P" + (int.Parse(maxId.Substring(1)) + 1).ToString("D7");
 
-                                // Insert the new location into the table
                                 string insertQuery = "INSERT INTO Location (location_id, place_name, area_id, latitude, longitude) VALUES (@id, @name, @areaId, @lat, @lng)";
                                 using (SqlCommand insertCmd = new SqlCommand(insertQuery, conn))
                                 {
                                     insertCmd.Parameters.AddWithValue("@id", newId);
                                     insertCmd.Parameters.AddWithValue("@name", loc.name);
-                                    insertCmd.Parameters.AddWithValue("@areaId", loc.area_id); // Ensure area_id matches correctly
+                                    insertCmd.Parameters.AddWithValue("@areaId", loc.area_id); 
                                     insertCmd.Parameters.AddWithValue("@lat", loc.lat);
                                     insertCmd.Parameters.AddWithValue("@lng", loc.lng);
 
                                     insertCmd.ExecuteNonQuery();
                                 }
 
-                                // Add newly inserted location to mustLocations
                                 mustLocations.Add(new Location
                                 {
                                     id = newId,
@@ -284,7 +262,6 @@ namespace FYP_TravelPlanner.Traveller
             {
                 conn.Open();
 
-                // Prepare a list of location IDs in mustLocations to exclude
                 var mustLocationIds = mustLocations.Select(loc => loc.id).ToList();
 
                 string query = "SELECT location_id, place_name, area_id, latitude, longitude FROM Location WHERE area_id = @areaId";
@@ -298,7 +275,6 @@ namespace FYP_TravelPlanner.Traveller
                     {
                         string locationId = reader["location_id"].ToString();
 
-                        // Exclude locations already in mustLocations
                         if (!mustLocationIds.Contains(locationId))
                         {
                             locations.Add(new Location
@@ -318,12 +294,10 @@ namespace FYP_TravelPlanner.Traveller
 
 
 
-        // Method to filter locations by activity interest keywords
         private List<Location> FilterLocationsByInterest(List<Location> locations, List<string> selectedInterests)
         {
             var filteredLocations = new List<Location>();
 
-            // Keywords for each category
             var interestKeywords = new Dictionary<string, List<string>>
     {
         { "beaches", new List<string> { "Pantai", "Island", "Beach", "Pulau" } },
@@ -337,7 +311,6 @@ namespace FYP_TravelPlanner.Traveller
             {
                 bool matchesInterest = false;
 
-                // Check if location name contains any keyword for each selected interest
                 foreach (var interest in selectedInterests)
                 {
                     if (interestKeywords.ContainsKey(interest))

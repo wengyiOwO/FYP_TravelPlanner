@@ -106,25 +106,6 @@
                                         </div>
                                         <div class="modal-body">
                                             <div class="row">
-                                                <!-- Search Section -->
-                                                <div class="col-12 mb-3">
-                                                    <div class="input-group">
-                                                        <asp:TextBox
-                                                            ID="txtSearch"
-                                                            runat="server"
-                                                            CssClass="form-control"
-                                                            placeholder="Search friends..."></asp:TextBox>
-                                                        <div class="input-group-append">
-                                                            <asp:Button
-                                                                ID="btnSearch"
-                                                                runat="server"
-                                                                CssClass="btn btn-primary"
-                                                                Text="Search"
-                                                                OnClick="btnSearch_Click" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
                                                 <!-- Friend List Section -->
                                                 <div class="col-12">
                                                     <asp:Repeater ID="rptFriendsList" runat="server" OnItemCommand="rptFriendsList_ItemCommand">
