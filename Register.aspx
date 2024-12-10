@@ -51,7 +51,7 @@
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0 position-relative">
-                                        <asp:TextBox runat="server" type="password" class="form-control form-control-user" ID="txtPassword" placeholder="Password" />
+                                        <asp:TextBox runat="server" type="password" class="form-control form-control-user" ID="txtPassword" placeholder="Password" MaxLength="16" />
                                         <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPassword" ErrorMessage="Password is required" CssClass="text-danger" Display="Dynamic" />
                                         <asp:RegularExpressionValidator runat="server" ControlToValidate="txtPassword"
                                             ErrorMessage="Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one number, and one special character."
@@ -59,7 +59,7 @@
                                             ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#+])[A-Za-z\d@$!%*?&#+]{8,16}$" Display="Dynamic" />
                                     </div>
                                     <div class="col-sm-6 position-relative">
-                                        <asp:TextBox runat="server" type="password" class="form-control form-control-user" ID="txtRepeatPassword" placeholder="Repeat Password" />
+                                        <asp:TextBox runat="server" type="password" class="form-control form-control-user" ID="txtRepeatPassword" placeholder="Repeat Password" MaxLength="16"  />
                                         <asp:RequiredFieldValidator runat="server" ControlToValidate="txtRepeatPassword" ErrorMessage="Please confirm your password" CssClass="text-danger" Display="Dynamic" />
                                         <asp:CompareValidator runat="server" ControlToValidate="txtRepeatPassword" ControlToCompare="txtPassword" ErrorMessage="Passwords do not match" CssClass="text-danger" Display="Dynamic" />
 

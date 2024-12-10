@@ -109,8 +109,6 @@ namespace FYP_TravelPlanner
             cmdInsert.Parameters.AddWithValue("@Role", "Traveller");
             cmdInsert.Parameters.AddWithValue("@ProfileImage", "unknown.jpg");
 
-
-
             cmdInsert.ExecuteNonQuery();
             conn.Close();
         }

@@ -105,6 +105,8 @@
                 <h5>If you encountered any issues or have suggestions for improvement, please provide details below:</h5>
 
                 <asp:TextBox runat="server" ID="txtReview" class="form-control mt-3" Rows="4" placeholder="Please provide any suggestions or feedback here..." TextMode="MultiLine"></asp:TextBox>
+                  <span id="review_error" class="text-danger" style="display: none;">Please provide a review.</span>
+
                 <asp:RequiredFieldValidator ID="rfvReview" runat="server" ControlToValidate="txtReview" ErrorMessage="Please provide review." ForeColor="Red" Display="Dynamic" />
 
             </li>
@@ -137,6 +139,8 @@
                 { name: 'functionality_rating', errorId: 'functionality_error' },
                 { name: 'satisfaction_rating', errorId: 'satisfaction_error' }
             ];
+            const reviewError = document.getElementById("review_error");
+            reviewError.style.display = "none";
 
             // Validate each rating group
             ratingGroups.forEach(function (group) {
@@ -147,6 +151,15 @@
                     isValid = false;
                 }
             });
+
+            // Validate the review textbox
+            const reviewBox = document.getElementById("<%= txtReview.ClientID %>");
+            const reviewValue = reviewBox.value.trim();
+            if (reviewValue === "") {
+                reviewError.style.display = "block";
+                reviewBox.focus(); // Focus on the review textbox if empty
+                isValid = false;
+            }
 
             // Return false if any validation fails
             return isValid;
