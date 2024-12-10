@@ -43,7 +43,7 @@ namespace FYP_TravelPlanner.Traveller
         protected void LoadPostDetails(string postId)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            string currentAccountId = Session["account_id"]?.ToString(); // Get current user's account ID
+            string currentAccountId = Session["account_id"]?.ToString(); 
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
@@ -136,7 +136,7 @@ namespace FYP_TravelPlanner.Traveller
                     }
                     else
                     {
-                        lblDeletedMessage.Text = "You do not have permission to view the post.";
+                        lblDeletedMessage.Text = "You do not have permission to view the post or the post may not exist.";
                         pnlDeletedMessage.Visible = true;
                         pnlPostDetails.Visible = false;
                     }
@@ -151,7 +151,6 @@ namespace FYP_TravelPlanner.Traveller
             string videoFileName = $"{postId}.mp4";
             string videoPath = ResolveUrl($"~/Uploads/Videos/{videoFileName}");
 
-            // Generate HTML for video player with controls
             videoLiteral.Text = $@"
         <div class='carousel-item active'>
             <div class='image-container'>
@@ -304,7 +303,6 @@ namespace FYP_TravelPlanner.Traveller
         
         private string GenerateChatId(string accountId, DateTime dateTime)
         {
-            // Append a GUID to make it more unique
             return $"C{accountId}{dateTime:yyyyMMddHHmmss}_{Guid.NewGuid()}";
         }
 

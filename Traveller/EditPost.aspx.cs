@@ -36,11 +36,12 @@ namespace FYP_TravelPlanner.Traveller
 
         private void LoadPostData(string postId)
         {
+            string currentAccountId = Session["account_id"] as string;
             string strCon = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(strCon))
             {
                 conn.Open();
-                string query = "SELECT post_title, post_content, post_permission, file_type, num_image FROM Posts WHERE post_id = @PostID";
+                string query = "SELECT post_title, post_content, post_permission, file_type, num_image, account_id, post_status FROM Posts WHERE post_id = @PostID";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@PostID", postId);
@@ -48,11 +49,26 @@ namespace FYP_TravelPlanner.Traveller
                     {
                         if (reader.Read())
                         {
+                            string postAccountId = reader["account_id"].ToString();
+                            if (postAccountId != currentAccountId)
+                            {
+                                Response.Redirect("~/Traveller/PostDetails.aspx?p=" + postId);
+                                return;
+                            }
+
+                            string postStatus = reader["post_status"].ToString();
+                            if (postStatus.Equals("Deleted", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Response.Redirect("~/Traveller/PostDetails.aspx?p=" + postId);
+                                return;
+                            }
+
                             txtPostTitle.Text = reader["post_title"].ToString();
                             txtPostContent.Text = reader["post_content"].ToString();
                             rblPostPermission.SelectedValue = reader["post_permission"].ToString();
                             fileType = reader["file_type"].ToString();
                             numImages = Convert.ToInt32(reader["num_image"]);
+                            postAccountId = reader["account_id"].ToString();
                         }
                     }
                 }
@@ -63,7 +79,7 @@ namespace FYP_TravelPlanner.Traveller
 
         private void LoadExistingMedia(string postId, string fileType, int numImages)
         {
-            string previewHtml = string.Empty; 
+            string previewHtml = string.Empty;
 
             if (fileType == "image")
             {
