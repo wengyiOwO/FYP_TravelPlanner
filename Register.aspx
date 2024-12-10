@@ -60,7 +60,7 @@
                                     </div>
                                     <div class="col-sm-6 position-relative">
                                         <asp:TextBox runat="server" type="password" class="form-control form-control-user" ID="txtRepeatPassword" placeholder="Repeat Password" MaxLength="16"  />
-                                        <asp:RequiredFieldValidator runat="server" ControlToValidate="txtRepeatPassword" ErrorMessage="Please confirm your password" CssClass="text-danger" Display="Dynamic" />
+                                        <asp:RequiredFieldValidator runat="server" ControlToValidate="txtRepeatPassword" ErrorMessage="Repeat Password is required" CssClass="text-danger" Display="Dynamic" />
                                         <asp:CompareValidator runat="server" ControlToValidate="txtRepeatPassword" ControlToCompare="txtPassword" ErrorMessage="Passwords do not match" CssClass="text-danger" Display="Dynamic" />
 
                                     </div>
