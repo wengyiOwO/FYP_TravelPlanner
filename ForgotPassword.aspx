@@ -31,8 +31,11 @@
                                             <asp:TextBox runat="server" type="email" class="form-control form-control-user"
                                                 ID="txtEmail" aria-describedby="emailHelp"
                                                 placeholder="Enter Email Address..." />
+                                            <asp:RequiredFieldValidator runat="server" ControlToValidate="txtEmail" ErrorMessage="Email is required" CssClass="text-danger" Display="Dynamic" />
+                                            <asp:RegularExpressionValidator runat="server" ControlToValidate="txtEmail" ErrorMessage="Invalid email format (Eg. example@gmail.com)" CssClass="text-danger"
+                                                ValidationExpression="^[^@\s]+@[^@\s]+\.[^@\s]+$" Display="Dynamic" />
                                         </div>
-                                        <asp:Button ID="btnSendEmail" runat="server" Text="Send Email Link" CssClass="btn btn-primary btn-user btn-block" onClick="btnSendEmail_Click"/>
+                                        <asp:Button ID="btnSendEmail" runat="server" Text="Send Email Link" CssClass="btn btn-primary btn-user btn-block" OnClick="btnSendEmail_Click" />
                                         <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
 
                                     </div>

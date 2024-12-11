@@ -109,8 +109,7 @@ namespace FYP_TravelPlanner
         {
             try
             {
-
-
+                
                 string fromEmail = "puajq-wm21@student.tarc.edu.my";
                 string subject = "Account Activation Request";
                 string body = $"<p>To active your account, please click the following link:</p><p><a href='{activeLink}'>Active Account</a></p>"
