@@ -29,11 +29,11 @@
             justify-content: flex-start;
         }
     </style>
-        <script src="/js/YearlyPieChart.js"></script>
+    <script src="/js/YearlyPieChart.js"></script>
 
     <script type="text/javascript">
-        var ratingData = <%= RatingDataJson %>; 
-</script>
+        var ratingData = <%= RatingDataJson %>;
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
 </asp:Content>
@@ -47,10 +47,9 @@
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
 
-    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
-></asp:Button>
-   
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" Style="margin-right: 20px; width: 150px;" OnClick="btnGenerate_Click"></asp:Button>
+
+                    <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                 </td>
             </tr>
         </table>
@@ -66,6 +65,7 @@
                     <h5>Select the Year for the Annual User Ratings Report</h5>
 
                     <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Year" Value="" />
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem>2025</asp:ListItem>
@@ -154,36 +154,36 @@
 
         </div>
     </div>
-      <script type="text/javascript">
-          function exportToExcel() {
-              // Calculate total count, average rating, and 5-star percentage
-              var totalCount = ratingData.reduce((a, b) => a + b, 0);
-              var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
-              var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
+    <script type="text/javascript">
+        function exportToExcel() {
+            // Calculate total count, average rating, and 5-star percentage
+            var totalCount = ratingData.reduce((a, b) => a + b, 0);
+            var avgRating = (ratingData.reduce((sum, value, index) => sum + value * (index + 1), 0) / totalCount).toFixed(1);
+            var fiveStarPercentage = ((ratingData[4] / totalCount) * 100).toFixed(1) + "%";
 
-              // Prepare worksheet data
-              const worksheetData = [
-                  ["User Ratings Report"],
-                  [],
-                  ["Rating", "Count"],
-                  ["1 star", ratingData[0]],
-                  ["2 stars", ratingData[1]],
-                  ["3 stars", ratingData[2]],
-                  ["4 stars", ratingData[3]],
-                  ["5 stars", ratingData[4]],
-                  [],
-                  ["Total Ratings", totalCount],
-                  ["Average Rating", avgRating],
-                  ["5-Star Percentage", fiveStarPercentage]
-              ];
+            // Prepare worksheet data
+            const worksheetData = [
+                ["User Ratings Report"],
+                [],
+                ["Rating", "Count"],
+                ["1 star", ratingData[0]],
+                ["2 stars", ratingData[1]],
+                ["3 stars", ratingData[2]],
+                ["4 stars", ratingData[3]],
+                ["5 stars", ratingData[4]],
+                [],
+                ["Total Ratings", totalCount],
+                ["Average Rating", avgRating],
+                ["5-Star Percentage", fiveStarPercentage]
+            ];
 
-              // Create a workbook and worksheet
-              const workbook = XLSX.utils.book_new();
-              const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-              XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
+            // Create a workbook and worksheet
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "User Ratings");
 
-              // Export the workbook to an Excel file
-              XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
-          }
-  </script>
+            // Export the workbook to an Excel file
+            XLSX.writeFile(workbook, "UserRatingsReport.xlsx");
+        }
+    </script>
 </asp:Content>

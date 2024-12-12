@@ -39,6 +39,17 @@ namespace FYP_TravelPlanner.js.demo
         }
         protected void DropDownList1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (DropDownList2.SelectedValue == "")
+            {
+                lblMessage.Text = "Please select Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
             GetTopDestinationsJson(selectedYear);
@@ -314,7 +325,17 @@ ORDER BY
             DataTable destinationData = new DataTable();
             destinationData.Columns.Add("location_name", typeof(string));
             destinationData.Columns.Add("visit_count", typeof(int));
-
+            if (DropDownList2.SelectedValue == "")
+            {
+                lblMessage.Text = "Please select Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
             GetTopDestinationsJson(selectedYear);
@@ -329,6 +350,8 @@ ORDER BY
             // Generate PDF report
             GeneratePopularDestinationPDF(destinationData,selectedYear);
             lblMessage.Text = "Annual Popular Destination Report has been generated successfully. <a href='/AnnualPopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
+            lblMessage.Visible = true;
+            lblMessage.ForeColor = Color.Green;
         }
     }
 }

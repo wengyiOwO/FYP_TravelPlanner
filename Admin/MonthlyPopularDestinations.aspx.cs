@@ -41,6 +41,17 @@ namespace FYP_TravelPlanner.js.demo
 
         protected void DropDownList1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (DropDownList1.SelectedValue == "" || DropDownList2.SelectedValue == "")
+            {
+                lblMessage.Text = "Please select both Month and Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedMonth = int.Parse(DropDownList1.SelectedValue);
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
@@ -202,7 +213,7 @@ ORDER BY
             }
         }
 
-        private void GeneratePopularDestinationPDF(DataTable destinationData,int month, int year)
+        private void GeneratePopularDestinationPDF(DataTable destinationData, int month, int year)
         {
             // Generate chart image bytes
             byte[] chartImageBytes = GenerateBarChartImage(destinationData);
@@ -319,6 +330,17 @@ ORDER BY
             destinationData.Columns.Add("location_name", typeof(string));
             destinationData.Columns.Add("visit_count", typeof(int));
 
+            if (DropDownList1.SelectedValue == "" || DropDownList2.SelectedValue == "") { 
+                lblMessage.Text = "Please select both Month and Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedMonth = int.Parse(DropDownList1.SelectedValue);
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
@@ -328,12 +350,22 @@ ORDER BY
             if (destinationData.Rows.Count == 0)
             {
                 lblMessage.Text = "No data available to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+
                 return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
             }
 
             // Generate PDF report
-            GeneratePopularDestinationPDF(destinationData,selectedMonth,selectedYear);
+            GeneratePopularDestinationPDF(destinationData, selectedMonth, selectedYear);
             lblMessage.Text = "Monthly Popular Destination Report has been generated successfully. <a href='/MonthlyPopularDestinationReport.pdf' target='_blank'>Download PDF</a>";
+            lblMessage.Visible = true;
+            lblMessage.ForeColor = Color.Green;
+
         }
     }
 }

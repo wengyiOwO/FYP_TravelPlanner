@@ -31,15 +31,15 @@
             justify-content: flex-start;
         }
     </style>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
     <script src="/js/MonthlyPieChart.js"></script>
 
     <script type="text/javascript">
-        var ratingData = <%= RatingDataJson %>; 
+        var ratingData = <%= RatingDataJson %>;
         console.log("Rating Data:", ratingData); // Check data in console to verify
 
-     
+
     </script>
 
 
@@ -54,10 +54,9 @@
                 <td class="auto-style1">&nbsp;</td>
                 <td class="auto-style2">
 
-    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" style="margin-right: 20px; width: 150px;"  onClick="btnGenerate_Click"
-></asp:Button>
-   
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
+                    <asp:Button ID="btnGenerate" runat="server" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" Text="Generate Report" Style="margin-right: 20px; width: 150px;" OnClick="btnGenerate_Click"></asp:Button>
+
+                    <asp:Label ID="lblMessage" runat="server" CssClass="text-small" Visible="true"></asp:Label>
                 </td>
             </tr>
         </table>
@@ -73,6 +72,7 @@
                 <div class="dropdown-list" style="margin-top: 20px; text-align: center;">
                     <h5>Select the Month & Year for the Monthly User Ratings Report</h5>
                     <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Month" Value="" />
                         <asp:ListItem>1</asp:ListItem>
                         <asp:ListItem>2</asp:ListItem>
                         <asp:ListItem>3</asp:ListItem>
@@ -88,6 +88,7 @@
 
                     </asp:DropDownList>
                     <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Year" Value="" />
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem>2025</asp:ListItem>
@@ -178,5 +179,5 @@
 
         </div>
     </div>
-   
+
 </asp:Content>

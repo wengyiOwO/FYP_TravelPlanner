@@ -33,6 +33,17 @@ namespace FYP_TravelPlanner
       
         protected void DropDownList1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (DropDownList1.SelectedValue == "" || DropDownList2.SelectedValue == "")
+            {
+                lblMessage.Text = "Please select both Month and Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedMonth = int.Parse(DropDownList1.SelectedValue);
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
@@ -299,6 +310,17 @@ namespace FYP_TravelPlanner
         }
         protected void btnGenerate_Click(object sender, EventArgs e)
         {
+            if (DropDownList1.SelectedValue == "" || DropDownList2.SelectedValue == "")
+            {
+                lblMessage.Text = "Please select both Month and Year to generate the report.";
+                lblMessage.ForeColor = Color.Red;
+                lblMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                lblMessage.Visible = false;
+            }
             int selectedMonth = int.Parse(DropDownList1.SelectedValue);
             int selectedYear = int.Parse(DropDownList2.SelectedValue);
 
@@ -315,6 +337,8 @@ namespace FYP_TravelPlanner
 
             GenerateUserRatingsPDFWithChart(ratingData, selectedMonth, selectedYear);
             lblMessage.Text = "Monthly User Ratings PDF has been generated successfully. <a href='/MonthlyUserRatingsReport.pdf' target='_blank'>Download PDF</a>";
+            lblMessage.Visible = true;
+            lblMessage.ForeColor = Color.Green;
         }
     }
 }

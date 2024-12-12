@@ -160,6 +160,7 @@
                 <div class="dropdown-list" style="margin-top: 20px; text-align: center;">
                     <h5>Select the Month & Year for the Monthly User Ratings Report</h5>
                     <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Month" Value="" />
                         <asp:ListItem>1</asp:ListItem>
                         <asp:ListItem>2</asp:ListItem>
                         <asp:ListItem>3</asp:ListItem>
@@ -174,11 +175,15 @@
                         <asp:ListItem>12</asp:ListItem>
 
                     </asp:DropDownList>
+
                     <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Year" Value="" />
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem>2025</asp:ListItem>
                     </asp:DropDownList>
+
+
                 </div>
                 <div class="row">
                     <!-- Bar Chart Section -->
@@ -212,6 +217,6 @@
 
                 </div>
             </div>
-            </div>
         </div>
+    </div>
 </asp:Content>

@@ -160,6 +160,7 @@
                     <h5>Select the Year for the Annual Popular Destinations Report</h5>
 
                     <asp:DropDownList ID="DropDownList2" runat="server" AutoPostBack="True" OnSelectedIndexChanged="DropDownList1_SelectedIndexChanged">
+                        <asp:ListItem Text="Select Year" Value="" />
                         <asp:ListItem>2023</asp:ListItem>
                         <asp:ListItem>2024</asp:ListItem>
                         <asp:ListItem>2025</asp:ListItem>
