@@ -100,25 +100,31 @@
                 draggableWaypoints: false
             }).addTo(map);
 
-            control.on('routesfound', function (e) {
-                console.log('Routes found:', e.routes);
-                e.routes.forEach(function (route) {
-                    if (route._line) {
-                        route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
-                    }
-                });
-            });
-
-            control.getPlan().on('routefound', function (e) {
-                console.log('Route found on plan:', e.routes);
-                e.routes.forEach(function (route) {
-                    if (route._line) {
-                        route._line.setStyle({ color: 'blue', weight: 5, opacity: 0.8 });
-                    }
-                });
-            });
-
             showDay(1);
+        }
+
+        function showDay(day) {
+            currentDay = day;
+            const dayLocations = locations.filter(loc => loc.day === day);
+
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            control.setWaypoints([]);
+
+            dayLocations.forEach((location, index) => {
+                var icon = L.divIcon({
+                    html: `<div class="custom-div-icon">${index + 1}</div>`,
+                    className: 'custom-div-icon'
+                });
+                var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
+                markers.push(marker);
+                marker.bindPopup(`<b>${location.name}</b><br>
+                <button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" 
+                class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
+            });
+
+            control.setWaypoints(dayLocations.map(loc => L.latLng(loc.lat, loc.lng)));
+            updateTable(day);
         }
 
         function findNearbyLocation(lat, lng, event) {
@@ -228,27 +234,6 @@
             updateRoute();
         }
 
-
-        function showDay(day) {
-            currentDay = day;
-            const dayLocations = locations.filter(loc => loc.day === day);
-
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            control.setWaypoints([]);
-
-            dayLocations.forEach((location, index) => {
-                var icon = L.divIcon({ html: `<div class="custom-div-icon">${index + 1}</div>`, className: 'custom-div-icon' });
-                var marker = L.marker([location.lat, location.lng], { icon: icon }).addTo(map);
-                markers.push(marker);
-                marker.bindPopup(`<b>${location.name}</b><br><button onclick="findNearbyLocation(${location.lat}, ${location.lng}, event)" class="btn btn-sm btn-primary mt-2">Find Nearby Location</button>`);
-            });
-
-
-            control.setWaypoints(dayLocations.map(loc => L.latLng(loc.lat, loc.lng)));
-            updateTable(day);
-
-        }
         async function updateTable(day) {
             const tableBody = document.getElementById('locationTable');
             tableBody.innerHTML = '';  // Clear existing table content
@@ -309,7 +294,8 @@
 
         //get route with OpenStreet API
         async function getRoute(lat1, lng1, lat2, lng2) {
-            const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`;
+            const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};
+                            ${lng2},${lat2}?overview=false`;
             try {
                 const data = await fetchWithRetry(url);
                 if (data.routes && data.routes.length > 0) {

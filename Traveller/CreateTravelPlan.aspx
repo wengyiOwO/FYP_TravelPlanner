@@ -222,11 +222,16 @@
             }).addTo(map);
         }
 
-
-
+        function handleSearchInput() {
+            var query = document.getElementById('<%= txtSearchLocation.ClientID %>').value;
+            if (query.length > 2) {
+                searchLocations(query);
+            } else {
+                document.getElementById('search-results').innerHTML = '';
+            }
+        }
 
         function searchLocations(query) {
-            //languag english
             var url = 'https://nominatim.openstreetmap.org/search?format=json&accept-language=en&q=' + query;
 
             fetch(url)
@@ -273,31 +278,24 @@
             document.getElementById('search-results').innerHTML = "";
         }
 
-        function handleSearchInput() {
-            var query = document.getElementById('<%= txtSearchLocation.ClientID %>').value;
-            if (query.length > 2) {
-                searchLocations(query);
-            } else {
-                document.getElementById('search-results').innerHTML = '';
-            }
-        }
+
 
 
         $(document).ready(function () {
             $("#<%= txtStartDate.ClientID %>").datepicker({
                 dateFormat: "dd-mm-yy",
-                showAnim: "slideDown",  
+                showAnim: "slideDown",
                 beforeShow: function (input, inst) {
                     $(inst.dpDiv).css({
-                        'height': 'auto',    
-                        'max-height': '300px', 
-                        'overflow-y': 'auto'   
+                        'height': 'auto',
+                        'max-height': '300px',
+                        'overflow-y': 'auto'
                     });
                 }
-            }).attr('readonly', true); 
+            }).attr('readonly', true);
 
             $("#<%= txtStartDate.ClientID %>").focus(function () {
-                $(this).removeAttr('readonly'); 
+                $(this).removeAttr('readonly');
                 $(this).datepicker("show");
             }).blur(function () {
                 $(this).attr('readonly', true);
@@ -328,7 +326,7 @@
         });
 
         function addSelectedLocation(location) {
-            var locationName = location.display_name.split(",")[0]; 
+            var locationName = location.display_name.split(",")[0];
             var lat = location.lat;
             var lon = location.lon;
             var ddlState = document.getElementById('<%= ddlState.ClientID %>');
@@ -371,7 +369,7 @@
 
         function updateLocationsTable() {
             var tbody = document.querySelector("#interestLocationsTable tbody");
-            tbody.innerHTML = ""; 
+            tbody.innerHTML = "";
 
             selectedLocations.forEach((location, index) => {
                 var row = document.createElement("tr");

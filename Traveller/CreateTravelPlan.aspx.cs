@@ -312,13 +312,14 @@ namespace FYP_TravelPlanner.Traveller
             var filteredLocations = new List<Location>();
 
             var interestKeywords = new Dictionary<string, List<string>>
-    {
-        { "beaches", new List<string> { "Pantai", "Island", "Beach", "Pulau" } },
-        { "citySightseeing", new List<string> { "Heritage", "Museum", "City", "Historical", "Monument", "Tower" } },
-        { "foodExploration", new List<string> { "Food", "Restaurant", "Cafe", "Market", "Cuisine", "Street Food" } },
-        { "shopping", new List<string> { "Mall", "Shopping", "Market", "Bazaar", "Souvenir" } },
-        { "outdoorAdventures", new List<string> { "Taman", "Park", "Theme Park", "Escape Park", "Waterfall", "Nature", "Hill", "Hiking" } }
-    };
+            {
+             { "beaches", new List<string> { "Pantai", "Island", "Beach", "Pulau" } },
+             { "citySightseeing", new List<string> { "Heritage", "Museum", "City", "Historical", "Monument", "Tower" } },
+             { "foodExploration", new List<string> { "Food", "Restaurant", "Cafe", "Market", "Cuisine", "Street Food" } },
+             { "shopping", new List<string> { "Mall", "Shopping", "Market", "Bazaar", "Souvenir" } },
+             { "outdoorAdventures", new List<string> { "Taman", "Park", "Theme Park", "Escape Park", 
+                 "Waterfall", "Nature", "Hill", "Hiking" } }
+            };
 
             foreach (var location in locations)
             {

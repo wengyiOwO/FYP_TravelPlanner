@@ -236,9 +236,8 @@ namespace FYP_TravelPlanner.Traveller
 
             using (var engine = new Engine())
             {
-                engine.GetMetadata(inputFile); // Retrieve duration
+                engine.GetMetadata(inputFile); 
 
-                // Generate a thumbnail at the 1 second
                 var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(1) };
                 engine.GetThumbnail(inputFile, outputFile, options);
             }
